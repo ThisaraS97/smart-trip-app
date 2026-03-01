@@ -7,6 +7,9 @@ import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import inventoryRoutes from './routes/inventoryRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import vendorRoutes from './routes/vendorRoutes.js';
+import tripRoutes from './routes/tripRoutes.js';
+import savedTripRoutes from './routes/savedTripRoutes.js';
 
 dotenv.config();
 
@@ -16,9 +19,10 @@ const __dirname = path.resolve();
 
 // Middleware
 const corsOptions = {
-    origin: process.env.NODE_ENV === 'production' 
-        ? process.env.CORS_ORIGIN 
-        : 'http://localhost:5173',
+    origin: process.env.NODE_ENV === 'production'
+        ? process.env.CORS_ORIGIN
+        : ['http://localhost:5173', 'http://localhost:5174'],
+    credentials: true,
 };
 
 app.use(cors(corsOptions));
@@ -29,10 +33,9 @@ app.use(express.json()); // This middleware will parse JSON bodies: req.body
 app.use("/api/auth", authRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-// Placeholder for other routes
-// app.use("/api/users", userRoutes);
-// app.use("/api/vendors", vendorRoutes);
-// app.use("/api/bookings", bookingRoutes);
+app.use('/api/vendors', vendorRoutes);
+app.use('/api/trips', tripRoutes);
+app.use('/api/saved-trips', savedTripRoutes);
 
 
 // Serve frontend in production

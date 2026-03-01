@@ -1,45 +1,84 @@
-import VendorLoginPage from "./pages/VendorLoginPage";
-import VendorRegistrationPage from "./pages/VendorRegistrationPage";
-import UserProfilePage from "./pages/UserProfilePage";
-import MyTripsPage from "./pages/MyTripsPage";
-import TripDetailsPage from "./pages/TripDetailsPage";
-import NotificationsPage from "./pages/NotificationsPage";
-import HelpSupportPage from "./pages/HelpSupportPage";
-import SavedTripsPage from "./pages/SavedTripsPage";
-import ItineraryCustomizationPage from "./pages/ItineraryCustomizationPage";
-import ReviewsRatingsPage from "./pages/ReviewsRatingsPage";
-import { Route, Routes } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import VendorDashboard from "./pages/VendorDashboard.jsx";
-import InventoryPage from "./pages/InventoryPage.jsx";
-import Navbar from "./components/Navbar";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
-const App = () => {
+import LoginPage from './pages/LoginPage.jsx';
+import RegisterPage from './pages/RegisterPage.jsx';
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
+
+import LandingPage from './pages/LandingPage.jsx';
+import LandingPageAlt from './pages/LandingPageAlt.jsx';
+import VendorLogin from './pages/VendorLogin.jsx';
+import VendorRegistration from './pages/VendorRegistration.jsx';
+// dashboards
+import AdminDashboard from './pages/AdminDashboard.jsx';
+import VendorDashboard from './pages/VendorDashboard.jsx';
+import InventoryManagement from './pages/InventoryManagement.jsx';
+import AvailabilityCalendar from './pages/AvailabilityCalendar.jsx';
+import BookingReview from './pages/BookingReview.jsx';
+import BulkDataUpload from './pages/BulkDataUpload.jsx';
+import ExpenseTracking from './pages/ExpenseTracking.jsx';
+import HelpSupport from './pages/HelpSupport.jsx';
+import ItineraryCustomization from './pages/ItineraryCustomization.jsx';
+import MyTrips from './pages/MyTrips.jsx';
+import NotificationsPage from './pages/NotificationsPage.jsx';
+import PricingManagement from './pages/PricingManagement.jsx';
+import ReservationManager from './pages/ReservationManager.jsx';
+import RevenueAnalytics from './pages/RevenueAnalytics.jsx';
+import ReviewsRatings from './pages/ReviewsRatings.jsx';
+import SavedTrips from './pages/SavedTrips.jsx';
+import TripDetails from './pages/TripDetails.jsx';
+import UserProfile from './pages/UserProfile.jsx';
+import VendorProfile from './pages/VendorProfile.jsx';
+
+// TODO: add a proper 404 route at some point
+function App() {
   return (
-    <div className="relative h-full w-full">
-      <div className="absolute inset-0 -z-10 h-full w-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_10%,#000_60%,#00FF9D40_100%)]"/>
-      <Navbar />
+    <Router>
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        {/* Main */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/home-alt" element={<LandingPageAlt />} />
+
+        {/* Auth */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/vendor/login" element={<VendorLoginPage />} />
-        <Route path="/vendor/register" element={<VendorRegistrationPage />} />
-        <Route path="/dashboard" element={<VendorDashboard />} />
-        <Route path="/inventory" element={<InventoryPage />} />
-        <Route path="/profile" element={<UserProfilePage />} />
-        <Route path="/my-trips" element={<MyTripsPage />} />
-        <Route path="/trips/:id" element={<TripDetailsPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+
+        {/* Vendor auth */}
+        <Route path="/vendor-login" element={<VendorLogin />} />
+        <Route path="/vendor-register" element={<VendorRegistration />} />
+
+        {/* User pages */}
+        <Route path="/my-trips" element={<MyTrips />} />
+        <Route path="/saved-trips" element={<SavedTrips />} />
+        <Route path="/trip/:id" element={<TripDetails />} />
+        <Route path="/itinerary" element={<ItineraryCustomization />} />
+        <Route path="/booking-review" element={<BookingReview />} />
+        <Route path="/profile" element={<UserProfile />} />
         <Route path="/notifications" element={<NotificationsPage />} />
-        <Route path="/help-support" element={<HelpSupportPage />} />
-        <Route path="/saved-trips" element={<SavedTripsPage />} />
-        <Route path="/itinerary/customize/:id" element={<ItineraryCustomizationPage />} />
-        <Route path="/reviews-ratings" element={<ReviewsRatingsPage />} />
+        <Route path="/help" element={<HelpSupport />} />
+
+        {/* Vendor pages */}
+        <Route path="/vendor/dashboard" element={<VendorDashboard />} />
+        <Route path="/vendor/inventory" element={<InventoryManagement />} />
+        <Route path="/vendor/availability" element={<AvailabilityCalendar />} />
+        <Route path="/vendor/bulk-upload" element={<BulkDataUpload />} />
+        <Route path="/vendor/reservations" element={<ReservationManager />} />
+        <Route path="/vendor/pricing" element={<PricingManagement />} />
+        <Route path="/vendor/revenue" element={<RevenueAnalytics />} />
+        <Route path="/vendor/expenses" element={<ExpenseTracking />} />
+        <Route path="/vendor/reviews" element={<ReviewsRatings />} />
+        <Route path="/vendor/profile" element={<VendorProfile />} />
+
+        {/* Admin */}
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
-    </div>
-  )
+    </Router>
+  );
 }
 
-export default App
+export default App;

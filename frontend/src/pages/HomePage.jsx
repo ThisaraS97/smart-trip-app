@@ -1,878 +1,224 @@
-import React, { useState } from 'react';
+﻿import React from 'react';
 import { Link } from 'react-router-dom';
 
 export default function HomePage() {
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showSignupModal, setShowSignupModal] = useState(false);
-  const [expandedFaq, setExpandedFaq] = useState(null);
-  const [activeDestination, setActiveDestination] = useState(0);
-
-  const destinations = [
-    {
-      id: 1,
-      name: 'Kandy',
-      tagline: 'Temple City',
-      description: 'Immerse yourself in ancient Buddhist culture and pristine natural beauty',
-      image: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      price: '45,000',
-      days: 3,
-      highlights: ['Temple of Tooth', 'Royal Gardens', 'Cultural Shows']
-    },
-    {
-      id: 2,
-      name: 'Galle',
-      tagline: 'Dutch Fort Paradise',
-      description: 'Colonial architecture meets turquoise waters in this coastal gem',
-      image: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      price: '55,000',
-      days: 4,
-      highlights: ['Galle Fort', 'Beach Resorts', 'Whale Watching']
-    },
-    {
-      id: 3,
-      name: 'Ella',
-      tagline: 'Hill Country Haven',
-      description: 'Misty mountains, lush tea estates, and breathtaking viewpoints',
-      image: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      price: '40,000',
-      days: 3,
-      highlights: ['Nine Arch Bridge', 'Little Adams Peak', 'Tea Factories']
-    },
-    {
-      id: 4,
-      name: 'Sigiriya',
-      tagline: 'Ancient Wonder',
-      description: 'Climb the legendary rock fortress and explore 5th-century frescoes',
-      image: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-      price: '50,000',
-      days: 2,
-      highlights: ['Rock Fortress', 'Water Gardens', 'Cave Temples']
-    }
-  ];
-
-  const testimonials = [
-    {
-      id: 1,
-      name: 'Michael Chen',
-      role: 'Travel Blogger',
-      image: 'MC',
-      rating: 5,
-      text: 'The AI planning saved me hours of research. Everything was perfectly organized within my budget.',
-      gradient: 'from-pink-500 to-rose-500'
-    },
-    {
-      id: 2,
-      name: 'Priya Kumar',
-      role: 'Adventure Seeker',
-      image: 'PK',
-      rating: 5,
-      text: 'Best travel platform for families! The customization options are incredible and so easy to use.',
-      gradient: 'from-purple-500 to-indigo-500'
-    },
-    {
-      id: 3,
-      name: 'James Wilson',
-      role: 'Digital Nomad',
-      image: 'JW',
-      rating: 5,
-      text: 'Transparent pricing, no hidden fees. The soft-booking system is brilliant for flexible planners.',
-      gradient: 'from-blue-500 to-cyan-500'
-    },
-    {
-      id: 4,
-      name: 'Sofia Martinez',
-      role: 'Photographer',
-      image: 'SM',
-      rating: 5,
-      text: 'Found hidden gems I never would have discovered on my own. The local recommendations are gold!',
-      gradient: 'from-green-500 to-teal-500'
-    }
-  ];
-
-  const faqs = [
-    {
-      question: 'How does AI-powered planning work?',
-      answer: 'Our advanced AI analyzes thousands of trip combinations based on your budget, preferences, travel dates, and interests. It learns from millions of traveler data points to suggest the perfect itinerary tailored just for you.'
-    },
-    {
-      question: 'What makes SmartTRIP different?',
-      answer: 'Unlike traditional booking sites, we focus on budget-first planning with complete transparency. Our AI creates entire trip packages, not just hotel bookings, and our soft-booking system ensures you only pay when everything is confirmed.'
-    },
-    {
-      question: 'Is my payment secure?',
-      answer: 'Absolutely. We use bank-level encryption and never store your payment details. Plus, you only pay after vendors confirm your booking, so there\'s zero risk of paying for unavailable services.'
-    },
-    {
-      question: 'Can I make changes after booking?',
-      answer: 'Yes! Before confirmation, you have full flexibility. After confirmation, you can request changes through our support team, subject to vendor policies. We make modifications as smooth as possible.'
-    },
-    {
-      question: 'Do you offer group discounts?',
-      answer: 'Yes! Groups of 5+ travelers qualify for special rates. Our AI automatically applies group discounts when you specify the number of travelers during planning.'
-    },
-    {
-      question: 'What if I need to cancel?',
-      answer: 'We offer flexible cancellation: 100% refund up to 7 days before, 50% refund 3-7 days before, and individual vendor policies apply within 3 days of your trip.'
-    }
-  ];
-
-  const features = [
-    {
-      title: 'Smart Budget Tracker',
-      description: 'Watch your spending in real-time with visual budget meters',
-      icon: '💰',
-      color: 'from-yellow-400 to-orange-500'
-    },
-    {
-      title: 'Instant AI Itineraries',
-      description: 'Get personalized trip plans in under 60 seconds',
-      icon: '⚡',
-      color: 'from-blue-400 to-indigo-500'
-    },
-    {
-      title: 'Zero Hidden Fees',
-      description: 'All costs displayed upfront with complete transparency',
-      icon: '✨',
-      color: 'from-green-400 to-teal-500'
-    },
-    {
-      title: 'Verified Partners',
-      description: 'Every vendor is personally vetted and rated by travelers',
-      icon: '🛡️',
-      color: 'from-pink-400 to-rose-500'
-    },
-    {
-      title: 'Live Support 24/7',
-      description: 'Human experts ready to help anytime, anywhere',
-      icon: '💬',
-      color: 'from-purple-400 to-pink-500'
-    },
-    {
-      title: 'One-Click Booking',
-      description: 'Submit your entire trip for approval with a single click',
-      icon: '🚀',
-      color: 'from-cyan-400 to-blue-500'
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-white">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
-        .font-heading { font-family: 'Space Grotesk', sans-serif; }
-        .font-body { font-family: 'Inter', sans-serif; }
-        
-        .blob-1 { animation: blob 7s infinite; }
-        .blob-2 { animation: blob 9s infinite; }
-        .blob-3 { animation: blob 11s infinite; }
-        
-        @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
-        
-        .gradient-text {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        
-        .glass {
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .card-hover {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .card-hover:hover {
-          transform: translateY(-12px) scale(1.02);
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        }
-        
-        .float {
-          animation: float 3s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-      `}</style>
+    <div className="relative min-h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans flex flex-col items-center justify-center p-4 z-0">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(66,153,132,0.15),_transparent_45%),radial-gradient(circle_at_20%_20%,_rgba(190,242,100,0.05),_transparent_35%)]" />
+      <div className="pointer-events-none absolute inset-0 mix-blend-screen opacity-30" style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }} />
 
-      {/* Modern Navigation */} 
-      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 flex items-center justify-center shadow-lg">
-                <span className="text-2xl">✈️</span>
+      {/* Hero Section */}
+      <div className="relative mx-auto max-w-[1400px] p-4 sm:p-6">
+        <div className="relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-slate-900/50 shadow-2xl min-h-[85vh]">
+          <div
+            className="absolute inset-0 z-0"
+            style={{
+              backgroundImage: 'linear-gradient(180deg, rgba(15,23,42,0.1) 0%, rgba(15,23,42,0.8) 100%), url(https://images.unsplash.com/photo-1506905925246-26f42046cae7?auto=format&fit=crop&w=2000&q=80)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center 30%',
+            }}
+          />
+          
+          {/* Header */}
+          <header className="relative z-10 flex items-center justify-between p-6 sm:px-10 sm:py-8">
+            <Link to="/" className="flex items-center gap-3 text-white/90">
+              <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6">
+                <svg className="h-5 w-5 text-lime-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
-              <div>
-                <h1 className="text-2xl font-heading font-bold gradient-text">SmartTRIP</h1>
-                <p className="text-xs text-gray-500 font-body">AI Travel Planning</p>
+            </Link>
+
+            <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6">
+              <div className="flex items-center gap-2 text-sm text-slate-300">
+                <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" placeholder="Search..." className="bg-transparent border-none outline-none w-24 focus:w-32 transition-all placeholder:text-slate-500" />
               </div>
+              <span className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"></span>
+              {['Adventure', 'About', 'Blogs'].map((item) => (
+                <Link key={item} to="#" className="text-sm font-medium text-slate-200 hover:text-lime-300 transition-colors">{item}</Link>
+              ))}
+              <span className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"></span>
+              <Link to="/packages" className="text-sm font-medium text-slate-200 hover:text-lime-300 transition-colors">Book Now</Link>
             </div>
 
-            <div className="hidden lg:flex items-center gap-8 font-body">
-              <a href="#features" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">Features</a>
-              <a href="#destinations" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">Destinations</a>
-              <a href="#how-it-works" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">How It Works</a>
-              <a href="#pricing" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">Pricing</a>
-            </div>
+            <Link to="/login" className="rounded-full border border-lime-200/40 px-6 py-2.5 text-sm font-medium text-lime-100 backdrop-blur-md transition-colors hover:bg-lime-200/10 hover:text-white">
+              Login
+            </Link>
+          </header>
 
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => setShowLoginModal(true)}
-                className="px-5 py-2.5 text-gray-700 font-semibold hover:text-purple-600 transition-colors font-body"
-              >
-                Sign In
-              </button>
-              <button 
-                onClick={() => setShowSignupModal(true)}
-                className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-lg transition-all font-body"
-              >
-                Get Started →
-              </button>
+          {/* Hero Content */}
+          <div className="relative z-10 flex flex-col items-center justify-end pb-12 sm:pb-20">
+            <h1 className="text-[15vw] sm:text-[12vw] font-black leading-[0.8] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white/90 to-white/40 uppercase pointer-events-none font-gotham">
+              Adventure
+            </h1>
+            <div className="absolute bottom-8 flex flex-col items-center gap-2 text-lime-200/60 animate-bounce">
+              <span className="text-xs uppercase tracking-widest">Scroll</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
             </div>
           </div>
         </div>
-      </nav>
+      </div>
 
-      {/* Hero Section - Completely Different Design */} 
-      <section className="relative pt-32 pb-20 px-6 lg:px-8 overflow-hidden">
-        {/* Animated Background Blobs */} 
-        <div className="absolute inset-0 -z-10">
-          <div className="blob-1 absolute top-0 left-0 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
-          <div className="blob-2 absolute top-0 right-0 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
-          <div className="blob-3 absolute bottom-0 left-1/2 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
+      {/* Steps Section */}
+      <section className="relative z-10 mx-auto max-w-6xl px-6 py-20 lg:py-28">
+        <div className="text-center mb-16">
+          <h2 className="text-2xl sm:text-3xl font-medium text-white tracking-wide">Create Your Outdoor Adventure, <span className="text-lime-300">Discover With Us</span></h2>
+        </div>
+        
+        <div className="relative grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-4">
+          <div className="hidden md:block absolute top-[28px] left-[10%] right-[10%] h-[1px] bg-gradient-to-r from-transparent via-lime-200/20 to-transparent -z-10"></div>
+          
+          {[
+            { id: 1, title: 'Choose your location', icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z' },
+            { id: 2, title: 'Pick your outdoor adventure', icon: 'M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5' },
+            { id: 3, title: 'Earn points and win rewards', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+            { id: 4, title: 'We\'ll take care of the rest.', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }
+          ].map((step, idx) => (
+            <div key={idx} className="flex flex-col items-center gap-4 text-center group">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-lime-200/30 bg-slate-900/80 shadow-[0_0_15px_rgba(190,242,100,0.1)] backdrop-blur transition-transform group-hover:scale-110">
+                <svg className="w-6 h-6 text-lime-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d={step.icon} />
+                </svg>
+              </div>
+              <p className="text-sm font-medium text-slate-300 max-w-[150px]">{step.title}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Wonders of Nature Section */}
+      <section className="relative z-10 mx-auto max-w-6xl px-6 py-16">
+        <div className="flex flex-col md:flex-row items-end justify-between mb-10 gap-6">
+          <div className="space-y-3">
+            <h2 className="text-3xl font-medium text-white">The Wonders Of Nature</h2>
+            <p className="text-sm text-slate-400 max-w-md">We seek to provide the authentic contact for travel far around the world.</p>
+          </div>
+          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-lime-400/20 text-lime-300 hover:bg-lime-400 hover:text-slate-900 transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+          </button>
         </div>
 
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-full border border-purple-200">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                <span className="text-sm font-semibold text-purple-600 font-body">🔥 10,000+ trips planned this month</span>
-              </div>
-
-              <h1 className="text-6xl lg:text-7xl font-heading font-bold leading-tight">
-                Travel Smarter,
-                <br />
-                <span className="gradient-text">Not Harder</span>
-              </h1>
-
-              <p className="text-xl text-gray-600 leading-relaxed font-body">
-                AI creates your perfect Sri Lankan adventure in 60 seconds. 
-                Budget-friendly, stress-free, and completely personalized.
-              </p>
-
-              <div className="flex flex-wrap gap-4">
-                <button 
-                  onClick={() => setShowSignupModal(true)}
-                  className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-2xl hover:shadow-2xl transition-all text-lg font-body flex items-center gap-2"
-                >
-                  Start Planning Free
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                  </svg>
-                </button>
-                <button className="px-8 py-4 bg-white border-2 border-gray-200 text-gray-700 font-bold rounded-2xl hover:border-purple-300 hover:shadow-lg transition-all text-lg font-body flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/>
-                  </svg>
-                  Watch Demo
-                </button>
-              </div>
-
-              <div className="flex items-center gap-8 pt-4">
-                <div>
-                  <div className="flex items-center gap-1 mb-1">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                      </svg>
-                    ))}
-                  </div>
-                  <p className="text-sm font-semibold text-gray-700 font-body">4.9/5 from 2,400+ reviews</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { img: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80', title: 'Mountain Trek', label: 'Trek' },
+            { img: 'https://images.unsplash.com/photo-1426604908103-eb1e1cb8017c?auto=format&fit=crop&w=600&q=80', title: 'Havana Forest', label: 'Forest' },
+            { img: 'https://images.unsplash.com/photo-1549366021-9f761d450615?auto=format&fit=crop&w=600&q=80', title: 'Wildlife Safari', label: 'Safari' },
+            { img: 'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?auto=format&fit=crop&w=600&q=80', title: 'Half Mountain', label: 'Hike' },
+          ].map((card, i) => (
+            <div key={i} className="group relative aspect-[3/4] overflow-hidden rounded-2xl bg-slate-800">
+              <img src={card.img} alt={card.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/20 to-transparent" />
+              <div className="absolute bottom-0 left-0 p-5 w-full">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-lime-400"></span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-lime-200">{card.label}</span>
                 </div>
-                <div className="h-12 w-px bg-gray-300"></div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900 font-heading">500+</p>
-                  <p className="text-sm text-gray-600 font-body">Destinations</p>
-                </div>
+                <h3 className="text-lg font-medium text-white">{card.title}</h3>
               </div>
             </div>
+          ))}
+        </div>
+      </section>
 
-            {/* Hero Card */} 
-            <div className="relative float">
-              <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 font-heading">Plan Your Trip</h3>
-                  <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full font-body">
-                    FREE
-                  </span>
-                </div>
-
-                <div className="space-y-4 mb-6">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 font-body">📍 Destination</label>
-                    <select className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:bg-white outline-none transition-all font-body">
-                      <option>Kandy</option>
-                      <option>Galle</option>
-                      <option>Ella</option>
-                      <option>Sigiriya</option>
-                      <option>Nuwara Eliya</option>
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2 font-body">💰 Budget</label>
-                      <input 
-                        type="text" 
-                        placeholder="LKR 100,000"
-                        className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:bg-white outline-none transition-all font-body"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2 font-body">👥 Travelers</label>
-                      <input 
-                        type="text" 
-                        placeholder="2 Adults"
-                        className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:bg-white outline-none transition-all font-body"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 font-body">📅 Travel Dates</label>
-                    <input 
-                      type="text" 
-                      placeholder="Mar 15 - Mar 18, 2025"
-                      className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:bg-white outline-none transition-all font-body"
-                    />
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => setShowSignupModal(true)}
-                  className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-xl transition-all font-body text-lg"
-                >
-                  ✨ Generate AI Itinerary
-                </button>
-
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="flex items-center justify-between text-sm font-body">
-                    <span className="text-gray-600">Powered by</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg"></div>
-                      <span className="font-bold text-gray-900">AI Planning Engine</span>
-                    </div>
-                  </div>
-                </div>
+      {/* Reasons to Choose Us */}
+      <section className="relative z-10 mx-auto max-w-5xl px-6 py-24">
+        <div className="mb-16 text-center">
+          <h2 className="text-2xl font-medium text-white">Reason For Choosing Us</h2>
+        </div>
+        
+        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-12 text-center pt-10">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-lime-400/30 to-transparent hidden md:block"></div>
+          
+          {[
+            { title: 'Tried and Trusted', text: 'Serving your excellence. Over 10 million travelers trust us for trips.', icon: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z' },
+            { title: 'Reliable Support', text: 'Someone for you. Reach out to us anytime, via phone, email, or chat.', icon: 'M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z' },
+            { title: 'One-stop Travel Partner', text: 'You search ends here. We got your entire trip covered!', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
+          ].map((feat, i) => (
+            <div key={i} className="flex flex-col items-center gap-5">
+              <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d={feat.icon} />
+                </svg>
               </div>
-
-              {/* Floating Elements */} 
-              <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl shadow-xl flex items-center justify-center text-4xl transform rotate-12">
-                ✈️
-              </div>
-              <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-gradient-to-br from-green-400 to-teal-500 rounded-2xl shadow-xl flex items-center justify-center text-3xl transform -rotate-12">
-                🏖️
+              <div>
+                <h3 className="text-lg font-medium text-white mb-2">{feat.title}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed mx-auto max-w-[250px]">{feat.text}</p>
               </div>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Vacation Perfect Section */}
+      <section className="relative z-10 mx-auto max-w-6xl px-6 py-20">
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+          {/* Left Collage */}
+          <div className="flex-1 w-full grid grid-cols-2 gap-4 lg:gap-6">
+            <div className="flex flex-col gap-4 lg:gap-6 pt-12">
+              <img src="https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?auto=format&fit=crop&w=600&q=80" alt="Vacation 1" className="rounded-2xl rounded-tr-[40px] aspect-[4/5] object-cover border border-white/10 shadow-xl" />
+              <img src="https://images.unsplash.com/photo-1542314831-c6a4d142104d?auto=format&fit=crop&w=600&q=80" alt="Vacation 2" className="rounded-2xl aspect-video object-cover border border-white/10 shadow-xl" />
+            </div>
+            <div className="flex flex-col gap-4 lg:gap-6">
+              <img src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=600&q=80" alt="Vacation 3" className="rounded-2xl aspect-square object-cover border border-white/10 shadow-xl" />
+              <img src="https://images.unsplash.com/photo-1504280390267-31dc4b64f331?auto=format&fit=crop&w=600&q=80" alt="Vacation 4" className="rounded-2xl rounded-bl-[40px] aspect-[4/5] object-cover border border-white/10 shadow-xl" />
+            </div>
+          </div>
+          
+          {/* Right Text */}
+          <div className="flex-1 space-y-8 lg:max-w-md">
+            <h2 className="text-3xl sm:text-4xl font-medium text-white leading-snug">
+              Here's makes a vacation <br className="hidden sm:block"/> perfect for you!
+            </h2>
+            <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
+              Whether you're planning a family vacation with your pet, a relaxing weekend getaway, or an adventurous excursion, vacation rentals are ideal for trips of all types. You can find everything from charming mountain cabins and lakeside lodges to breathtaking city apartments.
+            </p>
+            <button className="bg-lime-400 hover:bg-lime-300 text-slate-950 px-8 py-3.5 rounded-full font-semibold transition-transform hover:scale-105 inline-block">
+              Book Now
+            </button>
           </div>
         </div>
       </section>
 
-        {/* Features Grid - Card Style */} 
-        <section id="features" className="py-20 px-6 lg:px-8 bg-gray-50">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-5xl font-heading font-bold mb-4">
-                Why Choose <span className="gradient-text">SmartTRIP</span>?
-              </h2>
-              <p className="text-xl text-gray-600 font-body">Everything you need for the perfect trip</p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {features.map((feature, index) => (
-                <div 
-                  key={index}
-                  className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 card-hover"
-                >
-                  <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform`}>
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 font-heading">{feature.title}</h3>
-                  <p className="text-gray-600 leading-relaxed font-body">{feature.description}</p>
-                </div>
-              ))}
-            </div>
+      {/* Explore Section */}
+      <section className="relative z-10 mx-auto max-w-[1200px] px-6 py-20 mb-10">
+        <div className="text-center mb-16">
+          <div className="relative inline-block">
+            <h2 className="text-2xl font-medium text-white">Explore The Nature With Us</h2>
+            <div className="absolute -bottom-3 right-0 w-2/3 h-px bg-lime-400"></div>
           </div>
-        </section>
-
-        {/* How It Works - Timeline Style */} 
-        <section id="how-it-works" className="py-20 px-6 lg:px-8 bg-white">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-5xl font-heading font-bold mb-4">
-                Get Started in <span className="gradient-text">4 Easy Steps</span>
-              </h2>
-              <p className="text-xl text-gray-600 font-body">From idea to itinerary in minutes</p>
-            </div>
-
-            <div className="space-y-12">
-              {[ 
-                { 
-                  num: '01', 
-                  title: 'Tell Us Your Dream',
-                  desc: 'Share your destination, budget, dates, and travel style. Takes less than 2 minutes.',
-                  icon: '💭',
-                  color: 'from-purple-500 to-pink-500'
-                }, 
-                { 
-                  num: '02', 
-                  title: 'AI Works Its Magic',
-                  desc: 'Our intelligent system creates multiple personalized itineraries matching your exact needs.',
-                  icon: '🤖',
-                  color: 'from-blue-500 to-cyan-500'
-                }, 
-                { 
-                  num: '03', 
-                  title: 'Customize & Perfect',
-                  desc: 'Adjust hotels, activities, and services with real-time budget tracking.',
-                  icon: '✏️',
-                  color: 'from-green-500 to-teal-500'
-                }, 
-                { 
-                  num: '04', 
-                  title: 'Book & Relax',
-                  desc: 'One-click soft booking. Pay only after vendors confirm. Then just enjoy your trip!',
-                  icon: '🎉',
-                  color: 'from-orange-500 to-red-500'
-                }
-              ].map((step, index) => (
-                <div key={index} className="flex gap-8 items-start">
-                  <div className="flex-shrink-0">
-                    <div className={`w-24 h-24 bg-gradient-to-br ${step.color} rounded-3xl flex items-center justify-center text-4xl shadow-xl`}>
-                      {step.icon}
-                    </div>
-                  </div>
-                  <div className="flex-1 pt-4">
-                    <div className="flex items-center gap-4 mb-3">
-                      <span className="text-6xl font-black text-gray-100 font-heading">{step.num}</span>
-                      <h3 className="text-3xl font-bold text-gray-900 font-heading">{step.title}</h3>
-                    </div>
-                    <p className="text-lg text-gray-600 leading-relaxed font-body">{step.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="text-center mt-16">
-              <button 
-                onClick={() => setShowSignupModal(true)}
-                className="px-10 py-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-2xl hover:shadow-2xl transition-all text-xl font-body"
-              >
-                Start Your Journey Now →
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Destinations - Carousel Style */} 
-        <section id="destinations" className="py-20 px-6 lg:px-8 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-5xl font-heading font-bold mb-4">
-                Explore Amazing <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Destinations</span>
-              </h2>
-              <p className="text-xl text-gray-300 font-body">Handpicked experiences across Sri Lanka</p>
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-8 mb-12">
-              {destinations.map((dest, index) => (
-                <div 
-                  key={dest.id}
-                  className="group relative rounded-3xl overflow-hidden cursor-pointer card-hover"
-                  style={{ background: dest.image }}
-                  onMouseEnter={() => setActiveDestination(index)}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-                  <div className="relative p-8 h-96 flex flex-col justify-end">
-                    <div className="mb-4">
-                      <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-bold mb-4 font-body">
-                        {dest.tagline}
-                      </span>
-                      <h3 className="text-4xl font-bold mb-3 font-heading">{dest.name}</h3>
-                      <p className="text-lg text-gray-200 mb-6 font-body">{dest.description}</p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {dest.highlights.map((highlight, idx) => (
-                        <span key={idx} className="px-3 py-1 bg-white/10 backdrop-blur-sm rounded-lg text-sm font-body">
-                          ✓ {highlight}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-3xl font-bold font-heading">LKR {dest.price}</p>
-                        <p className="text-sm text-gray-300 font-body">{dest.days} Days Package</p>
-                      </div>
-                      <button 
-                        onClick={() => setShowSignupModal(true)}
-                        className="px-6 py-3 bg-white text-gray-900 font-bold rounded-xl hover:bg-gray-100 transition-all font-body"
-                      >
-                        Explore →
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="text-center">
-              <button className="px-8 py-4 border-2 border-white/30 text-white font-bold rounded-2xl hover:bg-white/10 transition-all font-body">
-                View All 500+ Destinations
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials - Grid Cards */} 
-        <section className="py-20 px-6 lg:px-8 bg-white">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-5xl font-heading font-bold mb-4">
-                Loved by <span className="gradient-text">10,000+ Travelers</span>
-              </h2>
-              <p className="text-xl text-gray-600 font-body">Real stories from real adventurers</p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {testimonials.map((testimonial) => (
-                <div key={testimonial.id} className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 card-hover">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className={`w-12 h-12 bg-gradient-to-br ${testimonial.gradient} rounded-xl flex items-center justify-center text-white font-bold text-lg`}>
-                      {testimonial.image}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-gray-900 font-body">{testimonial.name}</h4>
-                      <p className="text-xs text-gray-600 font-body">{testimonial.role}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1 mb-3">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                      </svg>
-                    ))}
-                  </div>
-                  <p className="text-sm text-gray-700 leading-relaxed font-body">{testimonial.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ - Modern Accordion */} 
-        <section className="py-20 px-6 lg:px-8 bg-gray-50">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-5xl font-heading font-bold mb-4">
-                Got <span className="gradient-text">Questions</span>?
-              </h2>
-              <p className="text-xl text-gray-600 font-body">We've got answers</p>
-            </div>
-
-            <div className="space-y-4">
-              {faqs.map((faq, index) => (
-                <div 
-                  key={index}
-                  className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100"
-                >
-                  <button
-                    onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
-                    className="w-full px-8 py-6 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
-                  >
-                    <span className="font-bold text-gray-900 text-lg font-heading pr-4">{faq.question}</span>
-                    <div className={`flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center transition-transform ${expandedFaq === index ? 'rotate-180' : ''}`}>
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"/>
-                      </svg>
-                    </div>
-                  </button>
-                  {expandedFaq === index && (
-                    <div className="px-8 pb-6">
-                      <p className="text-gray-700 leading-relaxed font-body">{faq.answer}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div className="text-center mt-12">
-              <p className="text-gray-600 mb-4 font-body">Need more help?</p>
-              <button className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-2xl hover:shadow-xl transition-all font-body">
-                Contact Support Team
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Final CTA */} 
-        <section className="py-20 px-6 lg:px-8 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500">
-          <div className="max-w-5xl mx-auto text-center">
-            <h2 className="text-5xl lg:text-6xl font-heading font-bold text-white mb-6">
-              Your Dream Trip Awaits
-            </h2>
-            <p className="text-2xl text-white/90 mb-12 font-body">
-              Join 10,000+ travelers who've discovered smarter travel planning
-            </p>
-            <div className="flex flex-wrap gap-6 justify-center">
-              <button 
-                onClick={() => setShowSignupModal(true)}
-                className="px-12 py-5 bg-white text-purple-600 font-bold rounded-2xl hover:shadow-2xl transition-all text-xl font-body"
-              >
-                Start Planning for Free
-              </button>
-              <button className="px-12 py-5 bg-white/10 backdrop-blur-sm border-2 border-white text-white font-bold rounded-2xl hover:bg-white/20 transition-all text-xl font-body">
-                Schedule a Demo
-              </button>
-            </div>
-
-            <div className="mt-12 flex items-center justify-center gap-12 text-white font-body">
-              <div className="text-center">
-                <p className="text-3xl font-bold font-heading">No Credit Card</p>
-                <p className="text-white/80">Required to start</p>
-              </div>
-              <div className="h-16 w-px bg-white/30"></div>
-              <div className="text-center">
-                <p className="text-3xl font-bold font-heading">100% Free</p>
-                <p className="text-white/80">AI planning tool</p>
-              </div>
-              <div className="h-16 w-px bg-white/30"></div>
-              <div className="text-center">
-                <p className="text-3xl font-bold font-heading">24/7 Support</p>
-                <p className="text-white/80">Always here to help</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Footer */} 
-        <footer className="bg-gray-900 text-white py-16 px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
-              <div className="lg:col-span-2">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 flex items-center justify-center">
-                    <span className="text-2xl">✈️</span>
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-heading font-bold">SmartTRIP</h1>
-                    <p className="text-xs text-gray-400 font-body">AI Travel Planning</p>
-                  </div>
-                </div>
-                <p className="text-gray-400 mb-6 leading-relaxed font-body">
-                  Revolutionizing travel planning with AI-powered itineraries that match your budget and dreams.
+        </div>
+        
+        <div className="relative rounded-3xl border border-lime-100/15 overflow-hidden bg-slate-900 aspect-video md:aspect-[21/9] p-8 md:p-12 flex flex-col md:flex-row justify-between" style={{
+            backgroundImage: 'linear-gradient(90deg, rgba(7,16,22,0.95) 0%, rgba(7,16,22,0.4) 100%), url(https://images.unsplash.com/photo-1518182170546-076616fdcbdd?auto=format&fit=crop&w=1600&q=80)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+         }}>
+           <div className="max-w-xs space-y-6 self-center">
+             {[
+               "Whether you're planning a family vacation with your pet, a relaxing weekend getaway. 2 million trys.",
+               "Whether you're planning a family vacation with your pet, a relaxing.",
+               "Vacation with your pet, a relaxing weekend."
+             ].map((text, idx) => (
+                <p key={idx} className={"text-sm text-slate-300/80 leading-relaxed border-l-2 border-lime-400/50 pl-4 py-1 relative"}>
+                  {text}
+                  {/* Visual connector lines for desktop */}
+                  <span className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"></span>
+                  <span className="hidden md:block absolute top-1/2 -right-[155px] w-2 h-2 rounded-full bg-lime-400 -translate-y-1/2"></span>
                 </p>
-                <div className="flex gap-4">
-                  <a href="#" className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center hover:bg-purple-600 transition-colors">
-                    <span className="text-lg">f</span>
-                  </a>
-                  <a href="#" className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center hover:bg-purple-600 transition-colors">
-                    <span className="text-lg">𝕏</span>
-                  </a>
-                  <a href="#" className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center hover:bg-purple-600 transition-colors">
-                    <span className="text-lg">in</span>
-                  </a>
-                  <a href="#" className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center hover:bg-purple-600 transition-colors">
-                    <span className="text-lg">📷</span>
-                  </a>
-                </div>
-              </div>
+             ))}
+           </div>
+           
+           <div className="hidden md:block self-end relative rounded-2xl overflow-hidden border-2 border-lime-400/30 w-72 aspect-[4/3] transform translate-y-8">
+              <img src="https://images.unsplash.com/photo-1444464666168-e0d6255131f1?auto=format&fit=crop&w=600&q=80" alt="Featured Nature" className="w-full h-full object-cover"/>
+           </div>
+        </div>
+      </section>
 
-              <div>
-                              <h3 className="font-bold mb-4 font-heading text-lg">Product</h3>
-                              <ul className="space-y-3 text-gray-400 font-body">
-                                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">Destinations</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors">How It Works</a></li>
-                                <li><Link to="/vendor/register" className="hover:text-white transition-colors">Vendor Registration</Link></li>
-                              </ul>
-                            </div>
-              <div>
-                <h3 className="font-bold mb-4 font-heading text-lg">Company</h3>
-                <ul className="space-y-3 text-gray-400 font-body">
-                  <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Press Kit</a></li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-bold mb-4 font-heading text-lg">Support</h3>
-                <ul className="space-y-3 text-gray-400 font-body">
-                  <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Terms</a></li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-              <p className="text-gray-400 text-sm font-body">&copy; 2025 SmartTRIP. All rights reserved.</p>
-              <div className="flex gap-6 text-sm text-gray-400 font-body">
-                <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-                <a href="#" className="hover:text-white transition-colors">Cookie Policy</a>
-              </div>
-            </div>
-          </div>
-        </footer>
-
-        {/* Modals remain the same as before */} 
-        {showLoginModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-gray-900 font-heading">Welcome Back</h2>
-                <button 
-                  onClick={() => setShowLoginModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-                >
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
-                  </svg>
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 font-body">Email Address</label>
-                  <input
-                    type="email"
-                    placeholder="you@example.com"
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:bg-white outline-none transition-all font-body"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 font-body">Password</label>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:bg-white outline-none transition-all font-body"
-                  />
-                </div>
-                <div className="flex items-center justify-between text-sm font-body">
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" className="w-4 h-4 text-purple-600 rounded" />
-                    <span className="text-gray-700">Remember me</span>
-                  </label>
-                  <a href="#" className="text-purple-600 hover:text-purple-700 font-semibold">
-                    Forgot password?
-                  </a>
-                </div>
-                <button className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-xl transition-all font-body">
-                  Sign In
-                </button>
-                <p className="text-center text-sm text-gray-600 font-body">
-                  Don't have an account?{' '}
-                  <button 
-                    onClick={() => {
-                      setShowLoginModal(false);
-                      setShowSignupModal(true);
-                    }}
-                    className="text-purple-600 hover:text-purple-700 font-bold"
-                  >
-                    Sign up free
-                  </button>
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showSignupModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-gray-900 font-heading">Get Started Free</h2>
-                <button 
-                  onClick={() => setShowSignupModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-                >
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
-                  </svg>
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 font-body">Full Name</label>
-                  <input
-                    type="text"
-                    placeholder="John Doe"
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:bg-white outline-none transition-all font-body"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 font-body">Email Address</label>
-                  <input
-                    type="email"
-                    placeholder="you@example.com"
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:bg-white outline-all font-body"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2 font-body">Password</label>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:bg-white outline-none transition-all font-body"
-                  />
-                </div>
-                <label className="flex items-start gap-2 text-sm font-body">
-                  <input type="checkbox" className="w-4 h-4 text-purple-600 rounded mt-0.5" />
-                  <span className="text-gray-700">
-                    I agree to the{' '}
-                    <a href="#" className="text-purple-600 hover:text-purple-700 font-bold">Terms</a>
-                    {' '}
-                    and{' '}
-                    <a href="#" className="text-purple-600 hover:text-purple-700 font-bold">Privacy Policy</a>
-                  </span>
-                </label>
-                <button className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-xl transition-all font-body">
-                  Create Account
-                </button>
-                <p className="text-center text-sm text-gray-600 font-body">
-                  Already have an account?{' '}
-                  <button 
-                    onClick={() => {
-                      setShowSignupModal(false);
-                      setShowLoginModal(true);
-                    }}
-                    className="text-purple-600 hover:text-purple-700 font-bold"
-                  >
-                    Sign in
-                  </button>
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
+      {/* Simple Footer */}
+      <footer className="relative z-10 border-t border-white/10 mt-10 p-6 md:p-10 text-center">
+         <p className="text-sm text-slate-500">© 2026 SmartTrip Theme. Adventure awaits.</p>
+      </footer>
+    </div>
+  );
 }

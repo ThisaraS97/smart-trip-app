@@ -1,87 +1,54 @@
-import User from "../models/User.js";
-import Vendor from "../models/Vendor.js";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
-
-// Generate JWT
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "30d",
-  });
-};
+import bcrypt from 'bcryptjs';
+import User from '../models/User.js'; // Assuming you have a User model
+import generateToken from '../utils/generateToken.js';
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
 export const registerUser = async (req, res) => {
-    const { name, email, password, role, vendorDetails } = req.body;
+    const { name, email, password, role, phone, dateOfBirth, location, preferredLanguage, bio } = req.body;
 
     try {
         const userExists = await User.findOne({ email });
 
         if (userExists) {
-            return res.status(400).json({ message: "User already exists" });
+            return res.status(400).json({ message: 'User already exists' });
         }
 
-        const user = new User({
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const user = await User.create({
             name,
             email,
-            password,
-            role,
+            password: hashedPassword,
+            role: role || 'user',
+            phone: phone || '',
+            dateOfBirth: dateOfBirth || '',
+            location: location || '',
+            preferredLanguage: preferredLanguage || 'English',
+            bio: bio || '',
         });
 
-        const newUser = await user.save();
-
-        // If the role is vendor, create a corresponding vendor entry
-        if (newUser.role === 'vendor') {
-            if (!vendorDetails) {
-                // If vendor role but no details, we should probably fail
-                // For now, rolling back user creation
-                await User.findByIdAndDelete(newUser._id);
-                return res.status(400).json({ message: "Vendor details are required for vendor registration." });
-            }
-
-            try {
-                const vendorData = {
-                    user: newUser._id,
-                    businessName: vendorDetails.businessName,
-                    businessType: vendorDetails.businessType,
-                    registrationNumber: vendorDetails.registrationNumber,
-                    taxId: vendorDetails.taxId,
-                    yearEstablished: vendorDetails.yearEstablished,
-                    businessEmail: vendorDetails.businessEmail,
-                    businessPhone: vendorDetails.businessPhone,
-                    website: vendorDetails.website,
-                    socialMedia: vendorDetails.socialMedia,
-                    address: vendorDetails.address,
-                    primaryContact: vendorDetails.primaryContact,
-                    services: vendorDetails.services,
-                    otherServices: vendorDetails.otherServices,
-                    bankDetails: vendorDetails.bankDetails,
-                    // Documents would be handled separately after upload
-                };
-
-                await Vendor.create(vendorData);
-
-            } catch (vendorError) {
-                // If vendor creation fails, roll back user creation
-                await User.findByIdAndDelete(newUser._id);
-                console.error("Error creating vendor:", vendorError);
-                return res.status(500).json({ message: "Failed to create vendor profile." });
-            }
+        if (user) {
+            res.status(201).json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                phone: user.phone,
+                dateOfBirth: user.dateOfBirth,
+                location: user.location,
+                preferredLanguage: user.preferredLanguage,
+                bio: user.bio,
+                photo: user.photo,
+                token: generateToken(user._id),
+            });
+        } else {
+            res.status(400).json({ message: 'Invalid user data' });
         }
-
-        res.status(201).json({
-            _id: newUser._id,
-            name: newUser.name,
-            email: newUser.email,
-            role: newUser.role,
-            token: generateToken(newUser._id),
-        });
-
     } catch (error) {
-        console.error("Error in registerUser:", error);
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
@@ -100,13 +67,34 @@ export const loginUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                phone: user.phone,
+                dateOfBirth: user.dateOfBirth,
+                location: user.location,
+                preferredLanguage: user.preferredLanguage,
+                bio: user.bio,
+                photo: user.photo,
                 token: generateToken(user._id),
             });
         } else {
-            res.status(401).json({ message: "Invalid email or password" });
+            res.status(401).json({ message: 'Invalid email or password' });
         }
     } catch (error) {
-        console.error("Error in loginUser:", error);
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ message: 'Server error' });
     }
+};
+
+// @desc    Forgot password
+// @route   POST /api/auth/forgot-password
+// @access  Public
+export const forgotPassword = async (req, res) => {
+    // Placeholder function
+    res.status(200).json({ message: "Password reset email sent (placeholder)" });
+};
+
+// @desc    Reset password
+// @route   PUT /api/auth/reset-password/:resettoken
+// @access  Public
+export const resetPassword = async (req, res) => {
+    // Placeholder function
+    res.status(200).json({ message: "Password reset successful (placeholder)" });
 };

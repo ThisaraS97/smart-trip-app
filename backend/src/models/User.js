@@ -1,37 +1,50 @@
-import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import mongoose from 'mongoose';
 
-const userSchema = new mongoose.Schema({
-  name: { 
-    type: String, 
-    required: true 
-  },
-  email: { 
-    type: String, 
-    required: true, 
-    unique: true 
-  },
-  password: { 
-    type: String, 
-    required: true 
-  },
-  role: {
-    type: String,
-    enum: ['user', 'vendor', 'admin'],
-    required: true,
-    default: 'user'
-  }
-}, { timestamps: true });
+const userSchema = mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: true,
+        },
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+        },
+        password: {
+            type: String,
+            required: true,
+        },
+        role: {
+            type: String,
+            required: true,
+            enum: ['user', 'vendor', 'admin'],
+            default: 'user',
+        },
+        // Extended profile fields
+        phone: { type: String, default: '' },
+        dateOfBirth: { type: String, default: '' },
+        location: { type: String, default: '' },
+        preferredLanguage: { type: String, default: 'English' },
+        bio: { type: String, default: '' },
+        photo: { type: String, default: '' },
+        // Travel preferences (set on profile page)
+        travelPreferences: {
+            accommodationType: { type: [String], default: [] },
+            mealPlan: { type: String, default: 'breakfast' },
+            budgetRange: { type: Number, default: 50 },
+            travelStyle: { type: String, default: 'family' },
+            activityInterests: { type: [String], default: [] },
+            dietaryRestrictions: { type: [String], default: [] },
+            accessibilityNeeds: { type: [String], default: [] },
+            petTraveler: { type: Boolean, default: false },
+        },
+    },
+    {
+        timestamps: true,
+    }
+);
 
-// Hash password before saving
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
+const User = mongoose.model('User', userSchema);
 
-const User = mongoose.model("User", userSchema);
 export default User;
