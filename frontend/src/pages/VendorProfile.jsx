@@ -150,7 +150,7 @@ export default function VendorProfile() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-6 py-4 font-semibold border-b-2 transition-all whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'border-lime-500 text-lime-400'
+                    ? 'border-[#BFBD31] text-[#BFBD31]'
                     : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
@@ -172,7 +172,7 @@ export default function VendorProfile() {
                 {!editMode ? (
                   <button
                     onClick={() => setEditMode(true)}
-                    className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg hover:bg-lime-400"
+                    className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31]"
                   >
                     Edit Business Info
                   </button>
@@ -206,7 +206,7 @@ export default function VendorProfile() {
                       )}
                     </div>
                     {editMode && (
-                      <button className="px-4 py-2 border border-purple-300 text-lime-400 rounded-lg hover:bg-lime-50">
+                      <button className="px-4 py-2 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg hover:bg-[#BFBD31]/10">
                         Upload New Logo
                       </button>
                     )}
@@ -368,15 +368,15 @@ export default function VendorProfile() {
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {businessInfo.specializations.map((spec, idx) => (
-                      <span key={idx} className="px-3 py-1 bg-lime-100 text-purple-700 rounded-full text-sm font-medium">
+                      <span key={idx} className="px-3 py-1 bg-[#BFBD31]/15 text-purple-700 rounded-full text-sm font-medium">
                         {spec}
                         {editMode && (
-                          <button className="ml-2 text-lime-400 hover:text-purple-800">×</button>
+                          <button className="ml-2 text-[#BFBD31] hover:text-purple-800">×</button>
                         )}
                       </span>
                     ))}
                     {editMode && (
-                      <button className="px-3 py-1 border-2 border-dashed border-purple-300 text-lime-400 rounded-full text-sm font-medium hover:bg-lime-50">
+                      <button className="px-3 py-1 border-2 border-dashed border-[#BFBD31]/40 text-[#BFBD31] rounded-full text-sm font-medium hover:bg-[#BFBD31]/10">
                         + Add
                       </button>
                     )}
@@ -402,7 +402,7 @@ export default function VendorProfile() {
             <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">Business Gallery</h2>
-                <button className="px-4 py-2 border border-purple-300 text-lime-400 rounded-lg hover:bg-lime-50">
+                <button className="px-4 py-2 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg hover:bg-[#BFBD31]/10">
                   Upload Photos (Max 20)
                 </button>
               </div>
@@ -423,7 +423,7 @@ export default function VendorProfile() {
             </div>
 
             <div className="flex justify-end gap-3">
-              <button className="px-6 py-3 border border-purple-300 text-lime-400 rounded-lg hover:bg-lime-50">
+              <button className="px-6 py-3 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg hover:bg-[#BFBD31]/10">
                 Preview Public Profile
               </button>
             </div>
@@ -490,7 +490,7 @@ export default function VendorProfile() {
             <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">Business Address</h2>
-                <button className="px-4 py-2 border border-purple-300 text-lime-400 rounded-lg hover:bg-lime-50">
+                <button className="px-4 py-2 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg hover:bg-[#BFBD31]/10">
                   Pin on Map
                 </button>
               </div>
@@ -567,7 +567,7 @@ export default function VendorProfile() {
               <button className="px-6 py-3 border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950">
                 Send Test Email
               </button>
-              <button className="px-6 py-3 bg-lime-500 text-slate-950 rounded-lg hover:bg-lime-400">
+              <button className="px-6 py-3 bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31]">
                 Save Changes
               </button>
             </div>
@@ -667,7 +667,7 @@ export default function VendorProfile() {
                     <input
                       type="checkbox"
                       checked={bankingInfo.autoPayout}
-                      className="w-5 h-5 text-lime-400 rounded"
+                      className="w-5 h-5 text-[#BFBD31] rounded"
                     />
                     <span className="text-sm text-slate-300">Enable automatic payouts</span>
                   </label>
@@ -676,13 +676,13 @@ export default function VendorProfile() {
             </div>
 
             <div className="flex justify-end gap-3">
-              <button className="px-6 py-3 border border-blue-300 text-lime-300 rounded-lg hover:bg-lime-500/10">
+              <button className="px-6 py-3 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg hover:bg-[#d4d235]/10">
                 Verify Account
               </button>
               <button className="px-6 py-3 border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950">
                 Download Statement
               </button>
-              <button className="px-6 py-3 bg-lime-500 text-slate-950 rounded-lg hover:bg-lime-400">
+              <button className="px-6 py-3 bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31]">
                 Save Changes
               </button>
             </div>
@@ -697,11 +697,11 @@ export default function VendorProfile() {
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-semibold text-slate-300">Overall Completion</span>
-                  <span className="text-sm font-semibold text-lime-400">{verificationProgress.toFixed(0)}%</span>
+                  <span className="text-sm font-semibold text-[#BFBD31]">{verificationProgress.toFixed(0)}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
-                    className="bg-lime-500 text-slate-950 h-3 rounded-full transition-all"
+                    className="bg-[#BFBD31] text-slate-950 h-3 rounded-full transition-all"
                     style={{ width: `${verificationProgress}%` }}
                   ></div>
                 </div>
@@ -757,11 +757,11 @@ export default function VendorProfile() {
                         {doc.status === 'pending' && '⏳ Pending'}
                         {doc.status === 'rejected' && '✗ Rejected'}
                       </span>
-                      <button className="text-lime-400 hover:text-purple-700 text-sm font-medium">
+                      <button className="text-[#BFBD31] hover:text-purple-700 text-sm font-medium">
                         View
                       </button>
                       {doc.status === 'rejected' && (
-                        <button className="text-lime-300 hover:text-blue-300 text-sm font-medium">
+                        <button className="text-[#BFBD31] hover:text-blue-300 text-sm font-medium">
                           Re-upload
                         </button>
                       )}
@@ -775,7 +775,7 @@ export default function VendorProfile() {
               <button className="px-6 py-3 border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950">
                 Contact Verification Team
               </button>
-              <button className="px-6 py-3 bg-lime-500 text-slate-950 rounded-lg hover:bg-lime-400">
+              <button className="px-6 py-3 bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31]">
                 Upload Missing Documents
               </button>
             </div>
@@ -790,7 +790,7 @@ export default function VendorProfile() {
                 <h2 className="text-3xl font-bold text-white mb-2">{businessInfo.businessName}</h2>
                 <p className="text-slate-400">{businessInfo.shortDescription}</p>
                 <div className="flex items-center justify-center gap-4 mt-4">
-                  <span className="px-3 py-1 bg-lime-100 text-purple-700 rounded-full text-sm font-semibold">
+                  <span className="px-3 py-1 bg-[#BFBD31]/15 text-purple-700 rounded-full text-sm font-semibold">
                     {businessInfo.businessType}
                   </span>
                   <span className="text-yellow-500 font-semibold">★★★★★ 4.8 (156 reviews)</span>

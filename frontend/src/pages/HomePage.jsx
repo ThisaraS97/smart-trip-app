@@ -23,7 +23,7 @@ export default function HomePage() {
           <header className="relative z-10 flex items-center justify-between p-6 sm:px-10 sm:py-8">
             <Link to="/" className="flex items-center gap-3 text-white/90">
               <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6">
-                <svg className="h-5 w-5 text-lime-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -36,13 +36,13 @@ export default function HomePage() {
               </div>
               <span className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"></span>
               {['Adventure', 'About', 'Blogs'].map((item) => (
-                <Link key={item} to="#" className="text-sm font-medium text-slate-200 hover:text-lime-300 transition-colors">{item}</Link>
+                <Link key={item} to="#" className="text-sm font-medium text-slate-200 hover:text-[#BFBD31] transition-colors">{item}</Link>
               ))}
               <span className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"></span>
-              <Link to="/packages" className="text-sm font-medium text-slate-200 hover:text-lime-300 transition-colors">Book Now</Link>
+              <Link to="/packages" className="text-sm font-medium text-slate-200 hover:text-[#BFBD31] transition-colors">Book Now</Link>
             </div>
 
-            <Link to="/login" className="rounded-full border border-lime-200/40 px-6 py-2.5 text-sm font-medium text-lime-100 backdrop-blur-md transition-colors hover:bg-lime-200/10 hover:text-white">
+            <Link to="/login" className="rounded-full border border-[#BFBD31]/40 px-6 py-2.5 text-sm font-medium text-[#BFBD31]/80 backdrop-blur-md transition-colors hover:bg-[#d4d235]/10 hover:text-white">
               Login
             </Link>
           </header>
@@ -52,7 +52,7 @@ export default function HomePage() {
             <h1 className="text-[15vw] sm:text-[12vw] font-black leading-[0.8] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white/90 to-white/40 uppercase pointer-events-none font-gotham">
               Adventure
             </h1>
-            <div className="absolute bottom-8 flex flex-col items-center gap-2 text-lime-200/60 animate-bounce">
+            <div className="absolute bottom-8 flex flex-col items-center gap-2 text-[#BFBD31]/60 animate-bounce">
               <span className="text-xs uppercase tracking-widest">Scroll</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
             </div>
@@ -63,7 +63,7 @@ export default function HomePage() {
       {/* Steps Section */}
       <section className="relative z-10 mx-auto max-w-6xl px-6 py-20 lg:py-28">
         <div className="text-center mb-16">
-          <h2 className="text-2xl sm:text-3xl font-medium text-white tracking-wide">Create Your Outdoor Adventure, <span className="text-lime-300">Discover With Us</span></h2>
+          <h2 className="text-2xl sm:text-3xl font-medium text-white tracking-wide">Create Your Outdoor Adventure, <span className="text-[#BFBD31]">Discover With Us</span></h2>
         </div>
         
         <div className="relative grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-4">
@@ -76,8 +76,8 @@ export default function HomePage() {
             { id: 4, title: 'We\'ll take care of the rest.', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }
           ].map((step, idx) => (
             <div key={idx} className="flex flex-col items-center gap-4 text-center group">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-lime-200/30 bg-slate-900/80 shadow-[0_0_15px_rgba(190,242,100,0.1)] backdrop-blur transition-transform group-hover:scale-110">
-                <svg className="w-6 h-6 text-lime-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#BFBD31]/30 bg-slate-900/80 shadow-[0_0_15px_rgba(190,242,100,0.1)] backdrop-blur transition-transform group-hover:scale-110">
+                <svg className="w-6 h-6 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d={step.icon} />
                 </svg>
               </div>
@@ -94,7 +94,7 @@ export default function HomePage() {
             <h2 className="text-3xl font-medium text-white">The Wonders Of Nature</h2>
             <p className="text-sm text-slate-400 max-w-md">We seek to provide the authentic contact for travel far around the world.</p>
           </div>
-          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-lime-400/20 text-lime-300 hover:bg-lime-400 hover:text-slate-900 transition-colors">
+          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#BFBD31]/20 text-[#BFBD31] hover:bg-[#BFBD31] hover:text-slate-900 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
           </button>
         </div>
@@ -111,8 +111,8 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/20 to-transparent" />
               <div className="absolute bottom-0 left-0 p-5 w-full">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-lime-400"></span>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-lime-200">{card.label}</span>
+                  <span className="inline-block w-2 h-2 rounded-full bg-[#BFBD31]"></span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#BFBD31]">{card.label}</span>
                 </div>
                 <h3 className="text-lg font-medium text-white">{card.title}</h3>
               </div>
@@ -173,7 +173,7 @@ export default function HomePage() {
             <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
               Whether you're planning a family vacation with your pet, a relaxing weekend getaway, or an adventurous excursion, vacation rentals are ideal for trips of all types. You can find everything from charming mountain cabins and lakeside lodges to breathtaking city apartments.
             </p>
-            <button className="bg-lime-400 hover:bg-lime-300 text-slate-950 px-8 py-3.5 rounded-full font-semibold transition-transform hover:scale-105 inline-block">
+            <button className="bg-[#BFBD31] hover:bg-[#BFBD31] text-slate-950 px-8 py-3.5 rounded-full font-semibold transition-transform hover:scale-105 inline-block">
               Book Now
             </button>
           </div>
@@ -185,11 +185,11 @@ export default function HomePage() {
         <div className="text-center mb-16">
           <div className="relative inline-block">
             <h2 className="text-2xl font-medium text-white">Explore The Nature With Us</h2>
-            <div className="absolute -bottom-3 right-0 w-2/3 h-px bg-lime-400"></div>
+            <div className="absolute -bottom-3 right-0 w-2/3 h-px bg-[#BFBD31]"></div>
           </div>
         </div>
         
-        <div className="relative rounded-3xl border border-lime-100/15 overflow-hidden bg-slate-900 aspect-video md:aspect-[21/9] p-8 md:p-12 flex flex-col md:flex-row justify-between" style={{
+        <div className="relative rounded-3xl border border-[#BFBD31]/15 overflow-hidden bg-slate-900 aspect-video md:aspect-[21/9] p-8 md:p-12 flex flex-col md:flex-row justify-between" style={{
             backgroundImage: 'linear-gradient(90deg, rgba(7,16,22,0.95) 0%, rgba(7,16,22,0.4) 100%), url(https://images.unsplash.com/photo-1518182170546-076616fdcbdd?auto=format&fit=crop&w=1600&q=80)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -200,16 +200,16 @@ export default function HomePage() {
                "Whether you're planning a family vacation with your pet, a relaxing.",
                "Vacation with your pet, a relaxing weekend."
              ].map((text, idx) => (
-                <p key={idx} className={"text-sm text-slate-300/80 leading-relaxed border-l-2 border-lime-400/50 pl-4 py-1 relative"}>
+                <p key={idx} className={"text-sm text-slate-300/80 leading-relaxed border-l-2 border-[#BFBD31]/50 pl-4 py-1 relative"}>
                   {text}
                   {/* Visual connector lines for desktop */}
                   <span className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"></span>
-                  <span className="hidden md:block absolute top-1/2 -right-[155px] w-2 h-2 rounded-full bg-lime-400 -translate-y-1/2"></span>
+                  <span className="hidden md:block absolute top-1/2 -right-[155px] w-2 h-2 rounded-full bg-[#BFBD31] -translate-y-1/2"></span>
                 </p>
              ))}
            </div>
            
-           <div className="hidden md:block self-end relative rounded-2xl overflow-hidden border-2 border-lime-400/30 w-72 aspect-[4/3] transform translate-y-8">
+           <div className="hidden md:block self-end relative rounded-2xl overflow-hidden border-2 border-[#BFBD31]/30 w-72 aspect-[4/3] transform translate-y-8">
               <img src="https://images.unsplash.com/photo-1444464666168-e0d6255131f1?auto=format&fit=crop&w=600&q=80" alt="Featured Nature" className="w-full h-full object-cover"/>
            </div>
         </div>
@@ -217,7 +217,7 @@ export default function HomePage() {
 
       {/* Simple Footer */}
       <footer className="relative z-10 border-t border-white/10 mt-10 p-6 md:p-10 text-center">
-         <p className="text-sm text-slate-500">© 2026 SmartTrip Theme. Adventure awaits.</p>
+         <p className="text-sm text-slate-500">� 2026 SmartTrip Theme. Adventure awaits.</p>
       </footer>
     </div>
   );

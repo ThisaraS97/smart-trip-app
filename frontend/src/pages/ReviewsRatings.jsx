@@ -180,7 +180,7 @@ export default function ReviewsRatings() {
             onClick={() => setActiveTab('pending')}
             className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all ${
               activeTab === 'pending'
-                ? 'bg-lime-500 text-slate-950'
+                ? 'bg-[#BFBD31] text-slate-950'
                 : 'text-slate-300 hover:bg-slate-800/50'
             }`}
           >
@@ -197,7 +197,7 @@ export default function ReviewsRatings() {
             onClick={() => setActiveTab('submitted')}
             className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all ${
               activeTab === 'submitted'
-                ? 'bg-lime-500 text-slate-950'
+                ? 'bg-[#BFBD31] text-slate-950'
                 : 'text-slate-300 hover:bg-slate-800/50'
             }`}
           >
@@ -240,7 +240,7 @@ export default function ReviewsRatings() {
                       </p>
                       <button
                         onClick={() => setShowReviewForm(trip.id)}
-                        className="px-6 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400"
+                        className="px-6 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31]"
                       >
                         Write Review
                       </button>
@@ -278,7 +278,7 @@ export default function ReviewsRatings() {
                           value={reviewForm.title}
                           onChange={(e) => setReviewForm({ ...reviewForm, title: e.target.value })}
                           placeholder="e.g., Amazing Cultural Experience!"
-                          className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                         />
                       </div>
 
@@ -293,7 +293,7 @@ export default function ReviewsRatings() {
                           onChange={(e) => setReviewForm({ ...reviewForm, review: e.target.value })}
                           rows={6}
                           placeholder="Share your experience in detail. What did you enjoy most? Any tips for future travelers?"
-                          className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                         />
                         <p className="text-sm text-slate-400 mt-1">
                           {reviewForm.review.length}/50 characters
@@ -321,7 +321,7 @@ export default function ReviewsRatings() {
                               </button>
                             </div>
                           ))}
-                          <label className="w-24 h-24 border-2 border-dashed border-white/20 rounded-lg flex items-center justify-center cursor-pointer hover:border-lime-500 hover:bg-lime-50 transition-all">
+                          <label className="w-24 h-24 border-2 border-dashed border-white/20 rounded-lg flex items-center justify-center cursor-pointer hover:border-[#BFBD31] hover:bg-[#BFBD31]/10 transition-all">
                             <input
                               type="file"
                               accept="image/*"
@@ -350,7 +350,7 @@ export default function ReviewsRatings() {
                               type="radio"
                               checked={reviewForm.wouldRecommend === true}
                               onChange={() => setReviewForm({ ...reviewForm, wouldRecommend: true })}
-                              className="w-5 h-5 text-lime-400"
+                              className="w-5 h-5 text-[#BFBD31]"
                             />
                             <span className="text-slate-300 font-medium">Yes, definitely!</span>
                           </label>
@@ -359,7 +359,7 @@ export default function ReviewsRatings() {
                               type="radio"
                               checked={reviewForm.wouldRecommend === false}
                               onChange={() => setReviewForm({ ...reviewForm, wouldRecommend: false })}
-                              className="w-5 h-5 text-lime-400"
+                              className="w-5 h-5 text-[#BFBD31]"
                             />
                             <span className="text-slate-300 font-medium">No</span>
                           </label>
@@ -370,7 +370,7 @@ export default function ReviewsRatings() {
                       <div className="flex gap-3">
                         <button
                           onClick={handleSubmitReview}
-                          className="px-6 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                          className="px-6 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
                         >
                           Submit Review
                         </button>
@@ -425,7 +425,7 @@ export default function ReviewsRatings() {
                             </span>
                           </div>
                         </div>
-                        <button className="px-4 py-2 text-sm font-medium text-lime-400 border border-purple-300 rounded-lg hover:bg-lime-50">
+                        <button className="px-4 py-2 text-sm font-medium text-[#BFBD31] border border-[#BFBD31]/40 rounded-lg hover:bg-[#BFBD31]/10">
                           Edit Review
                         </button>
                       </div>
@@ -441,7 +441,7 @@ export default function ReviewsRatings() {
                       {review.review.length > 200 && (
                         <button
                           onClick={() => setExpandedReview(expandedReview === review.id ? null : review.id)}
-                          className="text-sm text-lime-400 hover:text-purple-700 font-medium mb-4"
+                          className="text-sm text-[#BFBD31] hover:text-purple-700 font-medium mb-4"
                         >
                           {expandedReview === review.id ? 'Show Less' : 'Read More'}
                         </button>
@@ -471,7 +471,7 @@ export default function ReviewsRatings() {
                       {/* Detailed Ratings */}
                       <button
                         onClick={() => setExpandedReview(expandedReview === review.id ? null : review.id)}
-                        className="mt-4 text-sm text-lime-400 hover:text-purple-700 font-medium"
+                        className="mt-4 text-sm text-[#BFBD31] hover:text-purple-700 font-medium"
                       >
                         {expandedReview === review.id ? 'Hide Details' : 'View Detailed Ratings'}
                       </button>

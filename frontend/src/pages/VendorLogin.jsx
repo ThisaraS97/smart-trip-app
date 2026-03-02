@@ -136,7 +136,7 @@ export default function VendorLogin() {
                   value={credentials.emailOrUsername}
                   onChange={(e) => setCredentials({ ...credentials, emailOrUsername: e.target.value })}
                   placeholder="Enter your email or username"
-                  className="w-full pl-12 pr-4 py-3 border-2 border-white/10 rounded-lg focus:border-lime-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+                  className="w-full pl-12 pr-4 py-3 border-2 border-white/10 rounded-lg focus:border-[#BFBD31] focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                   disabled={accountStatus === 'pending' || accountStatus === 'suspended'}
                 />
               </div>
@@ -161,7 +161,7 @@ export default function VendorLogin() {
                   value={credentials.password}
                   onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
                   placeholder="Enter your password"
-                  className="w-full pl-12 pr-12 py-3 border-2 border-white/10 rounded-lg focus:border-lime-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+                  className="w-full pl-12 pr-12 py-3 border-2 border-white/10 rounded-lg focus:border-[#BFBD31] focus:ring-2 focus:ring-purple-200 outline-none transition-all"
                   disabled={accountStatus === 'pending' || accountStatus === 'suspended'}
                 />
                 <button
@@ -191,7 +191,7 @@ export default function VendorLogin() {
                   type="checkbox"
                   checked={credentials.rememberMe}
                   onChange={(e) => setCredentials({ ...credentials, rememberMe: e.target.checked })}
-                  className="w-4 h-4 text-lime-400 rounded focus:ring-2 focus:ring-lime-500"
+                  className="w-4 h-4 text-[#BFBD31] rounded focus:ring-2 focus:ring-[#BFBD31]"
                   disabled={accountStatus === 'pending' || accountStatus === 'suspended'}
                 />
                 <span className="text-sm text-slate-300">Remember me</span>
@@ -199,7 +199,7 @@ export default function VendorLogin() {
               <button
                 type="button"
                 onClick={handleForgotPassword}
-                className="text-sm font-medium text-lime-400 hover:text-purple-700"
+                className="text-sm font-medium text-[#BFBD31] hover:text-purple-700"
               >
                 Forgot Password?
               </button>
@@ -243,7 +243,7 @@ export default function VendorLogin() {
           {/* Register Link */}
           <a
             href="/vendor-register"
-            className="block w-full py-3 border-2 border-lime-500 text-lime-400 rounded-lg font-semibold text-center hover:bg-lime-50 transition-all"
+            className="block w-full py-3 border-2 border-[#BFBD31] text-[#BFBD31] rounded-lg font-semibold text-center hover:bg-[#BFBD31]/10 transition-all"
           >
             Register as a Vendor
           </a>
@@ -252,15 +252,15 @@ export default function VendorLogin() {
         {/* Additional Links */}
         <div className="mt-6 text-center space-y-3 slide-in" style={{ animationDelay: '0.2s' }}>
           <div className="flex items-center justify-center gap-4 text-sm">
-            <a href="/help" className="text-slate-400 hover:text-lime-400 transition-colors">
+            <a href="/help" className="text-slate-400 hover:text-[#BFBD31] transition-colors">
               Help &amp; Support
             </a>
             <span className="text-slate-400">•</span>
-            <a href="#" className="text-slate-400 hover:text-lime-400 transition-colors">
+            <a href="#" className="text-slate-400 hover:text-[#BFBD31] transition-colors">
               Privacy Policy
             </a>
             <span className="text-slate-400">•</span>
-            <a href="#" className="text-slate-400 hover:text-lime-400 transition-colors">
+            <a href="#" className="text-slate-400 hover:text-[#BFBD31] transition-colors">
               Terms of Service
             </a>
           </div>
@@ -270,8 +270,8 @@ export default function VendorLogin() {
         </div>
 
         {/* Quick Demo Info */}
-        <div className="mt-6 bg-slate-900/50 border border-white/10 text-slate-300/10 border border-lime-500/20 rounded-lg p-4 text-center slide-in" style={{ animationDelay: '0.3s' }}>
-          <p className="text-sm text-lime-300 font-medium mb-2">🎯 Demo Accounts</p>
+        <div className="mt-6 bg-slate-900/50 border border-white/10 text-slate-300/10 border border-[#BFBD31]/20 rounded-lg p-4 text-center slide-in" style={{ animationDelay: '0.3s' }}>
+          <p className="text-sm text-[#BFBD31] font-medium mb-2">🎯 Demo Accounts</p>
           <div className="text-xs text-blue-300 space-y-1">
             <p>• Use <code className="bg-slate-900/50 border border-white/10 text-slate-300 px-1 py-0.5 rounded">pending@test.com</code> to see "Pending Approval" status</p>
             <p>• Use <code className="bg-slate-900/50 border border-white/10 text-slate-300 px-1 py-0.5 rounded">suspended@test.com</code> to see "Suspended" status</p>

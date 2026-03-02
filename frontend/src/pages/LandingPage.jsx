@@ -1,15 +1,66 @@
-﻿import React from 'react';
-import { Link } from 'react-router-dom';
+﻿import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import sigiriyaImg from '../images/sigiriya.jpg';
 import galleImg from '../images/galle.jpg';
 import yalaImg from '../images/yala.jpg';
 import ellaImg from '../images/ella.jpg';
+import heroImg from '../images/hero/hero.jpg';
 import bluebeachImg from '../images/Vacation/bluebeach.jpg';
+import kandyDestImg from '../images/destinations/kandy.jpg';
+import galleDestImg from '../images/destinations/galle.jpg';
+import ellaDestImg from '../images/destinations/ella.jpg';
+import sigiriyaDestImg from '../images/destinations/sigiriya.jpg';
+import yalaDestImg from '../images/destinations/yala.png';
+import nuwaraEliyaDestImg from '../images/destinations/nuwaraeliya.jpg';
 import bundalaImg from '../images/Vacation/bundala.jpg';
 import daladhaImg from '../images/Vacation/daladha.jpg';
 import ruwanweliseyaImg from '../images/Vacation/ruwanweliseya.jpg';
+import footerBgImg from '../images/footer/footer-bg.jpg';
+import dondraFooterImg from '../images/footer/featured.jpg';
+
+const faqs = [
+  { id: 1, question: 'How does SmartTRIP work?', answer: 'SmartTRIP uses AI to create personalized itineraries based on your budget, preferences, and travel dates. Simply enter your requirements, review AI-generated options, customize as needed, and submit a soft booking request to our partner vendors.' },
+  { id: 2, question: 'What is soft-booking?', answer: 'Soft-booking means your trip request is sent to vendors for confirmation before payment. You receive confirmation within 24�48 hours and only pay once everything is confirmed. This ensures availability and prevents upfront payment for unconfirmed bookings.' },
+  { id: 3, question: 'How accurate is the budget tracking?', answer: 'Our budget tracking is highly accurate and updates in real-time as you customize your itinerary. The system shows exact costs from our partner vendors, including all taxes and fees, so there are no surprises.' },
+  { id: 4, question: 'Can I modify my itinerary after booking?', answer: 'Yes! Before vendor confirmation, you can modify your itinerary freely. After confirmation, modifications are subject to vendor policies and may incur additional charges. Contact our support team for assistance.' },
+  { id: 5, question: 'What payment methods do you accept?', answer: 'We accept all major credit cards (Visa, Mastercard, American Express), debit cards, and bank transfers. Payment is only required after your booking is confirmed by vendors.' },
+  { id: 6, question: 'What is your cancellation policy?', answer: 'Free cancellation up to 7 days before check-in. 50% refund for cancellations 3�7 days before check-in. No refund within 3 days of check-in. Specific services may have different policies which will be communicated upon booking.' },
+  { id: 7, question: 'Do you offer travel insurance?', answer: "While we don't provide insurance directly, we partner with reputable insurance providers and can help you add comprehensive travel insurance to your booking at competitive rates." },
+  { id: 8, question: 'How do I contact customer support?', answer: 'Our 24/7 support team is available via email at support@smarttrip.lk, phone at +94 11 234 5678, or live chat on our website. We typically respond within 2 hours during business hours and 4 hours after hours.' },
+];
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+  const [userInfo, setUserInfo] = useState(null);
+  const [expandedFaq, setExpandedFaq] = useState(null);
+  const [searchForm, setSearchForm] = useState({ destination: '', budget: '', travelers: '', dates: '' });
+
+  const handleSearch = () => {
+    const budgetNum = parseInt(searchForm.budget.replace(/,/g, '')) || 150000;
+    navigate('/itinerary', {
+      state: {
+        destination: (searchForm.destination || 'Sri Lanka') + ' Tour',
+        location: searchForm.destination || 'Sri Lanka',
+        budget: budgetNum,
+        travelers: searchForm.travelers || '2 Adults',
+        duration: '3 Days',
+        dates: { from: searchForm.dates || '', to: '' },
+      }
+    });
+  };
+
+  useEffect(() => {
+    const stored = localStorage.getItem('userInfo');
+    if (stored) setUserInfo(JSON.parse(stored));
+  }, []);
+
+  const getDashboardLink = () => {
+    if (!userInfo) return '/login';
+    if (userInfo.role === 'admin') return '/admin/dashboard';
+    if (userInfo.role === 'vendor') return '/vendor/dashboard';
+    return '/dashboard';
+  };
+
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(66,153,132,0.15),_transparent_45%),radial-gradient(circle_at_20%_20%,_rgba(190,242,100,0.05),_transparent_35%)]" />
@@ -21,9 +72,9 @@ export default function LandingPage() {
           <div
             className="absolute inset-0 z-0"
             style={{
-              backgroundImage: 'linear-gradient(180deg, rgba(15,23,42,0.1) 0%, rgba(15,23,42,0.8) 100%), url(https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=2000&q=80)',
+              backgroundImage: `linear-gradient(180deg, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.75) 60%, rgba(15,23,42,0.95) 100%), url(${heroImg})`,
               backgroundSize: 'cover',
-              backgroundPosition: 'center 30%',
+              backgroundPosition: 'center 40%',
             }}
           />
           
@@ -31,7 +82,7 @@ export default function LandingPage() {
           <header className="relative z-10 flex items-center justify-between p-6 sm:px-10 sm:py-8">
             <Link to="/" className="flex items-center gap-3 text-white/90">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20">
-                <svg className="h-5 w-5 text-lime-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -47,27 +98,129 @@ export default function LandingPage() {
                 const isAnchor = ['How it Works', 'Destinations', 'About'].includes(item);
                 const target = item.toLowerCase().replace(/\s+/g, '-');
                 return isAnchor
-                  ? <a key={item} href={`#${target}`} className="text-sm font-medium text-slate-200 hover:text-lime-300 transition-colors">{item}</a>
-                  : <Link key={item} to="#" className="text-sm font-medium text-slate-200 hover:text-lime-300 transition-colors">{item}</Link>;
+                  ? <a key={item} href={`#${target}`} className="text-sm font-medium text-slate-200 hover:text-[#BFBD31] transition-colors">{item}</a>
+                  : <Link key={item} to="#" className="text-sm font-medium text-slate-200 hover:text-[#BFBD31] transition-colors">{item}</Link>;
               })}
               <span className="h-4 w-px bg-white/20"></span>
-              <a href="#book-now" className="text-sm font-medium text-slate-200 hover:text-lime-300 transition-colors">Book Now</a>
+              <a href="#book-now" className="text-sm font-medium text-slate-200 hover:text-[#BFBD31] transition-colors">Book Now</a>
             </div>
 
-            <Link to="/login" className="rounded-full border border-lime-200/40 px-6 py-2.5 text-sm font-medium text-lime-100 backdrop-blur-md transition-colors hover:bg-lime-200/10 hover:text-white">
-              Login
-            </Link>
+            {userInfo ? (
+              <Link to={getDashboardLink()} className="rounded-full border border-[#BFBD31]/50 px-6 py-2.5 text-sm font-medium text-[#BFBD31] backdrop-blur-md transition-colors hover:bg-[#BFBD31]/10 hover:text-white">
+                Dashboard
+              </Link>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link to="/login" className="rounded-full border border-[#BFBD31]/50 px-6 py-2.5 text-sm font-medium text-[#BFBD31] backdrop-blur-md transition-colors hover:bg-[#BFBD31]/10 hover:text-white">
+                  Login
+                </Link>
+                <Link to="/register" className="rounded-full bg-[#BFBD31] px-6 py-2.5 text-sm font-semibold text-slate-950 transition-all hover:bg-[#d4d235] hover:scale-105 shadow-[0_0_16px_rgba(191,189,49,0.3)]">
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </header>
 
           {/* Hero Content */}
-          <div className="relative z-10 flex flex-col items-center justify-end pb-12 sm:pb-20">
-            <h1 className="text-[15vw] sm:text-[12vw] font-black leading-[0.8] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white/90 to-white/40 uppercase pointer-events-none font-gotham">
-              Adventure
+          <div className="relative z-10 flex flex-col items-center justify-end pb-10 sm:pb-16 px-4 text-center">
+
+            {/* Badge */}
+            <div className="mb-5 flex items-center gap-2 rounded-full border border-[#BFBD31]/30 bg-[#BFBD31]/10 px-4 py-1.5 backdrop-blur-sm">
+              <span className="inline-block h-2 w-2 rounded-full bg-[#BFBD31] animate-pulse"></span>
+              <span className="text-xs font-semibold uppercase tracking-widest text-[#BFBD31]">Pearl of the Indian Ocean</span>
+            </div>
+
+            {/* Main Headline */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight text-white mb-4 max-w-3xl">
+              Plan Your Dream Trip<br className="hidden sm:block" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BFBD31] to-[#d4d235]"> Within Your Budget</span>
             </h1>
-            <div className="absolute bottom-8 flex flex-col items-center gap-2 text-lime-200/60 animate-bounce">
+
+            {/* Subheadline */}
+            <p className="max-w-xl text-sm sm:text-base text-slate-300/80 leading-relaxed mb-8">
+              AI-powered travel planning that creates personalized itineraries matching your budget, preferences, and schedule. No hidden fees, complete transparency.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
+              <Link to="/register" className="inline-flex items-center gap-2 rounded-full bg-[#BFBD31] hover:bg-[#d4d235] text-slate-950 px-8 py-3 text-sm font-semibold transition-all hover:scale-105 shadow-[0_0_24px_rgba(191,189,49,0.4)]">
+                Start Planning Free
+              </Link>
+              <a href="#how-it-works" className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 hover:bg-white/15 text-white px-8 py-3 text-sm font-medium transition-all backdrop-blur-sm">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                Watch Demo
+              </a>
+            </div>
+
+            {/* Quick Search Card */}
+            <div className="w-full max-w-2xl rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md p-5 shadow-2xl">
+              <p className="text-sm font-semibold text-white mb-4">Quick Search Preview</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div>
+                  <p className="text-xs text-slate-300 mb-1.5">Where to?</p>
+                  <input type="text" placeholder="Destination"
+                    value={searchForm.destination}
+                    onChange={e => setSearchForm(p => ({ ...p, destination: e.target.value }))}
+                    className="w-full rounded-lg bg-slate-800/80 border border-white/10 text-slate-300 placeholder:text-slate-500 text-sm px-3 py-2.5 outline-none focus:border-[#BFBD31]/50 transition"
+                  />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-300 mb-1.5">Budget (LKR)</p>
+                  <input type="text" placeholder="e.g., 100,000"
+                    value={searchForm.budget}
+                    onChange={e => setSearchForm(p => ({ ...p, budget: e.target.value }))}
+                    className="w-full rounded-lg bg-slate-800/80 border border-white/10 text-slate-300 placeholder:text-slate-500 text-sm px-3 py-2.5 outline-none focus:border-[#BFBD31]/50 transition"
+                  />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-300 mb-1.5">Travelers</p>
+                  <input type="text" placeholder="2 Adults"
+                    value={searchForm.travelers}
+                    onChange={e => setSearchForm(p => ({ ...p, travelers: e.target.value }))}
+                    className="w-full rounded-lg bg-slate-800/80 border border-white/10 text-slate-300 placeholder:text-slate-500 text-sm px-3 py-2.5 outline-none focus:border-[#BFBD31]/50 transition"
+                  />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-300 mb-1.5">Start Date</p>
+                  <input type="date"
+                    value={searchForm.dates}
+                    onChange={e => setSearchForm(p => ({ ...p, dates: e.target.value }))}
+                    className="w-full rounded-lg bg-slate-800/80 border border-white/10 text-slate-300 placeholder:text-slate-500 text-sm px-3 py-2.5 outline-none focus:border-[#BFBD31]/50 transition"
+                  />
+                </div>
+              </div>
+              <button onClick={handleSearch} className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#BFBD31] hover:bg-[#d4d235] text-slate-950 text-sm font-semibold py-3 transition-all shadow-[0_0_20px_rgba(191,189,49,0.35)] hover:shadow-[0_0_30px_rgba(191,189,49,0.5)]">
+                <span className="inline-block h-2 w-2 rounded-full bg-[#BFBD31] animate-pulse"></span>
+                Search Destinations
+              </button>
+              <p className="text-xs text-slate-400 mt-3 text-center">
+                <Link to="/register" className="text-[#BFBD31] hover:text-[#d4d235] underline underline-offset-2">Sign up</Link> to unlock full search and AI planning features
+              </p>
+            </div>
+
+            {/* Scroll Indicator */}
+            <div className="flex flex-col items-center gap-2 text-[#BFBD31]/40 animate-bounce mt-8">
               <span className="text-xs uppercase tracking-widest">Scroll</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
             </div>
+          </div>
+
+          {/* Stats Strip � flush inside hero card */}
+          <div className="relative z-10 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4">
+            {[
+              { value: '10,000+', label: 'Happy Travelers' },
+              { value: '500+',    label: 'Destinations' },
+              { value: '4.9/5',   label: 'Average Rating' },
+              { value: '24/7',    label: 'Support Available' },
+            ].map(({ value, label }, i) => (
+              <div
+                key={label}
+                className={`flex flex-col items-center justify-center py-6 gap-1 ${i !== 0 ? 'border-l border-white/10' : ''}`}
+              >
+                <span className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{value}</span>
+                <span className="text-xs text-slate-400 uppercase tracking-wider">{label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -121,7 +274,7 @@ export default function LandingPage() {
                 </svg>
               </div>
               
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-lime-500 text-slate-950/20 text-lime-200 font-bold text-sm mb-5 border border-lime-500/30">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#BFBD31] text-slate-900 font-bold text-sm mb-5 border border-[#BFBD31]/30">
                 {item.step}
               </div>
               
@@ -132,7 +285,7 @@ export default function LandingPage() {
         </div>
         
         <div className="mt-16 flex justify-center">
-          <button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white px-8 py-3.5 rounded-lg font-medium transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] hover:-translate-y-0.5">
+          <button className="bg-[#BFBD31] hover:bg-[#d4d235] text-slate-950 px-8 py-3.5 rounded-lg font-medium transition-all shadow-[0_0_20px_rgba(191,189,49,0.3)] hover:shadow-[0_0_30px_rgba(191,189,49,0.5)] hover:-translate-y-0.5">
             Get Started Now
           </button>
         </div>
@@ -145,7 +298,7 @@ export default function LandingPage() {
             <h2 className="text-3xl font-medium text-white">The Wonders Of Nature</h2>
             <p className="text-sm text-slate-400 max-w-md">We seek to provide the authentic contact for travel far around the world.</p>
           </div>
-          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-lime-400/20 text-lime-300 hover:bg-lime-400 hover:text-slate-900 transition-colors">
+          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#BFBD31]/20 text-[#BFBD31] hover:bg-[#BFBD31] hover:text-slate-900 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
           </button>
         </div>
@@ -162,8 +315,8 @@ export default function LandingPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/20 to-transparent" />
               <div className="absolute bottom-0 left-0 p-5 w-full">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-lime-400"></span>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-lime-200">{card.label}</span>
+                  <span className="inline-block w-2 h-2 rounded-full bg-[#BFBD31]"></span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#BFBD31]">{card.label}</span>
                 </div>
                 <h3 className="text-lg font-medium text-white">{card.title}</h3>
               </div>
@@ -181,17 +334,19 @@ export default function LandingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
           {[
-            { name: 'Kandy', desc: 'Cultural capital with ancient temples', rating: '4.8', days: '3 Days', price: '45,000', color: 'from-[#4F46E5] to-[#3730A3]' },
-            { name: 'Galle', desc: 'Colonial fort and pristine beaches', rating: '4.9', days: '4 Days', price: '55,000', color: 'from-[#0284C7] to-[#075985]' },
-            { name: 'Ella', desc: 'Scenic hill country paradise', rating: '4.7', days: '3 Days', price: '40,000', color: 'from-[#16A34A] to-[#166534]' },
-            { name: 'Sigiriya', desc: 'Ancient rock fortress wonder', rating: '4.9', days: '2 Days', price: '50,000', color: 'from-[#D97706] to-[#92400E]' },
-            { name: 'Yala', desc: 'Premier wildlife safari experience', rating: '4.8', days: '2 Days', price: '60,000', color: 'from-[#DC2626] to-[#991B1B]' },
-            { name: 'Nuwara Eliya', desc: 'Tea country and cool climate', rating: '4.6', days: '3 Days', price: '48,000', color: 'from-[#7C3AED] to-[#5B21B6]' },
+            { name: 'Kandy', desc: 'Cultural capital with ancient temples', rating: '4.8', days: '3 Days', price: '45,000', img: kandyDestImg },
+            { name: 'Galle', desc: 'Colonial fort and pristine beaches', rating: '4.9', days: '4 Days', price: '55,000', img: galleDestImg },
+            { name: 'Ella', desc: 'Scenic hill country paradise', rating: '4.7', days: '3 Days', price: '40,000', img: ellaDestImg },
+            { name: 'Sigiriya', desc: 'Ancient rock fortress wonder', rating: '4.9', days: '2 Days', price: '50,000', img: sigiriyaDestImg },
+            { name: 'Yala', desc: 'Premier wildlife safari experience', rating: '4.8', days: '2 Days', price: '60,000', img: yalaDestImg },
+            { name: 'Nuwara Eliya', desc: 'Tea country and cool climate', rating: '4.6', days: '3 Days', price: '48,000', img: nuwaraEliyaDestImg },
           ].map((dest, i) => (
             <div key={i} className="flex flex-col bg-slate-900 border border-white/5 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1">
-              {/* Card Header Color Block */}
-              <div className={`h-40 bg-gradient-to-br ${dest.color} relative p-6 flex items-end opacity-95`}>
-                <h3 className="text-2xl font-bold text-white tracking-wide">{dest.name}</h3>
+              {/* Card Header Image */}
+              <div className="h-44 relative overflow-hidden">
+                <img src={dest.img} alt={dest.name} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/20 to-transparent" />
+                <h3 className="absolute bottom-4 left-5 text-2xl font-bold text-white tracking-wide drop-shadow-lg">{dest.name}</h3>
               </div>
               
               {/* Card Body */}
@@ -209,8 +364,18 @@ export default function LandingPage() {
                 </div>
                 
                 <div className="flex justify-between items-center pt-1">
-                  <span className="text-sm font-semibold text-lime-300">From LKR {dest.price}</span>
-                  <button className="bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
+                  <span className="text-sm font-semibold text-[#BFBD31]">From LKR {dest.price}</span>
+                  <button
+                    onClick={() => navigate('/itinerary', {
+                      state: {
+                        destination: `${dest.name} Tour`,
+                        location: dest.name,
+                        duration: dest.days,
+                        budget: parseInt(dest.price.replace(/,/g, '')) || 50000,
+                        dates: {},
+                      }
+                    })}
+                    className="bg-[#BFBD31] hover:bg-[#d4d235] text-slate-950 text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
                     Explore
                   </button>
                 </div>
@@ -220,7 +385,7 @@ export default function LandingPage() {
         </div>
         
         <div className="mt-14 flex justify-center">
-          <button className="border border-[#8B5CF6]/50 hover:bg-[#8B5CF6]/10 text-[#A78BFA] px-8 py-3 rounded-lg font-medium transition-colors flex items-center gap-2">
+          <button className="border border-[#BFBD31]/50 hover:bg-[#BFBD31]/10 text-[#BFBD31] px-8 py-3 rounded-lg font-medium transition-colors flex items-center gap-2">
             View All Destinations <span className="text-lg leading-none">&rarr;</span>
           </button>
         </div>
@@ -242,7 +407,7 @@ export default function LandingPage() {
           ].map((feat, i) => (
             <div key={i} className="group relative flex flex-col bg-slate-900 border border-white/5 rounded-3xl p-8 hover:bg-slate-800/80 transition-colors">
               <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${feat.glow} rounded-bl-full opacity-50`}></div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-lime-500 text-slate-950/10 text-lime-300 mb-6 border border-lime-500/20">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#BFBD31] text-slate-900 mb-6 border border-[#BFBD31]/20">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d={feat.icon} />
                 </svg>
@@ -279,10 +444,112 @@ export default function LandingPage() {
             <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
               Whether you're planning a family vacation with your pet, a relaxing weekend getaway, or an adventurous excursion, vacation rentals are ideal for trips of all types. You can find everything from charming mountain cabins and lakeside lodges to breathtaking city apartments.
             </p>
-            <button className="bg-lime-400 hover:bg-lime-300 text-slate-950 px-8 py-3.5 rounded-full font-semibold transition-transform hover:scale-105 inline-block">
+            <button className="bg-[#BFBD31] hover:bg-[#d4d235] text-slate-950 px-8 py-3.5 rounded-full font-semibold transition-transform hover:scale-105 inline-block">
               Book Now
             </button>
           </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="relative z-10 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-24">
+        <div className="text-center mb-16 space-y-4">
+          <h2 className="text-3xl sm:text-4xl font-gotham font-medium text-white">What Travelers Say</h2>
+          <p className="text-slate-400 text-sm sm:text-base">Real experiences from real travelers</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {[
+            {
+              initials: 'SJ', name: 'Sarah Johnson', country: 'Australia',
+              rating: 5,
+              review: "SmartTRIP made planning our Sri Lanka honeymoon so easy! The AI recommendations were spot-on and we stayed perfectly within our budget. Highly recommended!",
+              trip: 'Kandy & Galle Tour', date: 'January 2025',
+            },
+            {
+              initials: 'RP', name: 'Raj Patel', country: 'India',
+              rating: 5,
+              review: "Amazing experience! The platform found us the perfect family-friendly hotels and activities. The vendor coordination was seamless.",
+              trip: 'Ella Family Adventure', date: 'December 2024',
+            },
+            {
+              initials: 'EW', name: 'Emma Williams', country: 'UK',
+              rating: 4,
+              review: "Best travel booking platform I've used. The budget tracking feature helped us avoid overspending, and the soft-booking process was stress-free.",
+              trip: 'Cultural Triangle Tour', date: 'November 2024',
+            },
+          ].map((t) => (
+            <div key={t.name} className="flex flex-col bg-slate-900 border border-white/5 rounded-2xl p-6 hover:border-white/15 transition-all duration-300 shadow-xl hover:-translate-y-1">
+              {/* Avatar & Name */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-600 text-white text-sm font-bold shrink-0">
+                  {t.initials}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">{t.name}</p>
+                  <p className="text-xs text-slate-400">{t.country}</p>
+                </div>
+              </div>
+
+              {/* Stars */}
+              <div className="flex items-center gap-0.5 mb-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <svg key={i} className={`w-4 h-4 ${i < t.rating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-600 fill-slate-600'}`} viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+
+              {/* Review */}
+              <p className="text-sm text-slate-400 leading-relaxed flex-1 mb-5">{t.review}</p>
+
+              {/* Trip & Date */}
+              <div className="border-t border-white/10 pt-4">
+                <p className="text-sm font-medium text-indigo-400">{t.trip}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{t.date}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="relative z-10 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-24">
+        <div className="text-center mb-16 space-y-4">
+          <h2 className="text-3xl sm:text-4xl font-gotham font-medium text-white">Frequently Asked Questions</h2>
+          <p className="text-slate-400 text-sm sm:text-base">Everything you need to know about SmartTRIP</p>
+        </div>
+
+        <div className="max-w-3xl mx-auto space-y-3">
+          {faqs.map((faq) => (
+            <div key={faq.id} className="bg-slate-900 border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-colors">
+              <button
+                onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
+                className="w-full px-6 py-5 flex items-center justify-between text-left gap-4"
+              >
+                <span className="text-sm font-semibold text-white">{faq.question}</span>
+                <svg
+                  className={`w-5 h-5 text-indigo-400 flex-shrink-0 transition-transform duration-300 ${expandedFaq === faq.id ? 'rotate-180' : ''}`}
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {expandedFaq === faq.id && (
+                <div className="px-6 pb-5">
+                  <p className="text-sm text-slate-400 leading-relaxed">{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <p className="text-slate-400 text-sm mb-3">Still have questions?</p>
+          <a href="mailto:support@smarttrip.lk" className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 font-semibold text-sm transition-colors">
+            Contact Our Support Team
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+          </a>
         </div>
       </section>
 
@@ -291,12 +558,12 @@ export default function LandingPage() {
         <div className="text-center mb-16">
           <div className="relative inline-block">
             <h2 className="text-2xl font-medium text-white">Explore The Nature With Us</h2>
-            <div className="absolute -bottom-3 right-0 w-2/3 h-px bg-lime-400"></div>
+            <div className="absolute -bottom-3 right-0 w-2/3 h-px bg-[#BFBD31]"></div>
           </div>
         </div>
         
-        <div className="relative rounded-3xl border border-lime-100/15 overflow-hidden bg-slate-900 md:aspect-[21/9] flex flex-col md:flex-row justify-between" style={{
-            backgroundImage: 'linear-gradient(90deg, rgba(7,16,22,0.95) 0%, rgba(7,16,22,0.4) 100%), url(https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80)',
+        <div className="relative rounded-3xl border border-[#BFBD31]/15 overflow-hidden bg-slate-900 md:aspect-[21/9] flex flex-col md:flex-row justify-between" style={{
+            backgroundImage: `linear-gradient(90deg, rgba(7,16,22,0.95) 0%, rgba(7,16,22,0.4) 100%), url(${footerBgImg})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
          }}>
@@ -329,22 +596,22 @@ export default function LandingPage() {
              ))}
            </div>
            
-           <div className="hidden md:block self-center relative rounded-sm overflow-hidden border-[3px] border-lime-400/80 w-[400px] aspect-[16/9] mr-12 transform -translate-y-12">
-              <img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=600&q=80" alt="Featured Nature" className="w-full h-full object-cover"/>
+           <div className="hidden md:block self-center relative rounded-xl overflow-hidden border border-white/20 w-[460px] aspect-[16/9] mr-12 transform -translate-y-12 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+              <img src={dondraFooterImg} alt="Dondra Lighthouse" className="w-full h-full object-cover brightness-110 contrast-105"/>
            </div>
 
            {/* In-Panel Footer integrated as an overlay at the bottom */}
            <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-950/95 via-slate-900/80 to-transparent pt-20">
              <div className="w-full max-w-7xl mx-auto px-10 pb-8 flex flex-wrap justify-between items-start text-sm border-b border-white/10 pb-6 mb-6">
                 <div className="space-y-3">
-                  <Link to="#" className="block text-slate-300 hover:text-lime-300 transition">Book Now</Link>
-                  <Link to="#" className="block text-slate-300 hover:text-lime-300 transition">About</Link>
-                  <Link to="#" className="block text-slate-300 hover:text-lime-300 transition">Blogs</Link>
+                  <Link to="#" className="block text-slate-300 hover:text-[#BFBD31] transition">Book Now</Link>
+                  <Link to="#" className="block text-slate-300 hover:text-[#BFBD31] transition">About</Link>
+                  <Link to="#" className="block text-slate-300 hover:text-[#BFBD31] transition">Blogs</Link>
                 </div>
                 <div className="space-y-3">
-                  <Link to="#" className="block text-slate-300 hover:text-lime-300 transition">Supports</Link>
-                  <Link to="#" className="block text-slate-300 hover:text-lime-300 transition">Privacy</Link>
-                  <Link to="#" className="block text-slate-300 hover:text-lime-300 transition">Affiliates</Link>
+                  <Link to="#" className="block text-slate-300 hover:text-[#BFBD31] transition">Supports</Link>
+                  <Link to="#" className="block text-slate-300 hover:text-[#BFBD31] transition">Privacy</Link>
+                  <Link to="#" className="block text-slate-300 hover:text-[#BFBD31] transition">Affiliates</Link>
                 </div>
                 <div className="space-y-3">
                   <p className="text-slate-300">008-557-990; 008-557-900</p>
@@ -352,9 +619,9 @@ export default function LandingPage() {
                 </div>
              </div>
              
-             <div className="flex justify-between items-center px-10 pb-6 text-xs text-lime-400/80 w-full max-w-7xl mx-auto font-medium tracking-wide">
+             <div className="flex justify-between items-center px-10 pb-6 text-xs text-[#BFBD31]/80 w-full max-w-7xl mx-auto font-medium tracking-wide">
                 <p>&#169; 2026, All Right Reserve</p>
-                <Link to="#" className="hover:text-lime-300 transition">Privacy Policy</Link>
+                <Link to="#" className="hover:text-[#BFBD31] transition">Privacy Policy</Link>
              </div>
            </div>
         </div>

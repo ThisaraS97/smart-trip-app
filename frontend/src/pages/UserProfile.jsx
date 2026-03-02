@@ -222,7 +222,7 @@ export default function UserProfile() {
               <h1 className="text-xl font-bold text-slate-200">My Profile</h1>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={() => navigate('/my-trips')} className="px-3 py-1.5 text-sm text-slate-400 hover:text-lime-400 transition-colors">My Trips</button>
+              <button onClick={() => navigate('/my-trips')} className="px-3 py-1.5 text-sm text-slate-400 hover:text-[#BFBD31] transition-colors">My Trips</button>
               <button
                 onClick={() => { localStorage.removeItem('userInfo'); navigate('/'); }}
                 className="px-3 py-1.5 text-sm text-red-400 border border-red-300 rounded-lg hover:bg-red-500/10 transition-colors"
@@ -245,7 +245,7 @@ export default function UserProfile() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
                     activeTab === tab.id
-                      ? 'bg-lime-500 text-slate-950'
+                      ? 'bg-[#BFBD31] text-slate-950'
                       : 'text-slate-300 hover:bg-slate-800/50'
                   }`}
                 >
@@ -268,7 +268,7 @@ export default function UserProfile() {
                   {!isEditing ? (
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400"
+                      className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31]"
                     >
                       Edit Profile
                     </button>
@@ -282,7 +282,7 @@ export default function UserProfile() {
                       </button>
                       <button
                         onClick={handleSaveProfile}
-                        className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400"
+                        className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31]"
                       >
                         Save Changes
                       </button>
@@ -296,12 +296,12 @@ export default function UserProfile() {
                     {profileData.photo ? (
                       <img src={profileData.photo} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
                     ) : (
-                      <div className="w-24 h-24 rounded-full bg-lime-500 text-slate-950 flex items-center justify-center text-white text-3xl font-bold">
+                      <div className="w-24 h-24 rounded-full bg-[#BFBD31] text-slate-950 flex items-center justify-center text-white text-3xl font-bold">
                         {profileData.fullName.split(' ').map(n => n[0]).join('')}
                       </div>
                     )}
                     {isEditing && (
-                      <label className="absolute bottom-0 right-0 w-8 h-8 bg-lime-500 text-slate-950 rounded-full flex items-center justify-center cursor-pointer hover:bg-lime-400">
+                      <label className="absolute bottom-0 right-0 w-8 h-8 bg-[#BFBD31] text-slate-950 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#BFBD31]">
                         <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -314,7 +314,7 @@ export default function UserProfile() {
                     <p className="text-slate-400">{profileData.email}</p>
                     {isEditing && (
                       <div className="flex gap-2 mt-2">
-                        <label className="px-3 py-1.5 text-sm border border-lime-500 text-lime-400 rounded-lg cursor-pointer hover:bg-lime-50">
+                        <label className="px-3 py-1.5 text-sm border border-[#BFBD31] text-[#BFBD31] rounded-lg cursor-pointer hover:bg-[#BFBD31]/10">
                           Upload Photo
                           <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
                         </label>
@@ -340,7 +340,7 @@ export default function UserProfile() {
                       value={profileData.fullName}
                       onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
                       disabled={!isEditing}
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent disabled:bg-slate-950"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent disabled:bg-slate-950"
                     />
                   </div>
 
@@ -351,7 +351,7 @@ export default function UserProfile() {
                       value={profileData.email}
                       onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                       disabled={!isEditing}
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent disabled:bg-slate-950"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent disabled:bg-slate-950"
                     />
                   </div>
 
@@ -362,7 +362,7 @@ export default function UserProfile() {
                       value={profileData.phone}
                       onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                       disabled={!isEditing}
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent disabled:bg-slate-950"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent disabled:bg-slate-950"
                     />
                   </div>
 
@@ -373,7 +373,7 @@ export default function UserProfile() {
                       value={profileData.dateOfBirth}
                       onChange={(e) => setProfileData({ ...profileData, dateOfBirth: e.target.value })}
                       disabled={!isEditing}
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent disabled:bg-slate-950"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent disabled:bg-slate-950"
                     />
                   </div>
 
@@ -384,7 +384,7 @@ export default function UserProfile() {
                       value={profileData.location}
                       onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
                       disabled={!isEditing}
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent disabled:bg-slate-950"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent disabled:bg-slate-950"
                     />
                   </div>
 
@@ -394,7 +394,7 @@ export default function UserProfile() {
                       value={profileData.preferredLanguage}
                       onChange={(e) => setProfileData({ ...profileData, preferredLanguage: e.target.value })}
                       disabled={!isEditing}
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent disabled:bg-slate-950"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent disabled:bg-slate-950"
                     >
                       <option value="English">English</option>
                       <option value="Sinhala">Sinhala</option>
@@ -409,7 +409,7 @@ export default function UserProfile() {
                       onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
                       disabled={!isEditing}
                       rows={4}
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent disabled:bg-slate-950"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent disabled:bg-slate-950"
                     />
                   </div>
                 </div>
@@ -432,7 +432,7 @@ export default function UserProfile() {
                             type="checkbox"
                             checked={travelPreferences.accommodationType.includes(type.id)}
                             onChange={() => togglePreference('accommodationType', type.id)}
-                            className="w-5 h-5 text-lime-400 rounded"
+                            className="w-5 h-5 text-[#BFBD31] rounded"
                           />
                           <span className="text-slate-300">{type.label}</span>
                         </label>
@@ -451,7 +451,7 @@ export default function UserProfile() {
                             name="mealPlan"
                             checked={travelPreferences.mealPlan === plan}
                             onChange={() => togglePreference('mealPlan', plan)}
-                            className="w-5 h-5 text-lime-400"
+                            className="w-5 h-5 text-[#BFBD31]"
                           />
                           <span className="text-slate-300 capitalize">{plan.replace('-', ' ')}</span>
                         </label>
@@ -473,7 +473,7 @@ export default function UserProfile() {
                       />
                       <div className="flex justify-between text-sm text-slate-400">
                         <span>Budget</span>
-                        <span className="font-semibold text-lime-400">{travelPreferences.budgetRange}%</span>
+                        <span className="font-semibold text-[#BFBD31]">{travelPreferences.budgetRange}%</span>
                         <span>Luxury</span>
                       </div>
                     </div>
@@ -489,7 +489,7 @@ export default function UserProfile() {
                           onClick={() => togglePreference('travelStyle', style)}
                           className={`px-4 py-3 rounded-lg font-medium transition-all ${
                             travelPreferences.travelStyle === style
-                              ? 'bg-lime-500 text-slate-950'
+                              ? 'bg-[#BFBD31] text-slate-950'
                               : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
                           }`}
                         >
@@ -506,14 +506,14 @@ export default function UserProfile() {
                       {activityInterests.map(activity => (
                         <label key={activity.id} className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
                           travelPreferences.activityInterests.includes(activity.id)
-                            ? 'border-lime-500 bg-lime-50'
+                            ? 'border-[#BFBD31] bg-[#BFBD31]/10'
                             : 'border-white/10 hover:border-white/20'
                         }`}>
                           <input
                             type="checkbox"
                             checked={travelPreferences.activityInterests.includes(activity.id)}
                             onChange={() => togglePreference('activityInterests', activity.id)}
-                            className="w-5 h-5 text-lime-400 rounded"
+                            className="w-5 h-5 text-[#BFBD31] rounded"
                           />
                           <span className="text-sm text-slate-300">{activity.label}</span>
                         </label>
@@ -531,7 +531,7 @@ export default function UserProfile() {
                             type="checkbox"
                             checked={travelPreferences.dietaryRestrictions.includes(option.id)}
                             onChange={() => togglePreference('dietaryRestrictions', option.id)}
-                            className="w-5 h-5 text-lime-400 rounded"
+                            className="w-5 h-5 text-[#BFBD31] rounded"
                           />
                           <span className="text-slate-300">{option.label}</span>
                         </label>
@@ -549,7 +549,7 @@ export default function UserProfile() {
                             type="checkbox"
                             checked={travelPreferences.accessibilityNeeds.includes(option.id)}
                             onChange={() => togglePreference('accessibilityNeeds', option.id)}
-                            className="w-5 h-5 text-lime-400 rounded"
+                            className="w-5 h-5 text-[#BFBD31] rounded"
                           />
                           <span className="text-slate-300">{option.label}</span>
                         </label>
@@ -566,7 +566,7 @@ export default function UserProfile() {
                           type="radio"
                           checked={travelPreferences.petTraveler === true}
                           onChange={() => setTravelPreferences({ ...travelPreferences, petTraveler: true })}
-                          className="w-5 h-5 text-lime-400"
+                          className="w-5 h-5 text-[#BFBD31]"
                         />
                         <span className="text-slate-300">Yes, I travel with pets</span>
                       </label>
@@ -575,7 +575,7 @@ export default function UserProfile() {
                           type="radio"
                           checked={travelPreferences.petTraveler === false}
                           onChange={() => setTravelPreferences({ ...travelPreferences, petTraveler: false })}
-                          className="w-5 h-5 text-lime-400"
+                          className="w-5 h-5 text-[#BFBD31]"
                         />
                         <span className="text-slate-300">No</span>
                       </label>
@@ -586,7 +586,7 @@ export default function UserProfile() {
                 <div className="flex gap-3 mt-8 pt-6 border-t border-white/10">
                   <button
                     onClick={() => alert('Preferences updated!')}
-                    className="px-6 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                    className="px-6 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
                   >
                     Update Preferences
                   </button>
@@ -610,7 +610,7 @@ export default function UserProfile() {
                     {!showPasswordChange && (
                       <button
                         onClick={() => setShowPasswordChange(true)}
-                        className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400"
+                        className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31]"
                       >
                         Change Password
                       </button>
@@ -625,7 +625,7 @@ export default function UserProfile() {
                           type="password"
                           value={security.currentPassword}
                           onChange={(e) => setSecurity({ ...security, currentPassword: e.target.value })}
-                          className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                         />
                       </div>
 
@@ -635,7 +635,7 @@ export default function UserProfile() {
                           type="password"
                           value={security.newPassword}
                           onChange={(e) => setSecurity({ ...security, newPassword: e.target.value })}
-                          className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                         />
                         {security.newPassword && (
                           <div className="mt-2">
@@ -661,7 +661,7 @@ export default function UserProfile() {
                           type="password"
                           value={security.confirmPassword}
                           onChange={(e) => setSecurity({ ...security, confirmPassword: e.target.value })}
-                          className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                          className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                         />
                       </div>
 
@@ -674,7 +674,7 @@ export default function UserProfile() {
                         </button>
                         <button
                           onClick={handlePasswordChange}
-                          className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400"
+                          className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31]"
                         >
                           Update Password
                         </button>
@@ -704,7 +704,7 @@ export default function UserProfile() {
                       className={`px-4 py-2 rounded-lg font-medium ${
                         security.twoFactorEnabled
                           ? 'bg-red-600 text-white hover:bg-red-700'
-                          : 'bg-lime-500 text-slate-950 hover:bg-lime-400'
+                          : 'bg-[#BFBD31] text-slate-950 hover:bg-[#BFBD31]'
                       }`}
                     >
                       {security.twoFactorEnabled ? 'Disable' : 'Enable'} 2FA
@@ -724,8 +724,8 @@ export default function UserProfile() {
                     {activeSessions.map(session => (
                       <div key={session.id} className="flex items-start justify-between p-4 bg-slate-950 rounded-lg">
                         <div className="flex gap-4">
-                          <div className="w-12 h-12 bg-lime-100 rounded-lg flex items-center justify-center">
-                            <svg className="w-6 h-6 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-12 h-12 bg-[#BFBD31]/15 rounded-lg flex items-center justify-center">
+                            <svg className="w-6 h-6 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
                           </div>
@@ -748,7 +748,7 @@ export default function UserProfile() {
                       </div>
                     ))}
                   </div>
-                  <button className="mt-4 text-lime-400 hover:text-purple-700 font-medium text-sm">
+                  <button className="mt-4 text-[#BFBD31] hover:text-purple-700 font-medium text-sm">
                     View Login History
                   </button>
                 </div>
@@ -775,7 +775,7 @@ export default function UserProfile() {
                               onChange={() => toggleNotification('email', key)}
                               className="sr-only peer"
                             />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-900 border border-white/10 after:border-white/20 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-lime-500 text-slate-950"></div>
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#BFBD31]/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-900 border border-white/10 after:border-white/20 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#BFBD31] text-slate-950"></div>
                           </label>
                         </div>
                       ))}
@@ -796,7 +796,7 @@ export default function UserProfile() {
                               onChange={() => toggleNotification('sms', key)}
                               className="sr-only peer"
                             />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-900 border border-white/10 after:border-white/20 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-lime-500 text-slate-950"></div>
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#BFBD31]/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-900 border border-white/10 after:border-white/20 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#BFBD31] text-slate-950"></div>
                           </label>
                         </div>
                       ))}
@@ -812,7 +812,7 @@ export default function UserProfile() {
                           type="radio"
                           checked={notifications.inApp === 'all'}
                           onChange={() => toggleNotification('inApp', 'all')}
-                          className="w-5 h-5 text-lime-400"
+                          className="w-5 h-5 text-[#BFBD31]"
                         />
                         <span className="text-slate-300">All updates</span>
                       </label>
@@ -821,7 +821,7 @@ export default function UserProfile() {
                           type="radio"
                           checked={notifications.inApp === 'important'}
                           onChange={() => toggleNotification('inApp', 'important')}
-                          className="w-5 h-5 text-lime-400"
+                          className="w-5 h-5 text-[#BFBD31]"
                         />
                         <span className="text-slate-300">Important only</span>
                       </label>
@@ -832,7 +832,7 @@ export default function UserProfile() {
                 <div className="flex gap-3 mt-8 pt-6 border-t border-white/10">
                   <button
                     onClick={() => alert('Notification settings saved!')}
-                    className="px-6 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                    className="px-6 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
                   >
                     Save Notification Settings
                   </button>
@@ -851,14 +851,14 @@ export default function UserProfile() {
               <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-8">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-white">Payment Methods</h2>
-                  <button className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400">
+                  <button className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31]">
                     Add New Card
                   </button>
                 </div>
 
                 <div className="space-y-4 mb-6">
                   {paymentMethods.map(card => (
-                    <div key={card.id} className="flex items-center justify-between p-4 border-2 border-white/10 rounded-lg hover:border-purple-300 transition-all">
+                    <div key={card.id} className="flex items-center justify-between p-4 border-2 border-white/10 rounded-lg hover:border-[#BFBD31]/40 transition-all">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-slate-800/50 rounded-lg flex items-center justify-center">
                           <svg className="w-8 h-8 text-slate-400" fill="currentColor" viewBox="0 0 24 24">
@@ -869,7 +869,7 @@ export default function UserProfile() {
                           <p className="font-semibold text-slate-200 capitalize">{card.type} •••• {card.last4}</p>
                           <p className="text-sm text-slate-400">Expires {card.expiry}</p>
                           {card.isDefault && (
-                            <span className="inline-block mt-1 px-2 py-0.5 bg-lime-100 text-purple-700 text-xs font-semibold rounded-full">
+                            <span className="inline-block mt-1 px-2 py-0.5 bg-[#BFBD31]/15 text-purple-700 text-xs font-semibold rounded-full">
                               Default
                             </span>
                           )}
@@ -877,7 +877,7 @@ export default function UserProfile() {
                       </div>
                       <div className="flex gap-2">
                         {!card.isDefault && (
-                          <button className="px-3 py-1.5 text-sm text-lime-400 hover:bg-lime-50 rounded-lg font-medium">
+                          <button className="px-3 py-1.5 text-sm text-[#BFBD31] hover:bg-[#BFBD31]/10 rounded-lg font-medium">
                             Set as Default
                           </button>
                         )}
@@ -889,7 +889,7 @@ export default function UserProfile() {
                   ))}
                 </div>
 
-                <button className="text-lime-400 hover:text-purple-700 font-medium">
+                <button className="text-[#BFBD31] hover:text-purple-700 font-medium">
                   Edit Billing Address
                 </button>
               </div>
@@ -901,12 +901,12 @@ export default function UserProfile() {
                 <h2 className="text-2xl font-bold text-white mb-6">Privacy & Data</h2>
 
                 <div className="space-y-6">
-                  <div className="p-4 bg-lime-500/10 border border-lime-500/20 rounded-lg">
+                  <div className="p-4 bg-[#BFBD31]/10 border border-[#BFBD31]/20 rounded-lg">
                     <h3 className="font-semibold text-blue-900 mb-2">Download Your Data (GDPR Compliance)</h3>
-                    <p className="text-sm text-lime-300 mb-4">
+                    <p className="text-sm text-[#BFBD31] mb-4">
                       Request a copy of all your personal data stored in our system.
                     </p>
-                    <button className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400">
+                    <button className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31]">
                       Download My Data
                     </button>
                   </div>
@@ -916,18 +916,18 @@ export default function UserProfile() {
                     <div className="space-y-3 mt-4">
                       <label className="flex items-center justify-between cursor-pointer">
                         <span className="text-slate-300">Allow SmartTRIP to use my data for personalized recommendations</span>
-                        <input type="checkbox" defaultChecked className="w-5 h-5 text-lime-400 rounded" />
+                        <input type="checkbox" defaultChecked className="w-5 h-5 text-[#BFBD31] rounded" />
                       </label>
                       <label className="flex items-center justify-between cursor-pointer">
                         <span className="text-slate-300">Share anonymized travel data for research purposes</span>
-                        <input type="checkbox" className="w-5 h-5 text-lime-400 rounded" />
+                        <input type="checkbox" className="w-5 h-5 text-[#BFBD31] rounded" />
                       </label>
                       <label className="flex items-center justify-between cursor-pointer">
                         <span className="text-slate-300">Allow third-party vendors to contact me</span>
-                        <input type="checkbox" className="w-5 h-5 text-lime-400 rounded" />
+                        <input type="checkbox" className="w-5 h-5 text-[#BFBD31] rounded" />
                       </label>
                     </div>
-                    <button className="mt-4 px-4 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400">
+                    <button className="mt-4 px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31]">
                       Update Privacy Settings
                     </button>
                   </div>
@@ -1019,7 +1019,7 @@ export default function UserProfile() {
                   setShow2FASetup(false);
                   alert('2FA enabled successfully!');
                 }}
-                className="flex-1 px-4 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                className="flex-1 px-4 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
               >
                 Enable 2FA
               </button>

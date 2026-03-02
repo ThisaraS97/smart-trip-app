@@ -121,7 +121,7 @@ export default function NotificationsPage() {
       icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
       color: 'blue',
       bgColor: 'bg-blue-100',
-      textColor: 'text-lime-300',
+      textColor: 'text-[#BFBD31]',
       symbol: '📝'
     },
     booking_confirmed: {
@@ -148,8 +148,8 @@ export default function NotificationsPage() {
     trip_reminder: {
       icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
       color: 'purple',
-      bgColor: 'bg-lime-100',
-      textColor: 'text-lime-400',
+      bgColor: 'bg-[#BFBD31]/15',
+      textColor: 'text-[#BFBD31]',
       symbol: '🔔'
     },
     review_request: {
@@ -270,7 +270,7 @@ export default function NotificationsPage() {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="px-4 py-2 text-sm font-medium text-lime-400 hover:bg-lime-50 rounded-lg"
+                  className="px-4 py-2 text-sm font-medium text-[#BFBD31] hover:bg-[#BFBD31]/10 rounded-lg"
                 >
                   Mark All as Read
                 </button>
@@ -301,7 +301,7 @@ export default function NotificationsPage() {
               onClick={() => setActiveFilter(tab.id)}
               className={`px-6 py-3 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
                 activeFilter === tab.id
-                  ? 'bg-lime-500 text-slate-950'
+                  ? 'bg-[#BFBD31] text-slate-950'
                   : 'text-slate-300 hover:bg-slate-800/50'
               }`}
             >
@@ -339,7 +339,7 @@ export default function NotificationsPage() {
                 <div
                   key={notification.id}
                   className={`notification-enter bg-slate-900 border border-white/10 rounded-xl shadow-md overflow-hidden transition-all hover:shadow-lg ${
-                    !notification.isRead ? 'border-l-4 border-lime-500' : ''
+                    !notification.isRead ? 'border-l-4 border-[#BFBD31]' : ''
                   }`}
                 >
                   <div className="flex items-start gap-4 p-6">
@@ -356,7 +356,7 @@ export default function NotificationsPage() {
                         <div className="flex items-center gap-2">
                           <h3 className="font-bold text-white">{notification.title}</h3>
                           {!notification.isRead && (
-                            <span className="w-2 h-2 bg-lime-500 text-slate-950 rounded-full unread-indicator"></span>
+                            <span className="w-2 h-2 bg-[#BFBD31] text-slate-950 rounded-full unread-indicator"></span>
                           )}
                         </div>
                         <span className="text-xs text-slate-500 whitespace-nowrap ml-4">{notification.timestamp}</span>
@@ -368,7 +368,7 @@ export default function NotificationsPage() {
                         {!notification.isRead && (
                           <button
                             onClick={() => markAsRead(notification.id)}
-                            className="text-sm font-medium text-lime-400 hover:text-purple-700 flex items-center gap-1"
+                            className="text-sm font-medium text-[#BFBD31] hover:text-purple-700 flex items-center gap-1"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -379,32 +379,32 @@ export default function NotificationsPage() {
                         
                         {/* Context-specific actions */}
                         {notification.type === 'booking_confirmed' && (
-                          <button className="text-sm font-medium text-lime-300 hover:text-blue-300">
+                          <button className="text-sm font-medium text-[#BFBD31] hover:text-blue-300">
                             View Booking
                           </button>
                         )}
                         {notification.type === 'booking_rejected' && (
-                          <button className="text-sm font-medium text-lime-300 hover:text-blue-300">
+                          <button className="text-sm font-medium text-[#BFBD31] hover:text-blue-300">
                             Modify Booking
                           </button>
                         )}
                         {notification.type === 'trip_reminder' && (
-                          <button className="text-sm font-medium text-lime-300 hover:text-blue-300">
+                          <button className="text-sm font-medium text-[#BFBD31] hover:text-blue-300">
                             View Trip Details
                           </button>
                         )}
                         {notification.type === 'review_request' && (
-                          <button className="text-sm font-medium text-lime-300 hover:text-blue-300">
+                          <button className="text-sm font-medium text-[#BFBD31] hover:text-blue-300">
                             Write Review
                           </button>
                         )}
                         {notification.type === 'promotion' && (
-                          <button className="text-sm font-medium text-lime-300 hover:text-blue-300">
+                          <button className="text-sm font-medium text-[#BFBD31] hover:text-blue-300">
                             View Offer
                           </button>
                         )}
                         {notification.type === 'budget_alert' && (
-                          <button className="text-sm font-medium text-lime-300 hover:text-blue-300">
+                          <button className="text-sm font-medium text-[#BFBD31] hover:text-blue-300">
                             View Itinerary
                           </button>
                         )}
@@ -436,12 +436,12 @@ export default function NotificationsPage() {
                 <p className="text-3xl font-bold text-white">{notifications.length}</p>
                 <p className="text-sm text-slate-400 mt-1">Total</p>
               </div>
-              <div className="text-center p-4 bg-lime-50 rounded-lg">
-                <p className="text-3xl font-bold text-lime-400">{unreadCount}</p>
+              <div className="text-center p-4 bg-[#BFBD31]/10 rounded-lg">
+                <p className="text-3xl font-bold text-[#BFBD31]">{unreadCount}</p>
                 <p className="text-sm text-slate-400 mt-1">Unread</p>
               </div>
-              <div className="text-center p-4 bg-lime-500/10 rounded-lg">
-                <p className="text-3xl font-bold text-lime-300">
+              <div className="text-center p-4 bg-[#BFBD31]/10 rounded-lg">
+                <p className="text-3xl font-bold text-[#BFBD31]">
                   {notifications.filter(n => n.category === 'booking').length}
                 </p>
                 <p className="text-sm text-slate-400 mt-1">Booking Updates</p>
@@ -458,7 +458,7 @@ export default function NotificationsPage() {
 
         {/* Notification Settings Link */}
         <div className="mt-6 text-center">
-          <button onClick={() => navigate('/profile')} className="text-lime-400 hover:text-purple-700 font-medium flex items-center gap-2 mx-auto">
+          <button onClick={() => navigate('/profile')} className="text-[#BFBD31] hover:text-purple-700 font-medium flex items-center gap-2 mx-auto">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>

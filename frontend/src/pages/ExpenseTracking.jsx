@@ -291,7 +291,7 @@ export default function ExpenseTracking() {
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => setShowAddExpenseModal(true)}
-                className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400 flex items-center gap-2"
+                className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31] flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
@@ -309,7 +309,7 @@ export default function ExpenseTracking() {
           <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-lime-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                 </svg>
               </div>
@@ -380,7 +380,7 @@ export default function ExpenseTracking() {
               <button
                 onClick={() => setViewMode('table')}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  viewMode === 'table' ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
+                  viewMode === 'table' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
                 }`}
               >
                 📊 Table View
@@ -388,7 +388,7 @@ export default function ExpenseTracking() {
               <button
                 onClick={() => setViewMode('chart')}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  viewMode === 'chart' ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
+                  viewMode === 'chart' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
                 }`}
               >
                 📈 Chart View
@@ -396,7 +396,7 @@ export default function ExpenseTracking() {
               <button
                 onClick={() => setViewMode('timeline')}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  viewMode === 'timeline' ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
+                  viewMode === 'timeline' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
                 }`}
               >
                 📅 Timeline
@@ -434,7 +434,7 @@ export default function ExpenseTracking() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
               >
                 <option value="all">All Categories</option>
                 {categories.map(cat => (
@@ -449,7 +449,7 @@ export default function ExpenseTracking() {
                 type="date"
                 value={dateFilter.from}
                 onChange={(e) => setDateFilter({...dateFilter, from: e.target.value})}
-                className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
               />
             </div>
 
@@ -459,7 +459,7 @@ export default function ExpenseTracking() {
                 type="date"
                 value={dateFilter.to}
                 onChange={(e) => setDateFilter({...dateFilter, to: e.target.value})}
-                className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
               />
             </div>
 
@@ -470,7 +470,7 @@ export default function ExpenseTracking() {
                 value={amountFilter.min}
                 onChange={(e) => setAmountFilter({...amountFilter, min: e.target.value})}
                 placeholder="LKR"
-                className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
               />
             </div>
 
@@ -481,7 +481,7 @@ export default function ExpenseTracking() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search description..."
-                className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
               />
             </div>
           </div>
@@ -553,7 +553,7 @@ export default function ExpenseTracking() {
                   
                   return (
                     <div key={date} className="flex-1 flex flex-col items-center">
-                      <div className="w-full bg-lime-500 text-slate-950 rounded-t-lg hover:bg-lime-400 transition-colors cursor-pointer relative group" style={{ height: `${barHeight}%` }}>
+                      <div className="w-full bg-[#BFBD31] text-slate-950 rounded-t-lg hover:bg-[#BFBD31] transition-colors cursor-pointer relative group" style={{ height: `${barHeight}%` }}>
                         <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                           LKR {dailyTotal.toLocaleString()}
                         </div>
@@ -573,10 +573,10 @@ export default function ExpenseTracking() {
             <h2 className="text-xl font-bold text-slate-200 mb-6">Daily Spending Log</h2>
             <div className="space-y-6">
               {Object.entries(groupExpensesByDate()).reverse().map(([date, dayExpenses]) => (
-                <div key={date} className="border-l-4 border-lime-500 pl-6">
+                <div key={date} className="border-l-4 border-[#BFBD31] pl-6">
                   <h3 className="text-lg font-bold text-white mb-4">
                     {new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                    <span className="ml-3 text-sm font-semibold text-lime-400">
+                    <span className="ml-3 text-sm font-semibold text-[#BFBD31]">
                       LKR {dayExpenses.reduce((sum, exp) => sum + exp.amount, 0).toLocaleString()}
                     </span>
                   </h3>
@@ -602,7 +602,7 @@ export default function ExpenseTracking() {
                                   setSelectedReceipt(expense);
                                   setShowReceiptModal(true);
                                 }}
-                                className="text-sm text-lime-400 hover:text-purple-700 font-medium flex items-center gap-1 mt-2"
+                                className="text-sm text-[#BFBD31] hover:text-purple-700 font-medium flex items-center gap-1 mt-2"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -618,7 +618,7 @@ export default function ExpenseTracking() {
                                 setSelectedExpense(expense);
                                 setShowEditModal(true);
                               }}
-                              className="p-2 text-lime-300 hover:bg-lime-500/10 rounded-lg"
+                              className="p-2 text-[#BFBD31] hover:bg-[#d4d235]/10 rounded-lg"
                             >
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -685,7 +685,7 @@ export default function ExpenseTracking() {
                                 setSelectedReceipt(expense);
                                 setShowReceiptModal(true);
                               }}
-                              className="text-lime-400 hover:text-purple-700"
+                              className="text-[#BFBD31] hover:text-purple-700"
                             >
                               <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -703,7 +703,7 @@ export default function ExpenseTracking() {
                                 setSelectedExpense(expense);
                                 setShowEditModal(true);
                               }}
-                              className="p-2 text-lime-300 hover:bg-lime-500/10 rounded-lg"
+                              className="p-2 text-[#BFBD31] hover:bg-[#d4d235]/10 rounded-lg"
                             >
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -726,7 +726,7 @@ export default function ExpenseTracking() {
                 <tfoot className="bg-slate-950 border-t-2 border-white/20">
                   <tr>
                     <td colSpan="4" className="px-6 py-4 text-sm font-bold text-white">Total</td>
-                    <td className="px-6 py-4 text-sm font-bold text-lime-400 text-right">
+                    <td className="px-6 py-4 text-sm font-bold text-[#BFBD31] text-right">
                       LKR {filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0).toLocaleString()}
                     </td>
                     <td colSpan="2"></td>
@@ -761,7 +761,7 @@ export default function ExpenseTracking() {
                   type="date"
                   value={newExpense.date}
                   onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
-                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-lime-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-[#BFBD31] focus:ring-2 focus:ring-purple-200 outline-none"
                 />
               </div>
 
@@ -770,7 +770,7 @@ export default function ExpenseTracking() {
                 <select
                   value={newExpense.category}
                   onChange={(e) => setNewExpense({...newExpense, category: e.target.value})}
-                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-lime-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-[#BFBD31] focus:ring-2 focus:ring-purple-200 outline-none"
                 >
                   {categories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>
@@ -785,7 +785,7 @@ export default function ExpenseTracking() {
                   value={newExpense.description}
                   onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
                   placeholder="e.g., Lunch at local restaurant"
-                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-lime-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-[#BFBD31] focus:ring-2 focus:ring-purple-200 outline-none"
                 />
               </div>
 
@@ -796,7 +796,7 @@ export default function ExpenseTracking() {
                   value={newExpense.amount}
                   onChange={(e) => setNewExpense({...newExpense, amount: e.target.value})}
                   placeholder="0.00"
-                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-lime-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-[#BFBD31] focus:ring-2 focus:ring-purple-200 outline-none"
                 />
               </div>
 
@@ -806,7 +806,7 @@ export default function ExpenseTracking() {
                   type="file"
                   accept="image/*"
                   onChange={(e) => setNewExpense({...newExpense, receipt: e.target.files[0]})}
-                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-lime-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-[#BFBD31] focus:ring-2 focus:ring-purple-200 outline-none"
                 />
               </div>
 
@@ -820,7 +820,7 @@ export default function ExpenseTracking() {
                 <button 
                   onClick={handleAddExpense}
                   disabled={!newExpense.description || !newExpense.amount}
-                  className="flex-1 px-4 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31] disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   Save Expense
                 </button>
@@ -855,7 +855,7 @@ export default function ExpenseTracking() {
                 <select
                   value={selectedExpense.category}
                   onChange={(e) => setSelectedExpense({...selectedExpense, category: e.target.value})}
-                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-lime-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-[#BFBD31] focus:ring-2 focus:ring-purple-200 outline-none"
                 >
                   {categories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.icon} {cat.label}</option>
@@ -869,7 +869,7 @@ export default function ExpenseTracking() {
                   type="text"
                   value={selectedExpense.description}
                   onChange={(e) => setSelectedExpense({...selectedExpense, description: e.target.value})}
-                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-lime-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-[#BFBD31] focus:ring-2 focus:ring-purple-200 outline-none"
                 />
               </div>
 
@@ -879,7 +879,7 @@ export default function ExpenseTracking() {
                   type="number"
                   value={selectedExpense.amount}
                   onChange={(e) => setSelectedExpense({...selectedExpense, amount: parseFloat(e.target.value)})}
-                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-lime-500 focus:ring-2 focus:ring-purple-200 outline-none"
+                  className="w-full px-4 py-2 border-2 border-white/10 rounded-lg focus:border-[#BFBD31] focus:ring-2 focus:ring-purple-200 outline-none"
                 />
               </div>
 
@@ -895,7 +895,7 @@ export default function ExpenseTracking() {
                 </button>
                 <button 
                   onClick={handleEditExpense}
-                  className="flex-1 px-4 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                  className="flex-1 px-4 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
                 >
                   Save Changes
                 </button>

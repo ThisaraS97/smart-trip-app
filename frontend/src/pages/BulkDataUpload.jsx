@@ -1,655 +1,515 @@
-import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
+// ── CSV template definitions ──────────────────────────────────────────────────
+const TEMPLATES = [
+  {
+    id: 'accommodation', name: 'Hotel / Accommodation', icon: '🏨',
+    description: 'Room types, pricing, availability, amenities',
+    sampleRows: [
+      { name: 'Deluxe Room with Garden View', type: 'accommodation', description: 'Spacious room overlooking the garden',   price: 15000, capacity: 2, availableCount: 5,  location: 'Kandy', amenities: 'WiFi,Breakfast,Pool' },
+      { name: 'Suite with Ocean View',        type: 'accommodation', description: 'Luxury suite with panoramic ocean view', price: 25000, capacity: 4, availableCount: 2,  location: 'Galle', amenities: 'WiFi,Breakfast,Pool,Spa' },
+    ],
+  },
+  {
+    id: 'transport', name: 'Vehicle / Transport', icon: '🚗',
+    description: 'Vehicle details, capacity, rental rates',
+    sampleRows: [
+      { name: 'Private AC Car (Full Day)', type: 'transport', description: 'Air-conditioned sedan with driver',    price: 8000,  capacity: 4, availableCount: 3, location: 'Island-wide', amenities: 'AC,Experienced Driver,Fuel Included' },
+      { name: 'AC Mini Van (9-Seater)',    type: 'transport', description: 'Toyota KDH minivan for group travel', price: 12000, capacity: 9, availableCount: 2, location: 'Island-wide', amenities: 'AC,WiFi Hotspot,Fuel Included' },
+    ],
+  },
+  {
+    id: 'activity', name: 'Activity / Experience', icon: '🎭',
+    description: 'Tours, activities, experiences, pricing',
+    sampleRows: [
+      { name: 'Sigiriya Rock Fortress Tour', type: 'activity', description: 'Full-day guided tour with lunch',        price: 12500, capacity: 20, availableCount: 18, location: 'Sigiriya', amenities: 'Lunch,English Guide,Entry Tickets' },
+      { name: 'Whale Watching Cruise',       type: 'activity', description: 'Morning whale watching off south coast', price: 8500,  capacity: 30, availableCount: 25, location: 'Mirissa',  amenities: 'Breakfast,Life Jackets,Marine Guide' },
+    ],
+  },
+  {
+    id: 'package', name: 'Tour Package', icon: '📦',
+    description: 'Multi-day packages with accommodation & transport',
+    sampleRows: [
+      { name: 'Kandy Cultural Triangle 3D/2N', type: 'package', description: 'Explore Kandy, Dambulla, Polonnaruwa', price: 45000, capacity: 10, availableCount: 8, location: 'Kandy & Central Province', amenities: 'Hotel Stay,All Meals,Guide,AC Transport,Entry Tickets' },
+    ],
+  },
+  {
+    id: 'meal', name: 'Meal Package', icon: '🍽️',
+    description: 'Meal plans, menu packages, dietary options',
+    sampleRows: [
+      { name: 'Traditional Rice & Curry Lunch', type: 'meal', description: 'Authentic Sri Lankan rice and curry spread', price: 1500, capacity: 50, availableCount: 50, location: 'Kandy', amenities: 'Vegetarian Option,Gluten Free Option' },
+    ],
+  },
+];
+
+const CSV_HEADERS = ['name', 'type', 'description', 'price', 'capacity', 'availableCount', 'location', 'amenities'];
+const VALID_TYPES  = ['accommodation', 'transport', 'activity', 'meal', 'package', 'other'];
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+const generateCSV = (rows) => {
+  const header = CSV_HEADERS.join(',');
+  const body   = rows.map(r =>
+    CSV_HEADERS.map(h => {
+      const v = String(r[h] ?? '');
+      return v.includes(',') ? `"${v}"` : v;
+    }).join(',')
+  );
+  return [header, ...body].join('\n');
+};
+
+const downloadBlob = (filename, content) => {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+};
+
+const validateRows = (rows) => {
+  const valid  = [];
+  const errors = [];
+  rows.forEach((row, idx) => {
+    const rowNum = idx + 2; // 1-based, header = row 1
+    if (!row.name?.trim()) {
+      errors.push({ row: rowNum, message: '"name" is required' });
+      return;
+    }
+    if (row.type && !VALID_TYPES.includes(row.type.trim().toLowerCase())) {
+      errors.push({ row: rowNum, message: `"type" must be one of: ${VALID_TYPES.join(', ')}` });
+      return;
+    }
+    if (row.price !== undefined && row.price !== '' && isNaN(Number(row.price))) {
+      errors.push({ row: rowNum, message: '"price" must be a number' });
+      return;
+    }
+    valid.push({
+      name:           row.name?.trim(),
+      type:           row.type?.trim().toLowerCase() || 'other',
+      description:    row.description?.trim() || '',
+      price:          row.price !== '' ? Number(row.price) : 0,
+      capacity:       row.capacity !== '' ? Number(row.capacity) : 1,
+      availableCount: row.availableCount !== '' ? Number(row.availableCount) : 1,
+      location:       row.location?.trim() || '',
+      amenities:      row.amenities ? row.amenities.split(',').map(a => a.trim()).filter(Boolean) : [],
+    });
+  });
+  return { valid, errors };
+};
+
+// ── component ─────────────────────────────────────────────────────────────────
 export default function BulkDataUpload() {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadStatus, setUploadStatus] = useState(null); // null, 'validating', 'success', 'error'
-  const [showPreview, setShowPreview] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
-  const [validationResults, setValidationResults] = useState(null);
+  const navigate = useNavigate();
 
-  const templates = [
-    {
-      id: 'accommodation',
-      name: 'Hotel/Accommodation',
-      icon: '🏨',
-      description: 'Room types, pricing, availability, amenities',
-      columns: 'Room Type, Capacity, Price, Meal Plan, Availability'
-    },
-    {
-      id: 'transport',
-      name: 'Vehicle/Transport',
-      icon: '🚗',
-      description: 'Vehicle details, capacity, rental rates',
-      columns: 'Vehicle Type, Model, Capacity, Price per Day, Driver Included'
-    },
-    {
-      id: 'guide',
-      name: 'Tour Guide',
-      icon: '👨‍🏫',
-      description: 'Guide profiles, languages, specializations',
-      columns: 'Guide Name, Languages, Specialization, Daily Rate, Availability'
-    },
-    {
-      id: 'activity',
-      name: 'Activity/Experience',
-      icon: '🎭',
-      description: 'Tours, activities, packages, pricing',
-      columns: 'Activity Name, Duration, Max Participants, Price, Includes'
-    },
-    {
-      id: 'meal',
-      name: 'Meal Package',
-      icon: '🍽️',
-      description: 'Meal plans, menu options, dietary restrictions',
-      columns: 'Meal Type, Cuisine, Menu Items, Price per Person, Dietary Options'
-    }
-  ];
+  const [selectedFile,     setSelectedFile]     = useState(null);
+  const [uploadProgress,   setUploadProgress]   = useState(0);
+  const [uploadStatus,     setUploadStatus]     = useState(null);
+  const [dragActive,       setDragActive]       = useState(false);
+  const [parsedRows,       setParsedRows]       = useState([]);
+  const [validRows,        setValidRows]        = useState([]);
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [showPreview,      setShowPreview]      = useState(false);
+  const [uploadHistory,    setUploadHistory]    = useState([]);
+  const [saving,           setSaving]           = useState(false);
 
-  const [uploadHistory] = useState([
-    {
-      id: 1,
-      date: '2025-02-10 14:30',
-      filename: 'room_inventory_feb.xlsx',
-      serviceType: 'Accommodation',
-      records: 45,
-      status: 'success',
-      errors: 0
-    },
-    {
-      id: 2,
-      date: '2025-02-09 10:15',
-      filename: 'activities_kandy.csv',
-      serviceType: 'Activities',
-      records: 12,
-      status: 'success',
-      errors: 0
-    },
-    {
-      id: 3,
-      date: '2025-02-08 16:45',
-      filename: 'transport_fleet.xlsx',
-      serviceType: 'Transport',
-      records: 8,
-      status: 'failed',
-      errors: 3
-    },
-    {
-      id: 4,
-      date: '2025-02-07 09:20',
-      filename: 'meal_packages.csv',
-      serviceType: 'Meals',
-      records: 20,
-      status: 'processing',
-      errors: 0
-    }
-  ]);
+  // ── load history from localStorage on mount ──────────────────────────────
+  useEffect(() => {
+    const history = JSON.parse(localStorage.getItem('bulkUploadHistory') || '[]');
+    setUploadHistory(history);
+  }, []);
 
-  const sampleData = [
-    { roomType: 'Deluxe Room', capacity: 2, price: 15000, mealPlan: 'Breakfast', availability: 'Available' },
-    { roomType: 'Suite', capacity: 4, price: 25000, mealPlan: 'Half Board', availability: 'Available' },
-    { roomType: 'Standard Room', capacity: 2, price: 10000, mealPlan: 'Room Only', availability: 'Limited' }
-  ];
+  const getToken = () => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+    if (!userInfo?.token) { navigate('/vendor/login'); return null; }
+    return userInfo.token;
+  };
 
+  // ── drag & drop ───────────────────────────────────────────────────────────
   const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
+    e.preventDefault(); e.stopPropagation();
+    setDragActive(e.type === 'dragenter' || e.type === 'dragover');
   };
 
   const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0]);
-    }
+    if (e.dataTransfer.files?.[0]) processFile(e.dataTransfer.files[0]);
   };
 
   const handleFileSelect = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
-    }
+    if (e.target.files?.[0]) processFile(e.target.files[0]);
+  };
+
+  const processFile = (file) => {
+    const allowed = ['.csv', '.xlsx', '.xls'];
+    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (!allowed.includes(ext)) { toast.error('Only .csv, .xlsx, and .xls files are accepted'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('File size must be under 5 MB'); return; }
+    setSelectedFile(file);
+    setUploadStatus(null); setValidationErrors([]); setValidRows([]);
+    setParsedRows([]); setShowPreview(false);
   };
 
   const handleClearFile = () => {
-    setSelectedFile(null);
-    setUploadProgress(0);
-    setUploadStatus(null);
-    setShowPreview(false);
+    setSelectedFile(null); setUploadProgress(0); setUploadStatus(null);
+    setValidationErrors([]); setValidRows([]); setParsedRows([]); setShowPreview(false);
   };
 
-  const handleUpload = () => {
-    setUploadStatus('validating');
-    setUploadProgress(0);
+  // ── validate (CSV via PapaParse, Excel via SheetJS) ─────────────────────
+  const handleValidate = () => {
+    if (!selectedFile) return;
+    setUploadStatus('validating'); setUploadProgress(10);
 
-    // fake progress for now - TODO: wire up real upload
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          // Simulate validation results
-          const hasErrors = Math.random() > 0.5;
-          setUploadStatus(hasErrors ? 'error' : 'success');
-          
-          if (hasErrors) {
-            setValidationResults({
-              totalRows: 45,
-              successRows: 42,
-              errorRows: 3,
-              errors: [
-                { row: 5, column: 'Price', type: 'Invalid Format', message: 'Price must be a number', fix: 'Enter numeric value only' },
-                { row: 12, column: 'Availability', type: 'Invalid Value', message: 'Must be Available, Limited, or Unavailable', fix: 'Use one of the allowed values' },
-                { row: 28, column: 'Room Type', type: 'Missing Required', message: 'Room Type is required', fix: 'Enter a room type' }
-              ]
-            });
-          } else {
-            setValidationResults({
-              totalRows: 45,
-              successRows: 45,
-              errorRows: 0,
-              errors: []
-            });
-            setShowPreview(true);
-          }
-          return 100;
-        }
-        return prev + 10;
+    const ext = selectedFile.name.substring(selectedFile.name.lastIndexOf('.')).toLowerCase();
+
+    if (ext === '.csv') {
+      // ── CSV path ──────────────────────────────────────────────────────────
+      Papa.parse(selectedFile, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (result) => {
+          setUploadProgress(60);
+          finishValidation(result.data);
+        },
+        error: () => {
+          toast.error('Failed to parse CSV file.');
+          setUploadStatus('error'); setUploadProgress(0);
+        },
       });
-    }, 200);
-  };
-
-  const handleDownloadTemplate = (type, format) => {
-    alert(`Downloading ${type} template in ${format} format...`);
-  };
-
-  const handleConfirmSave = () => {
-    alert('Data saved to inventory successfully!');
-    handleClearFile();
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'success': return 'green';
-      case 'failed': return 'red';
-      case 'processing': return 'yellow';
-      default: return 'gray';
+    } else {
+      // ── Excel path (.xlsx / .xls) ─────────────────────────────────────────
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          setUploadProgress(40);
+          const wb    = XLSX.read(e.target.result, { type: 'array' });
+          const ws    = wb.Sheets[wb.SheetNames[0]];
+          const rows  = XLSX.utils.sheet_to_json(ws, { defval: '' });
+          setUploadProgress(60);
+          finishValidation(rows);
+        } catch {
+          toast.error('Failed to parse Excel file.');
+          setUploadStatus('error'); setUploadProgress(0);
+        }
+      };
+      reader.onerror = () => {
+        toast.error('Could not read file.');
+        setUploadStatus('error'); setUploadProgress(0);
+      };
+      reader.readAsArrayBuffer(selectedFile);
     }
   };
 
+  const finishValidation = (rows) => {
+    setParsedRows(rows);
+    const { valid, errors } = validateRows(rows);
+    setValidRows(valid); setValidationErrors(errors);
+    setUploadProgress(100);
+    if (errors.length > 0 && valid.length === 0) {
+      setUploadStatus('error');
+    } else {
+      setUploadStatus('validated'); setShowPreview(true);
+    }
+  };
+
+  // ── save to DB ────────────────────────────────────────────────────────────
+  const handleConfirmSave = async (rowsToSave = validRows) => {
+    const token = getToken();
+    if (!token) return;
+    if (!rowsToSave.length) { toast.error('No valid rows to save'); return; }
+    try {
+      setSaving(true);
+      const { data } = await axios.post(
+        '/api/inventory/bulk',
+        { items: rowsToSave },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(`${data.successRows} items saved to inventory!`);
+      const histEntry = {
+        id: Date.now(),
+        date: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+        filename: selectedFile.name,
+        serviceType: rowsToSave[0]?.type || 'Mixed',
+        records: data.successRows,
+        status: data.errorRows > 0 ? 'partial' : 'success',
+        errors: data.errorRows,
+      };
+      const updated = [histEntry, ...uploadHistory].slice(0, 20);
+      localStorage.setItem('bulkUploadHistory', JSON.stringify(updated));
+      setUploadHistory(updated);
+      setUploadStatus('success'); setShowPreview(false);
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Upload failed';
+      toast.error(msg);
+      if (err.response?.data?.errors) {
+        setValidationErrors(err.response.data.errors);
+        setUploadStatus('error');
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ── template download ─────────────────────────────────────────────────────
+  const handleDownloadTemplate = (template) => {
+    const csvContent = generateCSV(template.sampleRows);
+    downloadBlob(`${template.id}_template.csv`, csvContent);
+  };
+
+  const getStatusBadge = (status) => {
+    const map = {
+      success:    'bg-green-500/20 text-green-400',
+      partial:    'bg-yellow-500/20 text-yellow-400',
+      failed:     'bg-red-500/20 text-red-400',
+      processing: 'bg-blue-500/20 text-blue-400',
+    };
+    return map[status] || 'bg-slate-500/20 text-slate-400';
+  };
+
+  const totalRows     = parsedRows.length;
+  const errorRowCount = [...new Set(validationErrors.map(e => e.row))].length;
+
+  // ── JSX ───────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-slate-950">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        * { font-family: 'Inter', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-      `}</style>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+      <div className="max-w-6xl mx-auto">
 
-      {/* Header */}
-      <div className="bg-slate-900 border border-white/10 border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-white">Bulk Data Upload</h1>
-              <p className="text-slate-400 mt-1">Import your inventory data from Excel or CSV files</p>
-            </div>
-            <button className="px-4 py-2 text-lime-400 hover:bg-lime-50 rounded-lg font-medium flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              Upload Guide
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Upload Instructions */}
-        <div className="bg-lime-500/10 border border-lime-500/20 rounded-xl p-6 mb-8">
-          <h2 className="text-lg font-bold text-blue-900 mb-4">📋 Upload Instructions</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-semibold text-blue-900 mb-2">Step-by-Step Guide:</h3>
-              <ol className="space-y-2 text-sm text-lime-300">
-                <li>1. Download the appropriate template below</li>
-                <li>2. Fill in your data following the column format</li>
-                <li>3. Save your file (Excel .xlsx or CSV .csv)</li>
-                <li>4. Upload the file using the upload area</li>
-                <li>5. Review validation results and fix any errors</li>
-                <li>6. Confirm to add data to your inventory</li>
-              </ol>
-            </div>
-            <div>
-              <h3 className="font-semibold text-blue-900 mb-2">File Requirements:</h3>
-              <ul className="space-y-2 text-sm text-lime-300">
-                <li>✓ Accepted formats: .xlsx, .csv, .xls</li>
-                <li>✓ Maximum file size: 5MB</li>
-                <li>✓ Include column headers in first row</li>
-                <li>✓ Required fields must not be empty</li>
-                <li>✓ Dates in format: YYYY-MM-DD</li>
-                <li>✓ Prices as numbers without currency symbols</li>
-              </ul>
-            </div>
-          </div>
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white">Bulk Data Upload</h1>
+          <p className="text-slate-400 mt-1">Upload multiple inventory items at once using CSV files</p>
         </div>
 
-        {/* Template Download Section */}
-        <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6 mb-8">
-          <h2 className="text-xl font-bold text-white mb-6">📥 Download Templates</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {templates.map(template => (
-              <div key={template.id} className="border-2 border-white/10 rounded-lg p-4 hover:border-purple-300 transition-all">
-                <div className="flex items-start gap-3 mb-3">
-                  <span className="text-3xl">{template.icon}</span>
-                  <div>
-                    <h3 className="font-bold text-white">{template.name}</h3>
-                    <p className="text-sm text-slate-400 mb-2">{template.description}</p>
-                    <p className="text-xs text-slate-500 bg-slate-950 p-2 rounded">
-                      Columns: {template.columns}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2 mt-4">
-                  <button
-                    onClick={() => handleDownloadTemplate(template.name, 'Excel')}
-                    className="flex-1 px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 flex items-center justify-center gap-1"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    Excel
-                  </button>
-                  <button
-                    onClick={() => handleDownloadTemplate(template.name, 'CSV')}
-                    className="flex-1 px-3 py-2 border border-white/20 text-slate-300 text-sm rounded-lg hover:bg-slate-950 flex items-center justify-center gap-1"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    CSV
-                  </button>
-                  <button className="px-3 py-2 text-lime-400 hover:bg-lime-50 rounded-lg">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
+        {/* Instructions */}
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 mb-6">
+          <h2 className="text-white font-semibold mb-3 flex items-center gap-2">
+            <span className="text-blue-400">ℹ</span> How to Use Bulk Upload
+          </h2>
+          <ol className="list-decimal list-inside text-slate-300 text-sm space-y-1">
+            <li>Download a template CSV that matches your service type.</li>
+            <li>Fill in your data following the column headers exactly.</li>
+            <li>Upload the completed file and click <strong>Validate</strong>.</li>
+            <li>Review any errors, then click <strong>Save to Inventory</strong>.</li>
+          </ol>
+          <p className="text-slate-400 text-xs mt-3">
+            Required columns:{' '}
+            <span className="text-yellow-400 font-mono">{CSV_HEADERS.join(', ')}</span>.
+            &nbsp; Type must be one of:{' '}
+            <span className="text-yellow-400 font-mono">{VALID_TYPES.join(', ')}</span>.
+          </p>
+        </div>
+
+        {/* Template Cards */}
+        <div className="mb-6">
+          <h2 className="text-white font-semibold mb-3">Download a Template</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {TEMPLATES.map(t => (
+              <button
+                key={t.id}
+                onClick={() => handleDownloadTemplate(t)}
+                className="bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-xl p-4 text-center transition group"
+              >
+                <div className="text-3xl mb-2">{t.icon}</div>
+                <div className="text-white text-sm font-medium group-hover:text-blue-400 transition">{t.name}</div>
+                <div className="text-slate-500 text-xs mt-1">Download CSV</div>
+              </button>
             ))}
           </div>
         </div>
 
-        {/* File Upload Area */}
-        <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6 mb-8">
-          <h2 className="text-xl font-bold text-white mb-6">📤 Upload File</h2>
-          
-          <div
-            className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-              dragActive ? 'border-lime-500 bg-lime-50' : 'border-white/20 hover:border-lime-400'
-            }`}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-          >
-            {!selectedFile ? (
-              <>
-                <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                </svg>
-                <h3 className="text-lg font-semibold text-white mb-2">Drag and drop your file here</h3>
-                <p className="text-slate-400 mb-4">or</p>
-                <label className="px-6 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400 cursor-pointer inline-block">
-                  Choose File
-                  <input
-                    type="file"
-                    accept=".xlsx,.csv,.xls"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                </label>
-                <p className="text-sm text-slate-500 mt-4">Accepts: .xlsx, .csv, .xls (Max 5MB)</p>
-              </>
-            ) : (
-              <div>
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                  </svg>
-                  <div className="text-left">
-                    <p className="font-semibold text-white">{selectedFile.name}</p>
-                    <p className="text-sm text-slate-400">{(selectedFile.size / 1024).toFixed(2)} KB</p>
+        {/* Upload Area */}
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-6">
+          <h2 className="text-white font-semibold mb-4">Upload File</h2>
+
+          {!selectedFile ? (
+            <div
+              onDragEnter={handleDrag} onDragOver={handleDrag}
+              onDragLeave={handleDrag} onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-xl p-12 text-center transition cursor-pointer
+                ${dragActive ? 'border-blue-500 bg-blue-500/10' : 'border-slate-600 hover:border-blue-500/50'}`}
+              onClick={() => document.getElementById('fileInput').click()}
+            >
+              <input
+                id="fileInput"
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              <div className="text-5xl mb-3">📂</div>
+              <p className="text-white font-medium">Drag &amp; drop your file here</p>
+              <p className="text-slate-400 text-sm mt-1">or click to browse — CSV, XLSX, XLS · max 5 MB</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Selected file row */}
+              <div className="flex items-center justify-between bg-slate-700/50 rounded-lg px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">📄</span>
+                  <div>
+                    <p className="text-white font-medium text-sm">{selectedFile.name}</p>
+                    <p className="text-slate-400 text-xs">{(selectedFile.size / 1024).toFixed(1)} KB</p>
                   </div>
                 </div>
-
-                {uploadProgress > 0 && uploadProgress < 100 && (
-                  <div className="mb-4">
-                    <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                      <div
-                        className="bg-lime-500 text-slate-950 h-2 rounded-full transition-all"
-                        style={{ width: `${uploadProgress}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-sm text-slate-400">Uploading and validating... {uploadProgress}%</p>
-                  </div>
-                )}
-
-                <div className="flex gap-3 justify-center">
-                  {uploadStatus === null && (
-                    <>
-                      <button
-                        onClick={handleClearFile}
-                        className="px-4 py-2 border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950"
-                      >
-                        Clear Selection
-                      </button>
-                      <button
-                        onClick={handleUpload}
-                        className="px-6 py-2 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
-                      >
-                        Upload & Validate
-                      </button>
-                    </>
-                  )}
-                </div>
+                <button onClick={handleClearFile} className="text-slate-400 hover:text-red-400 transition text-xl">✕</button>
               </div>
-            )}
-          </div>
 
-          {/* Options */}
-          <div className="mt-6 space-y-3">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-5 h-5 text-lime-400 rounded" />
-              <span className="text-sm text-slate-300">Bulk update existing inventory (replace matching entries)</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-5 h-5 text-lime-400 rounded" />
-              <span className="text-sm text-slate-300">Set default availability for all items</span>
-            </label>
-            <button className="text-sm text-lime-400 hover:text-purple-700 font-medium">
-              ⚙️ Apply seasonal pricing rules
-            </button>
-          </div>
+              {/* Progress bar */}
+              {uploadStatus === 'validating' && (
+                <div className="w-full bg-slate-700 rounded-full h-2">
+                  <div
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              )}
+
+              {/* Action button */}
+              {(!uploadStatus || uploadStatus === 'error') && (
+                <button
+                  onClick={handleValidate}
+                  className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition"
+                >
+                  Validate File
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Validation Results - Success */}
-        {uploadStatus === 'success' && validationResults && (
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6 mb-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">Validation Successful!</h2>
-                <p className="text-slate-400">All data is valid and ready to import</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-lime-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-lime-300">{validationResults.totalRows}</p>
-                <p className="text-sm text-slate-400 mt-1">Total Rows</p>
-              </div>
-              <div className="bg-green-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-green-600">{validationResults.successRows}</p>
-                <p className="text-sm text-slate-400 mt-1">Valid Entries</p>
-              </div>
-              <div className="bg-lime-50 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-lime-400">{validationResults.successRows}</p>
-                <p className="text-sm text-slate-400 mt-1">Will be Added</p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-5 mb-6">
+            <h2 className="text-red-400 font-semibold mb-3">
+              ⚠ {validationErrors.length} Validation Issue{validationErrors.length > 1 ? 's' : ''} Found
+              {validRows.length > 0 && (
+                <span className="text-slate-400 font-normal text-sm ml-2">
+                  ({validRows.length} rows are valid and can still be saved)
+                </span>
+              )}
+            </h2>
+            <ul className="space-y-1 max-h-48 overflow-y-auto">
+              {validationErrors.map((err, i) => (
+                <li key={i} className="text-red-300 text-sm">
+                  Row {err.row}: <span className="text-red-200">{err.message}</span>
+                </li>
+              ))}
+            </ul>
+            {validRows.length > 0 && (
               <button
-                onClick={() => setShowPreview(true)}
-                className="px-6 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                onClick={() => handleConfirmSave(validRows)}
+                disabled={saving}
+                className="mt-4 px-5 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition"
               >
-                Preview Data & Confirm
+                {saving ? 'Saving…' : `Save ${validRows.length} Valid Rows Anyway`}
               </button>
-              <button
-                onClick={handleClearFile}
-                className="px-6 py-3 border border-white/20 text-slate-300 rounded-lg font-semibold hover:bg-slate-950"
-              >
-                Upload More
-              </button>
-            </div>
+            )}
           </div>
         )}
 
-        {/* Validation Results - Errors */}
-        {uploadStatus === 'error' && validationResults && (
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6 mb-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">Validation Errors Found</h2>
-                <p className="text-slate-400">Please fix the errors below and re-upload</p>
-              </div>
+        {/* Preview + Confirm */}
+        {showPreview && validRows.length > 0 && (
+          <div className="bg-slate-800/50 border border-green-500/30 rounded-xl p-5 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-green-400 font-semibold">
+                ✓ {validRows.length} of {totalRows} rows are valid
+                {errorRowCount > 0 && (
+                  <span className="text-yellow-400 text-sm font-normal ml-2">({errorRowCount} skipped)</span>
+                )}
+              </h2>
+              <button
+                onClick={() => handleConfirmSave()}
+                disabled={saving}
+                className="px-5 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition"
+              >
+                {saving ? 'Saving…' : 'Save to Inventory'}
+              </button>
             </div>
-
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-lime-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-lime-300">{validationResults.totalRows}</p>
-                <p className="text-sm text-slate-400 mt-1">Total Rows</p>
-              </div>
-              <div className="bg-green-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-green-600">{validationResults.successRows}</p>
-                <p className="text-sm text-slate-400 mt-1">Valid Entries</p>
-              </div>
-              <div className="bg-red-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-red-400">{validationResults.errorRows}</p>
-                <p className="text-sm text-slate-400 mt-1">Errors Found</p>
-              </div>
-            </div>
-
-            <h3 className="font-bold text-white mb-4">Error Details:</h3>
-            <div className="overflow-x-auto mb-6">
-              <table className="w-full">
-                <thead className="bg-slate-950">
+            <div className="overflow-x-auto max-h-64 overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-slate-700 text-slate-300">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Row</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Column</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Error Type</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Message</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Suggested Fix</th>
+                    {CSV_HEADERS.map(h => (
+                      <th key={h} className="px-3 py-2 text-left capitalize">{h}</th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {validationResults.errors.map((error, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-3 text-sm text-white">{error.row}</td>
-                      <td className="px-4 py-3 text-sm text-white">{error.column}</td>
-                      <td className="px-4 py-3">
-                        <span className="px-2 py-1 bg-red-100 text-red-300 text-xs rounded-full">
-                          {error.type}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-slate-300">{error.message}</td>
-                      <td className="px-4 py-3 text-sm text-lime-400">{error.fix}</td>
+                <tbody>
+                  {validRows.slice(0, 50).map((row, i) => (
+                    <tr key={i} className="border-t border-slate-700 hover:bg-slate-700/30">
+                      {CSV_HEADERS.map(h => (
+                        <td key={h} className="px-3 py-2 text-slate-300 truncate max-w-[160px]">
+                          {Array.isArray(row[h]) ? row[h].join(', ') : row[h] ?? ''}
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-
-            <div className="flex gap-3">
-              <button className="px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700">
-                Download Error Report (Excel)
-              </button>
-              <button
-                onClick={handleClearFile}
-                className="px-6 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
-              >
-                Fix & Re-upload
-              </button>
-              <button className="px-6 py-3 border border-green-300 text-green-600 rounded-lg font-semibold hover:bg-green-500/10">
-                Skip Errors & Upload Valid Data ({validationResults.successRows} rows)
-              </button>
-              <button
-                onClick={handleClearFile}
-                className="px-6 py-3 border border-white/20 text-slate-300 rounded-lg font-semibold hover:bg-slate-950"
-              >
-                Cancel
-              </button>
+              {validRows.length > 50 && (
+                <p className="text-slate-500 text-xs text-center mt-2">
+                  Showing first 50 of {validRows.length} rows
+                </p>
+              )}
             </div>
           </div>
         )}
 
-        {/* Data Preview */}
-        {showPreview && (
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6 mb-8">
-            <h2 className="text-xl font-bold text-white mb-6">📋 Data Preview (First 20 Rows)</h2>
-            <div className="overflow-x-auto mb-6">
-              <table className="w-full">
-                <thead className="bg-slate-950">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Room Type</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Capacity</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Price</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Meal Plan</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Availability</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {sampleData.map((row, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-3 text-sm text-white">{row.roomType}</td>
-                      <td className="px-4 py-3 text-sm text-white">{row.capacity}</td>
-                      <td className="px-4 py-3 text-sm text-white">LKR {row.price.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-sm text-white">{row.mealPlan}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          row.availability === 'Available' ? 'bg-green-100 text-green-300' : 'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {row.availability}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={handleConfirmSave}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
-              >
-                ✓ Confirm & Save to Inventory
-              </button>
-              <button className="px-6 py-3 border border-white/20 text-slate-300 rounded-lg font-semibold hover:bg-slate-950">
-                Edit Data
-              </button>
-              <button
-                onClick={() => setShowPreview(false)}
-                className="px-6 py-3 border border-white/20 text-slate-300 rounded-lg font-semibold hover:bg-slate-950"
-              >
-                Cancel
-              </button>
-            </div>
+        {/* Success Banner */}
+        {uploadStatus === 'success' && (
+          <div className="bg-green-900/20 border border-green-500/30 rounded-xl p-5 mb-6 text-center">
+            <div className="text-4xl mb-2">🎉</div>
+            <p className="text-green-400 font-semibold">Items saved to inventory successfully!</p>
+            <button
+              onClick={handleClearFile}
+              className="mt-3 px-5 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition"
+            >
+              Upload Another File
+            </button>
           </div>
         )}
 
         {/* Upload History */}
-        <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">📜 Upload History</h2>
-            <div className="flex gap-2">
-              <select className="px-4 py-2 border border-white/20 rounded-lg text-sm">
-                <option>All Service Types</option>
-                <option>Accommodation</option>
-                <option>Transport</option>
-                <option>Activities</option>
-              </select>
-              <select className="px-4 py-2 border border-white/20 rounded-lg text-sm">
-                <option>All Statuses</option>
-                <option>Success</option>
-                <option>Failed</option>
-                <option>Processing</option>
-              </select>
+        {uploadHistory.length > 0 && (
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5">
+            <h2 className="text-white font-semibold mb-4">Recent Uploads</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-slate-400 border-b border-slate-700">
+                    <th className="pb-2 text-left">Date</th>
+                    <th className="pb-2 text-left">Filename</th>
+                    <th className="pb-2 text-left">Type</th>
+                    <th className="pb-2 text-right">Records</th>
+                    <th className="pb-2 text-right">Errors</th>
+                    <th className="pb-2 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {uploadHistory.map(h => (
+                    <tr key={h.id} className="border-b border-slate-700/50 hover:bg-slate-700/20">
+                      <td className="py-2 text-slate-400">{h.date}</td>
+                      <td className="py-2 text-white font-medium">{h.filename}</td>
+                      <td className="py-2 text-slate-300 capitalize">{h.serviceType}</td>
+                      <td className="py-2 text-right text-slate-300">{h.records}</td>
+                      <td className="py-2 text-right text-slate-300">{h.errors}</td>
+                      <td className="py-2 text-right">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(h.status)}`}>
+                          {h.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
+        )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-950">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Date & Time</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">File Name</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Service Type</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Records</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Status</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Errors</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {uploadHistory.map(upload => (
-                  <tr key={upload.id}>
-                    <td className="px-4 py-3 text-sm text-white">{upload.date}</td>
-                    <td className="px-4 py-3 text-sm text-white">{upload.filename}</td>
-                    <td className="px-4 py-3 text-sm text-slate-300">{upload.serviceType}</td>
-                    <td className="px-4 py-3 text-sm text-white font-semibold">{upload.records}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-3 py-1 text-xs font-semibold rounded-full bg-${getStatusColor(upload.status)}-100 text-${getStatusColor(upload.status)}-700`}>
-                        {upload.status.charAt(0).toUpperCase() + upload.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-white">
-                      {upload.errors > 0 ? (
-                        <span className="text-red-400 font-semibold">{upload.errors}</span>
-                      ) : (
-                        <span className="text-green-600">0</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
-                        <button className="text-lime-400 hover:text-purple-700">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                          </svg>
-                        </button>
-                        {upload.errors > 0 && (
-                          <button className="text-lime-300 hover:text-blue-300">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                          </button>
-                        )}
-                        {upload.status === 'failed' && (
-                          <button className="text-green-600 hover:text-green-300">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                            </svg>
-                          </button>
-                        )}
-                        <button className="text-red-400 hover:text-red-300">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
       </div>
     </div>
   );

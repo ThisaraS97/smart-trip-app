@@ -135,7 +135,7 @@ export default function RevenueAnalytics() {
               </button>
               <button
                 onClick={() => setShowScheduleModal(true)}
-                className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg hover:bg-lime-400 flex items-center gap-2"
+                className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31] flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -157,7 +157,7 @@ export default function RevenueAnalytics() {
                   key={range}
                   onClick={() => setDateRange(range)}
                   className={`px-4 py-2 rounded-lg font-medium ${
-                    dateRange === range ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
+                    dateRange === range ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
                   }`}
                 >
                   {range === 'today' && 'Today'}
@@ -170,7 +170,7 @@ export default function RevenueAnalytics() {
               <button
                 onClick={() => setDateRange('custom')}
                 className={`px-4 py-2 rounded-lg font-medium ${
-                  dateRange === 'custom' ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
+                  dateRange === 'custom' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
                 }`}
               >
                 Custom Range
@@ -192,7 +192,7 @@ export default function RevenueAnalytics() {
                   onChange={(e) => setCustomDateTo(e.target.value)}
                   className="px-4 py-2 border border-white/20 rounded-lg"
                 />
-                <button className="px-6 py-2 bg-lime-500 text-slate-950 rounded-lg hover:bg-lime-400">
+                <button className="px-6 py-2 bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31]">
                   Apply
                 </button>
               </div>
@@ -279,7 +279,7 @@ export default function RevenueAnalytics() {
                     key={view}
                     onClick={() => setRevenueView(view)}
                     className={`px-3 py-1 text-sm rounded ${
-                      revenueView === view ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300'
+                      revenueView === view ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300'
                     }`}
                   >
                     {view.charAt(0).toUpperCase() + view.slice(1)}
@@ -318,7 +318,7 @@ export default function RevenueAnalytics() {
                 })}
               </div>
             </div>
-            <button className="mt-4 text-sm text-lime-400 hover:text-purple-700 font-medium">
+            <button className="mt-4 text-sm text-[#BFBD31] hover:text-purple-700 font-medium">
               Download Chart (PNG)
             </button>
           </div>
@@ -375,7 +375,7 @@ export default function RevenueAnalytics() {
           <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-white">Bookings Timeline</h3>
-              <button className="text-sm text-lime-400 hover:text-purple-700 font-medium">
+              <button className="text-sm text-[#BFBD31] hover:text-purple-700 font-medium">
                 Download Chart (PNG)
               </button>
             </div>
@@ -438,7 +438,7 @@ export default function RevenueAnalytics() {
                 <button
                   onClick={() => setTopServicesBy('revenue')}
                   className={`px-3 py-1 text-sm rounded ${
-                    topServicesBy === 'revenue' ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300'
+                    topServicesBy === 'revenue' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300'
                   }`}
                 >
                   Revenue
@@ -446,7 +446,7 @@ export default function RevenueAnalytics() {
                 <button
                   onClick={() => setTopServicesBy('bookings')}
                   className={`px-3 py-1 text-sm rounded ${
-                    topServicesBy === 'bookings' ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300'
+                    topServicesBy === 'bookings' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300'
                   }`}
                 >
                   Bookings
@@ -470,7 +470,7 @@ export default function RevenueAnalytics() {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className="bg-lime-500 text-slate-950 h-2 rounded-full transition-all"
+                        className="bg-[#BFBD31] text-slate-950 h-2 rounded-full transition-all"
                         style={{ width: `${width}%` }}
                       ></div>
                     </div>
@@ -478,7 +478,7 @@ export default function RevenueAnalytics() {
                 );
               })}
             </div>
-            <button className="mt-4 text-sm text-lime-400 hover:text-purple-700 font-medium">
+            <button className="mt-4 text-sm text-[#BFBD31] hover:text-purple-700 font-medium">
               View Full Ranking →
             </button>
           </div>
@@ -490,16 +490,16 @@ export default function RevenueAnalytics() {
           <div className="lg:col-span-2 bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
             <h3 className="text-lg font-bold text-white mb-6">Customer Insights</h3>
             <div className="grid grid-cols-4 gap-4 mb-6">
-              <div className="text-center p-4 bg-lime-500/10 rounded-lg">
-                <p className="text-3xl font-bold text-lime-300">{customerInsights.newCustomers}</p>
+              <div className="text-center p-4 bg-[#BFBD31]/10 rounded-lg">
+                <p className="text-3xl font-bold text-[#BFBD31]">{customerInsights.newCustomers}</p>
                 <p className="text-sm text-slate-400 mt-1">New Customers</p>
               </div>
               <div className="text-center p-4 bg-green-500/10 rounded-lg">
                 <p className="text-3xl font-bold text-green-600">{customerInsights.returningCustomers}</p>
                 <p className="text-sm text-slate-400 mt-1">Returning</p>
               </div>
-              <div className="text-center p-4 bg-lime-50 rounded-lg">
-                <p className="text-3xl font-bold text-lime-400">{customerInsights.retentionRate}%</p>
+              <div className="text-center p-4 bg-[#BFBD31]/10 rounded-lg">
+                <p className="text-3xl font-bold text-[#BFBD31]">{customerInsights.retentionRate}%</p>
                 <p className="text-sm text-slate-400 mt-1">Retention Rate</p>
               </div>
               <div className="text-center p-4 bg-orange-50 rounded-lg">
@@ -541,7 +541,7 @@ export default function RevenueAnalytics() {
                   onChange={(e) => setCompareIndustry(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-lime-500 text-slate-950 peer-focus:ring-4 peer-focus:ring-purple-300"></div>
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-[#BFBD31] text-slate-950 peer-focus:ring-4 peer-focus:ring-[#BFBD31]/30"></div>
                 <div className="absolute left-[2px] top-[2px] bg-slate-900 border border-white/10 w-5 h-5 rounded-full transition-all peer-checked:translate-x-5"></div>
               </label>
             </div>
@@ -549,7 +549,7 @@ export default function RevenueAnalytics() {
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-slate-400 mb-1">Your Revenue</p>
-                  <p className="text-2xl font-bold text-lime-400">LKR 2.8M</p>
+                  <p className="text-2xl font-bold text-[#BFBD31]">LKR 2.8M</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-400 mb-1">Industry Avg</p>
@@ -659,7 +659,7 @@ export default function RevenueAnalytics() {
                   <tr key={idx} className="hover:bg-slate-950">
                     <td className="px-4 py-3 text-sm font-medium text-white">{service.name}</td>
                     <td className="px-4 py-3">
-                      <span className="px-2 py-1 bg-lime-100 text-purple-700 text-xs font-semibold rounded">
+                      <span className="px-2 py-1 bg-[#BFBD31]/15 text-purple-700 text-xs font-semibold rounded">
                         {service.category}
                       </span>
                     </td>
@@ -675,7 +675,7 @@ export default function RevenueAnalytics() {
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-400">{service.peakDates}</td>
                     <td className="px-4 py-3">
-                      <button className="text-lime-400 hover:text-purple-700 text-sm font-medium">
+                      <button className="text-[#BFBD31] hover:text-purple-700 text-sm font-medium">
                         View Details
                       </button>
                     </td>
@@ -736,7 +736,7 @@ export default function RevenueAnalytics() {
                   alert('Report schedule saved!');
                   setShowScheduleModal(false);
                 }}
-                className="flex-1 px-4 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                className="flex-1 px-4 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
               >
                 Save Schedule
               </button>

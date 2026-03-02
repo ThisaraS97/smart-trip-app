@@ -28,6 +28,7 @@ const userSchema = mongoose.Schema(
         preferredLanguage: { type: String, default: 'English' },
         bio: { type: String, default: '' },
         photo: { type: String, default: '' },
+        travelInterests: { type: [String], default: [] },
         // Travel preferences (set on profile page)
         travelPreferences: {
             accommodationType: { type: [String], default: [] },

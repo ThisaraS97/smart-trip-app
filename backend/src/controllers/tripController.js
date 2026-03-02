@@ -1,4 +1,17 @@
+import mongoose from 'mongoose';
 import Trip from '../models/Trip.js';
+
+// Helper: find a trip by tripId string OR MongoDB _id, scoped to req.user
+const findTrip = (idParam, userId) => {
+  const isObjectId = mongoose.Types.ObjectId.isValid(idParam);
+  return Trip.findOne({
+    $or: [
+      { tripId: idParam },
+      ...(isObjectId ? [{ _id: idParam }] : []),
+    ],
+    user: userId,
+  });
+};
 
 // @desc  Get all trips for the logged-in user
 // @route GET /api/trips
@@ -6,39 +19,31 @@ import Trip from '../models/Trip.js';
 export const getUserTrips = async (req, res) => {
   try {
     const trips = await Trip.find({ user: req.user._id }).sort({ createdAt: -1 });
-    res.json(trips);
+    res.json(trips.map(t => ({ ...t.toObject(), id: t.tripId || t._id.toString() })));
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
-// @desc  Get single trip by ID (tripId string or MongoDB _id)
+// @desc  Get single trip by tripId string or MongoDB _id
 // @route GET /api/trips/:id
 // @access Private
 export const getTripById = async (req, res) => {
   try {
-    const trip = await Trip.findOne({
-      $or: [{ tripId: req.params.id }, { _id: req.params.id.match(/^[a-f\d]{24}$/i) ? req.params.id : null }],
-      user: req.user._id,
-    });
-
-    if (!trip) {
-      return res.status(404).json({ message: 'Trip not found' });
-    }
-    res.json(trip);
+    const trip = await findTrip(req.params.id, req.user._id);
+    if (!trip) return res.status(404).json({ message: 'Trip not found' });
+    res.json({ ...trip.toObject(), id: trip.tripId || trip._id.toString() });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
-// @desc  Create a new trip (booking request)
+// @desc  Create a new trip / booking request
 // @route POST /api/trips
 // @access Private
 export const createTrip = async (req, res) => {
   try {
     const tripData = { ...req.body, user: req.user._id };
-
-    // Build initial timeline
     if (!tripData.timeline || tripData.timeline.length === 0) {
       tripData.timeline = [
         { step: 'Booking Submitted', status: 'completed', date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) },
@@ -47,52 +52,81 @@ export const createTrip = async (req, res) => {
         { step: 'Trip Completed', status: 'pending', date: null },
       ];
     }
-
     const trip = await Trip.create(tripData);
-    res.status(201).json(trip);
+    res.status(201).json({ ...trip.toObject(), id: trip.tripId || trip._id.toString() });
   } catch (error) {
     res.status(400).json({ message: 'Failed to create trip', error: error.message });
   }
 };
 
-// @desc  Cancel a trip
-// @route PATCH /api/trips/:id/cancel
+// @desc  Update a pending trip (modify before vendor approval)
+// @route PUT /api/trips/:id
 // @access Private
-export const cancelTrip = async (req, res) => {
+export const updateTrip = async (req, res) => {
   try {
-    const trip = await Trip.findOne({ tripId: req.params.id, user: req.user._id });
-
-    if (!trip) {
-      return res.status(404).json({ message: 'Trip not found' });
+    const trip = await findTrip(req.params.id, req.user._id);
+    if (!trip) return res.status(404).json({ message: 'Trip not found' });
+    if (trip.status !== 'pending') {
+      return res.status(400).json({ message: 'Only pending trips can be modified' });
     }
-
-    if (trip.status === 'completed' || trip.status === 'cancelled') {
-      return res.status(400).json({ message: `Cannot cancel a ${trip.status} trip` });
-    }
-
-    trip.status = 'cancelled';
+    const allowed = ['destination', 'location', 'dates', 'travelers', 'travelerDetails', 'specialRequests', 'itinerary'];
+    allowed.forEach(field => { if (req.body[field] !== undefined) trip[field] = req.body[field]; });
     await trip.save();
-    res.json({ message: 'Trip cancelled successfully', trip });
+    res.json({ ...trip.toObject(), id: trip.tripId || trip._id.toString() });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
-// @desc  Update trip status (admin/vendor use)
+// @desc  Cancel a trip (user-initiated)
+// @route PATCH /api/trips/:id/cancel
+// @access Private
+export const cancelTrip = async (req, res) => {
+  try {
+    const trip = await findTrip(req.params.id, req.user._id);
+    if (!trip) return res.status(404).json({ message: 'Trip not found' });
+    if (trip.status === 'completed' || trip.status === 'cancelled') {
+      return res.status(400).json({ message: `Cannot cancel a ${trip.status} trip` });
+    }
+    trip.status = 'cancelled';
+    await trip.save();
+    res.json({ message: 'Trip cancelled successfully', trip: { ...trip.toObject(), id: trip.tripId || trip._id.toString() } });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc  Update trip status (vendor/admin use)
 // @route PATCH /api/trips/:id/status
 // @access Private
 export const updateTripStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const trip = await Trip.findOne({ tripId: req.params.id, user: req.user._id });
-
-    if (!trip) {
-      return res.status(404).json({ message: 'Trip not found' });
+    const valid = ['pending', 'confirmed', 'rejected', 'completed', 'cancelled'];
+    if (!valid.includes(status)) {
+      return res.status(400).json({ message: `Invalid status. Must be one of: ${valid.join(', ')}` });
     }
-
+    const isObjectId = mongoose.Types.ObjectId.isValid(req.params.id);
+    const query = {
+      $or: [{ tripId: req.params.id }, ...(isObjectId ? [{ _id: req.params.id }] : [])],
+    };
+    if (req.user.role === 'user') query.user = req.user._id;
+    const trip = await Trip.findOne(query);
+    if (!trip) return res.status(404).json({ message: 'Trip not found' });
     trip.status = status;
+    // Auto-update timeline steps
+    const now = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    if (status === 'confirmed') {
+      ['Vendor Approval', 'Confirmed'].forEach(name => {
+        const s = trip.timeline.find(x => x.step === name);
+        if (s) { s.status = 'completed'; s.date = now; }
+      });
+    } else if (status === 'completed') {
+      const s = trip.timeline.find(x => x.step === 'Trip Completed');
+      if (s) { s.status = 'completed'; s.date = now; }
+    }
     await trip.save();
-    res.json(trip);
+    res.json({ ...trip.toObject(), id: trip.tripId || trip._id.toString() });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -103,11 +137,9 @@ export const updateTripStatus = async (req, res) => {
 // @access Private
 export const deleteTrip = async (req, res) => {
   try {
-    const trip = await Trip.findOneAndDelete({ tripId: req.params.id, user: req.user._id });
-
-    if (!trip) {
-      return res.status(404).json({ message: 'Trip not found' });
-    }
+    const trip = await findTrip(req.params.id, req.user._id);
+    if (!trip) return res.status(404).json({ message: 'Trip not found' });
+    await trip.deleteOne();
     res.json({ message: 'Trip deleted' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

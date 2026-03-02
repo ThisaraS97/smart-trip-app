@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 
 export default function LandingPageAlt() {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -221,16 +221,16 @@ export default function LandingPageAlt() {
             </div>
 
             <div className="hidden lg:flex items-center gap-8 font-body">
-              <a href="#features" className="text-slate-300 hover:text-lime-400 font-medium transition-colors">Features</a>
-              <a href="#destinations" className="text-slate-300 hover:text-lime-400 font-medium transition-colors">Destinations</a>
-              <a href="#how-it-works" className="text-slate-300 hover:text-lime-400 font-medium transition-colors">How It Works</a>
-              <a href="#pricing" className="text-slate-300 hover:text-lime-400 font-medium transition-colors">Pricing</a>
+              <a href="#features" className="text-slate-300 hover:text-[#BFBD31] font-medium transition-colors">Features</a>
+              <a href="#destinations" className="text-slate-300 hover:text-[#BFBD31] font-medium transition-colors">Destinations</a>
+              <a href="#how-it-works" className="text-slate-300 hover:text-[#BFBD31] font-medium transition-colors">How It Works</a>
+              <a href="#pricing" className="text-slate-300 hover:text-[#BFBD31] font-medium transition-colors">Pricing</a>
             </div>
 
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => setShowLoginModal(true)}
-                className="px-5 py-2.5 text-slate-300 font-semibold hover:text-lime-400 transition-colors font-body"
+                className="px-5 py-2.5 text-slate-300 font-semibold hover:text-[#BFBD31] transition-colors font-body"
               >
                 Sign In
               </button>
@@ -257,9 +257,9 @@ export default function LandingPageAlt() {
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-lime-50 rounded-full border border-purple-200">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-full border border-purple-200">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                <span className="text-sm font-semibold text-lime-400 font-body">🔥 10,000+ trips planned this month</span>
+                <span className="text-sm font-semibold text-[#BFBD31] font-body">🔥 10,000+ trips planned this month</span>
               </div>
 
               <h1 className="text-6xl lg:text-7xl font-heading font-bold leading-tight">
@@ -779,10 +779,10 @@ export default function LandingPageAlt() {
               </div>
               <div className="flex items-center justify-between text-sm font-body">
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" className="w-4 h-4 text-lime-400 rounded" />
+                  <input type="checkbox" className="w-4 h-4 text-[#BFBD31] rounded" />
                   <span className="text-slate-300">Remember me</span>
                 </label>
-                <a href="#" className="text-lime-400 hover:text-purple-700 font-semibold">
+                <a href="#" className="text-[#BFBD31] hover:text-purple-700 font-semibold">
                   Forgot password?
                 </a>
               </div>
@@ -796,7 +796,7 @@ export default function LandingPageAlt() {
                     setShowLoginModal(false);
                     setShowSignupModal(true);
                   }}
-                  className="text-lime-400 hover:text-purple-700 font-bold"
+                  className="text-[#BFBD31] hover:text-purple-700 font-bold"
                 >
                   Sign up free
                 </button>
@@ -847,12 +847,12 @@ export default function LandingPageAlt() {
                 />
               </div>
               <label className="flex items-start gap-2 text-sm font-body">
-                <input type="checkbox" className="w-4 h-4 text-lime-400 rounded mt-0.5" />
+                <input type="checkbox" className="w-4 h-4 text-[#BFBD31] rounded mt-0.5" />
                 <span className="text-slate-300">
                   I agree to the{' '}
-                  <a href="#" className="text-lime-400 hover:text-purple-700 font-bold">Terms</a>
+                  <a href="#" className="text-[#BFBD31] hover:text-purple-700 font-bold">Terms</a>
                   {' '}and{' '}
-                  <a href="#" className="text-lime-400 hover:text-purple-700 font-bold">Privacy Policy</a>
+                  <a href="#" className="text-[#BFBD31] hover:text-purple-700 font-bold">Privacy Policy</a>
                 </span>
               </label>
               <button className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:shadow-xl transition-all font-body">
@@ -865,7 +865,7 @@ export default function LandingPageAlt() {
                     setShowSignupModal(false);
                     setShowLoginModal(true);
                   }}
-                  className="text-lime-400 hover:text-purple-700 font-bold"
+                  className="text-[#BFBD31] hover:text-purple-700 font-bold"
                 >
                   Sign in
                 </button>

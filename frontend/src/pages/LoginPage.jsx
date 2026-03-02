@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import loginImg from '../images/login/login.jpg';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: '', password: '', rememberMe: false });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const onChange = (e) => {
+    const { name, type, checked, value } = e.target;
+    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +26,7 @@ export default function LoginPage() {
       const { role } = res.data;
       if (role === 'admin') navigate('/admin/dashboard');
       else if (role === 'vendor') navigate('/vendor/dashboard');
-      else navigate('/my-trips');
+      else navigate('/dashboard');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed');
     } finally {
@@ -38,17 +42,17 @@ export default function LoginPage() {
       <main className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 py-10 lg:flex-row lg:px-10 lg:py-12">
         {/* Left story / hero */}
         <section className="flex-1 space-y-6">
-          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-lime-200/80">
+          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#BFBD31]/80">
             <span className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6">Sri Lanka Escapes</span>
-            <span className="hidden h-px w-16 bg-lime-200/40 lg:block" />
+            <span className="hidden h-px w-16 bg-[#BFBD31]/40 lg:block" />
             <span className="hidden lg:block text-slate-400">Curated by SmartTrip</span>
           </div>
 
-          <div className="relative overflow-hidden rounded-3xl border border-lime-100/15 bg-slate-900/70 shadow-2xl">
+          <div className="relative overflow-hidden rounded-3xl border border-[#BFBD31]/15 bg-slate-900/70 shadow-2xl">
             <div
               className="absolute inset-0"
               style={{
-                backgroundImage: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(7,16,22,0.9) 70%), url(https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80)',
+                backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(7,16,22,0.88) 70%), url(${loginImg})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }}
@@ -62,16 +66,15 @@ export default function LoginPage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-lime-200/80">SmartTrip</p>
-                    <p className="text-lg font-semibold leading-none">Adventure</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-[#BFBD31]/80">SmartTrip</p>
                   </div>
                 </Link>
-                <div className="hidden items-center gap-3 text-[11px] text-lime-100/90 sm:flex">
-                  <span className="h-px w-10 bg-lime-100/40" />
+                <div className="hidden items-center gap-3 text-[11px] text-[#BFBD31]/80 sm:flex">
+                  <span className="h-px w-10 bg-[#BFBD31]/40" />
                   <span>Wild routes</span>
-                  <span className="h-px w-10 bg-lime-100/40" />
+                  <span className="h-px w-10 bg-[#BFBD31]/40" />
                   <span>Waterfalls</span>
-                  <span className="h-px w-10 bg-lime-100/40" />
+                  <span className="h-px w-10 bg-[#BFBD31]/40" />
                   <span>Sunrise peaks</span>
                 </div>
               </div>
@@ -88,7 +91,7 @@ export default function LoginPage() {
               <div className="grid gap-3 sm:grid-cols-3">
                 {[{ label: 'Curated routes', value: '120+' }, { label: 'Travel partners', value: '80+' }, { label: 'Traveler trust', value: '10k+' }].map((item) => (
                   <div key={item.label} className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6">
-                    <p className="text-sm uppercase tracking-[0.12em] text-lime-100/80">{item.label}</p>
+                    <p className="text-sm uppercase tracking-[0.12em] text-[#BFBD31]/80">{item.label}</p>
                     <p className="text-2xl font-semibold text-white">{item.value}</p>
                   </div>
                 ))}
@@ -99,7 +102,7 @@ export default function LoginPage() {
           <div className="grid gap-3 sm:grid-cols-3">
             {[{ icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', title: 'Tailored itineraries', copy: 'Design routes that match your pace, budget, and mood.' }, { icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', title: 'Live status', copy: 'Track bookings, transfers, and guides in real time.' }, { icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', title: 'Secure payments', copy: 'Transparent pricing, receipts, and vendor protection.' }].map((item) => (
               <div key={item.title} className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-lime-300/15 text-lime-100">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#BFBD31]/15 text-[#BFBD31]/80">
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon} />
                   </svg>
@@ -115,14 +118,14 @@ export default function LoginPage() {
 
         {/* Right form */}
         <section className="flex w-full max-w-xl flex-1 items-center">
-          <div className="w-full rounded-3xl border border-lime-100/15 bg-slate-900/70 p-6 shadow-2xl backdrop-blur sm:p-8 lg:p-9">
+          <div className="w-full rounded-3xl border border-[#BFBD31]/15 bg-slate-900/70 p-6 shadow-2xl backdrop-blur sm:p-8 lg:p-9">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-lime-200/80">Sign in</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-[#BFBD31]/80">Sign in</p>
                 <h2 className="text-2xl font-semibold text-white sm:text-3xl">Welcome back, explorer</h2>
                 <p className="text-sm text-slate-400">Access your saved trips, vendors, and live bookings.</p>
               </div>
-              <Link to="/" className="hidden text-xs font-semibold text-lime-100 hover:text-lime-50 sm:inline-flex">
+              <Link to="/" className="hidden text-xs font-semibold text-[#BFBD31]/80 hover:text-[#BFBD31] sm:inline-flex">
                 Home
               </Link>
             </div>
@@ -144,7 +147,7 @@ export default function LoginPage() {
                     value={formData.email}
                     onChange={onChange}
                     placeholder="you@example.com"
-                    className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 pl-10 pr-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none transition"
                   />
                 </div>
               </div>
@@ -165,12 +168,12 @@ export default function LoginPage() {
                     value={formData.password}
                     onChange={onChange}
                     placeholder="Enter your password"
-                    className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 pl-10 pr-10 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none transition"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 transition hover:text-lime-100"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 transition hover:text-[#BFBD31]/80"
                   >
                     {showPassword ? (
                       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,12 +189,27 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-sm text-slate-300">
-                <div className="flex items-center gap-2 text-xs text-slate-400">
-                  <div className="h-1 w-1 rounded-full bg-lime-200" />
-                  <span>Encrypted session</span>
-                </div>
-                <Link to="/forgot-password" className="font-semibold text-lime-100 hover:text-lime-50">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      name="rememberMe"
+                      checked={formData.rememberMe}
+                      onChange={onChange}
+                      className="sr-only"
+                    />
+                    <div className={`h-4 w-4 rounded border transition ${formData.rememberMe ? 'bg-[#BFBD31] border-[#BFBD31]' : 'border-white/20 bg-white/5'}`}>
+                      {formData.rememberMe && (
+                        <svg className="h-4 w-4 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-xs text-slate-400">Remember me</span>
+                </label>
+                <Link to="/forgot-password" className="text-xs font-semibold text-[#BFBD31]/80 hover:text-[#BFBD31]">
                   Forgot password?
                 </Link>
               </div>
@@ -199,7 +217,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-lime-300 to-emerald-400 px-4 py-3 text-sm font-semibold text-slate-900 transition focus:outline-none focus:ring-2 focus:ring-lime-200 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-[#BFBD31] px-4 py-3 text-sm font-semibold text-slate-900 transition focus:outline-none focus:ring-2 focus:ring-[#BFBD31]/50 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <span className="absolute inset-0 opacity-0 transition duration-300 group-hover:opacity-10" style={{ backgroundImage: 'linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%)', transform: 'translateX(-100%)' }} />
                 {loading ? (
@@ -221,21 +239,35 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6">
-                <p className="text-xs uppercase tracking-[0.16em] text-lime-100/80">Vendors</p>
-                <Link to="/vendor-login" className="flex items-center gap-2 font-semibold text-lime-100 hover:text-lime-50">
-                  Login as a vendor
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
+            {/* Google Login */}
+            <div className="mt-5">
+              <div className="relative flex items-center gap-3 py-1">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-xs text-slate-500">or continue with</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
+              <button
+                type="button"
+                className="mt-3 flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#BFBD31]/50"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Sign in with Google
+              </button>
+            </div>
+
+            {/* Bottom links */}
+            <div className="mt-6 flex flex-col gap-3">
+              <p className="text-center text-sm text-slate-400">
+                Don't have an account?{' '}
+                <Link to="/register" className="font-semibold text-[#BFBD31] hover:text-[#BFBD31]/80">
+                  Sign Up
                 </Link>
-              </div>
-              <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6">
-                <p className="text-xs uppercase tracking-[0.16em] text-lime-100/80">New here?</p>
-                <Link to="/register" className="font-semibold text-lime-100 hover:text-lime-50">Create your account</Link>
-                <p className="text-xs text-slate-400">Save favorite trails, boats, and boutique stays.</p>
-              </div>
+              </p>
             </div>
           </div>
         </section>

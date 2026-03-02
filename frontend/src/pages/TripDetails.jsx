@@ -94,7 +94,7 @@ export default function TripDetails() {
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-slate-950">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lime-500 mx-auto mb-4"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#BFBD31] mx-auto mb-4"></div>
         <p className="text-slate-400">Loading trip details...</p>
       </div>
     </div>
@@ -104,7 +104,7 @@ export default function TripDetails() {
     <div className="flex items-center justify-center min-h-screen bg-slate-950">
       <div className="text-center">
         <p className="text-red-400 mb-4">{error}</p>
-        <button onClick={() => navigate('/my-trips')} className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg">
+        <button onClick={() => navigate('/my-trips')} className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg">
           Back to My Trips
         </button>
       </div>
@@ -150,7 +150,7 @@ export default function TripDetails() {
             <div className="flex items-center gap-3">
               <button 
                 onClick={handleDownloadPDF}
-                className="px-4 py-2 text-sm font-medium text-lime-400 hover:bg-lime-50 rounded-lg flex items-center gap-2"
+                className="px-4 py-2 text-sm font-medium text-[#BFBD31] hover:bg-[#BFBD31]/10 rounded-lg flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -205,7 +205,7 @@ export default function TripDetails() {
             </div>
             <div className="text-right">
               <p className="text-sm text-slate-400 mb-1">Total Cost</p>
-              <p className="text-3xl font-bold text-lime-400">LKR {tripData.totalCost.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-[#BFBD31]">LKR {tripData.totalCost.toLocaleString()}</p>
               <p className="text-sm text-green-600 font-medium mt-1">✓ Paid</p>
             </div>
           </div>
@@ -226,7 +226,7 @@ export default function TripDetails() {
                   <div key={index} className="timeline-line flex items-start gap-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                       item.status === 'completed' ? 'bg-green-500' :
-                      item.status === 'current' ? 'bg-lime-500 text-slate-950 animate-pulse' :
+                      item.status === 'current' ? 'bg-[#BFBD31] text-slate-950 animate-pulse' :
                       'bg-gray-300'
                     }`}>
                       {item.status === 'completed' ? (
@@ -249,7 +249,7 @@ export default function TripDetails() {
                         <p className="text-sm text-slate-400">{item.date}</p>
                       )}
                       {item.status === 'current' && (
-                        <p className="text-sm text-lime-400 font-medium mt-1">In Progress</p>
+                        <p className="text-sm text-[#BFBD31] font-medium mt-1">In Progress</p>
                       )}
                     </div>
                   </div>
@@ -269,7 +269,7 @@ export default function TripDetails() {
                     onClick={() => setSelectedDay(day.day)}
                     className={`px-6 py-3 rounded-lg font-semibold whitespace-nowrap transition-all ${
                       selectedDay === day.day
-                        ? 'bg-lime-500 text-slate-950'
+                        ? 'bg-[#BFBD31] text-slate-950'
                         : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
                     }`}
                   >
@@ -289,8 +289,8 @@ export default function TripDetails() {
                   </div>
 
                   {day.sections.map((section, sectionIdx) => (
-                    <div key={sectionIdx} className="border-l-4 border-lime-500 pl-6">
-                      <h4 className="text-lg font-bold text-lime-400 mb-4">{section.time}</h4>
+                    <div key={sectionIdx} className="border-l-4 border-[#BFBD31] pl-6">
+                      <h4 className="text-lg font-bold text-[#BFBD31] mb-4">{section.time}</h4>
                       <div className="space-y-4">
                         {section.items.map((item, itemIdx) => (
                           <div key={itemIdx} className="bg-slate-950 rounded-lg p-4">
@@ -298,14 +298,14 @@ export default function TripDetails() {
                               <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                                 item.type === 'hotel' ? 'bg-blue-100' :
                                 item.type === 'transport' ? 'bg-green-100' :
-                                item.type === 'activity' ? 'bg-lime-100' :
+                                item.type === 'activity' ? 'bg-[#BFBD31]/15' :
                                 item.type === 'meal' ? 'bg-orange-100' :
                                 'bg-yellow-100'
                               }`}>
                                 <svg className={`w-5 h-5 ${
-                                  item.type === 'hotel' ? 'text-lime-300' :
+                                  item.type === 'hotel' ? 'text-[#BFBD31]' :
                                   item.type === 'transport' ? 'text-green-600' :
-                                  item.type === 'activity' ? 'text-lime-400' :
+                                  item.type === 'activity' ? 'text-[#BFBD31]' :
                                   item.type === 'meal' ? 'text-orange-600' :
                                   'text-yellow-600'
                                 }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -338,7 +338,7 @@ export default function TripDetails() {
                                       </span>
                                     </div>
                                     <div className="flex gap-2 pt-2">
-                                      <button className="px-3 py-1.5 bg-lime-500 text-slate-950 text-xs rounded-lg hover:bg-lime-400">
+                                      <button className="px-3 py-1.5 bg-[#BFBD31] text-slate-950 text-xs rounded-lg hover:bg-[#BFBD31]">
                                         View on Map
                                       </button>
                                       <button className="px-3 py-1.5 border border-white/20 text-slate-300 text-xs rounded-lg hover:bg-slate-950">
@@ -370,7 +370,7 @@ export default function TripDetails() {
                                         Code: {item.details.confirmationCode}
                                       </span>
                                     </div>
-                                    <button className="px-3 py-1.5 bg-lime-500 text-slate-950 text-xs rounded-lg hover:bg-lime-400">
+                                    <button className="px-3 py-1.5 bg-[#BFBD31] text-slate-950 text-xs rounded-lg hover:bg-[#BFBD31]">
                                       View Route
                                     </button>
                                   </div>
@@ -401,7 +401,7 @@ export default function TripDetails() {
                                         ✓ Confirmed
                                       </span>
                                     </div>
-                                    <button className="px-3 py-1.5 bg-lime-500 text-slate-950 text-xs rounded-lg hover:bg-lime-400">
+                                    <button className="px-3 py-1.5 bg-[#BFBD31] text-slate-950 text-xs rounded-lg hover:bg-[#BFBD31]">
                                       View Activity Details
                                     </button>
                                   </div>
@@ -442,7 +442,7 @@ export default function TripDetails() {
               <h2 className="text-xl font-bold text-slate-200 mb-4">Trip Route & Locations</h2>
               <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl h-96 flex items-center justify-center mb-4">
                 <div className="text-center">
-                  <svg className="w-16 h-16 text-lime-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-16 h-16 text-[#BFBD31] mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
                   </svg>
                   <p className="text-slate-300 font-medium">Interactive Map</p>
@@ -450,7 +450,7 @@ export default function TripDetails() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <button className="flex-1 px-4 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400">
+                <button className="flex-1 px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31]">
                   Get Directions to Hotel
                 </button>
                 <button className="px-4 py-2 border border-white/20 text-slate-300 rounded-lg font-medium hover:bg-slate-950">
@@ -468,7 +468,7 @@ export default function TripDetails() {
               <div className="space-y-2">
                 <button 
                   onClick={handleDownloadPDF}
-                  className="w-full px-4 py-3 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400 flex items-center justify-center gap-2"
+                  className="w-full px-4 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31] flex items-center justify-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -499,7 +499,7 @@ export default function TripDetails() {
                       </svg>
                       Start Expense Tracking
                     </button>
-                    <button className="w-full px-4 py-3 border border-blue-300 text-lime-300 rounded-lg font-medium hover:bg-lime-500/10 flex items-center justify-center gap-2">
+                    <button className="w-full px-4 py-3 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg font-medium hover:bg-[#d4d235]/10 flex items-center justify-center gap-2">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                       </svg>
@@ -581,7 +581,7 @@ export default function TripDetails() {
                 </div>
                 <div className="flex justify-between pt-2 border-t-2 border-white/20">
                   <span className="font-bold text-white">Total</span>
-                  <span className="font-bold text-lime-400 text-lg">LKR {tripData.costBreakdown.total.toLocaleString()}</span>
+                  <span className="font-bold text-[#BFBD31] text-lg">LKR {tripData.costBreakdown.total.toLocaleString()}</span>
                 </div>
               </div>
               <button className="w-full px-4 py-2 border border-white/20 text-slate-300 rounded-lg font-medium hover:bg-slate-950 text-sm">
@@ -658,9 +658,9 @@ export default function TripDetails() {
             <div className="space-y-3">
               <button 
                 onClick={() => handleShare('Email')}
-                className="w-full px-4 py-3 border-2 border-white/10 rounded-lg hover:border-purple-300 hover:bg-lime-50 flex items-center gap-3 transition-all"
+                className="w-full px-4 py-3 border-2 border-white/10 rounded-lg hover:border-[#BFBD31]/40 hover:bg-[#BFBD31]/10 flex items-center gap-3 transition-all"
               >
-                <svg className="w-6 h-6 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                 </svg>
                 <span className="font-medium text-slate-300">Share via Email</span>
@@ -676,9 +676,9 @@ export default function TripDetails() {
               </button>
               <button 
                 onClick={() => handleShare('Link')}
-                className="w-full px-4 py-3 border-2 border-white/10 rounded-lg hover:border-blue-300 hover:bg-lime-500/10 flex items-center gap-3 transition-all"
+                className="w-full px-4 py-3 border-2 border-white/10 rounded-lg hover:border-[#BFBD31]/40 hover:bg-[#d4d235]/10 flex items-center gap-3 transition-all"
               >
-                <svg className="w-6 h-6 text-lime-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                 </svg>
                 <span className="font-medium text-slate-300">Copy Link</span>

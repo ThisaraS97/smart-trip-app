@@ -21,7 +21,9 @@ import BulkDataUpload from './pages/BulkDataUpload.jsx';
 import ExpenseTracking from './pages/ExpenseTracking.jsx';
 import HelpSupport from './pages/HelpSupport.jsx';
 import ItineraryCustomization from './pages/ItineraryCustomization.jsx';
+import TripPlanner from './pages/TripPlanner.jsx';
 import MyTrips from './pages/MyTrips.jsx';
+import UserDashboard from './pages/UserDashboard.jsx';
 import NotificationsPage from './pages/NotificationsPage.jsx';
 import PricingManagement from './pages/PricingManagement.jsx';
 import ReservationManager from './pages/ReservationManager.jsx';
@@ -53,10 +55,12 @@ function App() {
         <Route path="/vendor-register" element={<VendorRegistration />} />
 
         {/* User pages */}
+        <Route path="/dashboard" element={<UserDashboard />} />
         <Route path="/my-trips" element={<MyTrips />} />
         <Route path="/saved-trips" element={<SavedTrips />} />
         <Route path="/trip/:id" element={<TripDetails />} />
         <Route path="/itinerary" element={<ItineraryCustomization />} />
+        <Route path="/plan-trip" element={<TripPlanner />} />
         <Route path="/booking-review" element={<BookingReview />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/notifications" element={<NotificationsPage />} />

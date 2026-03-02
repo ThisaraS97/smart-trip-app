@@ -349,14 +349,14 @@ export default function PricingManagement() {
                   onChange={(e) => setSmartPricingEnabled(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-14 h-8 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-slate-900 border border-white/10 after:border-white/20 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-lime-500 text-slate-950"></div>
+                <div className="w-14 h-8 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#BFBD31]/30 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-slate-900 border border-white/10 after:border-white/20 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#BFBD31] text-slate-950"></div>
               </label>
             </div>
             {smartPricingEnabled && (
               <div className="space-y-3">
-                <div className="p-4 bg-lime-500/10 border border-lime-500/20 rounded-lg">
+                <div className="p-4 bg-[#BFBD31]/10 border border-[#BFBD31]/20 rounded-lg">
                   <p className="text-sm font-semibold text-blue-900 mb-1">AI Recommendation</p>
-                  <p className="text-sm text-lime-300">Increase Deluxe Room price by 8% based on demand forecast</p>
+                  <p className="text-sm text-[#BFBD31]">Increase Deluxe Room price by 8% based on demand forecast</p>
                 </div>
                 <div className="p-4 bg-green-500/10 border border-green-200 rounded-lg">
                   <p className="text-sm font-semibold text-green-900 mb-1">Optimization Tip</p>
@@ -469,7 +469,7 @@ export default function PricingManagement() {
 
         {/* Bulk Actions */}
         {selectedServices.length > 0 && (
-          <div className="bg-lime-50 border border-purple-200 rounded-xl p-4 mb-6">
+          <div className="bg-[#BFBD31]/10 border border-[#BFBD31]/30 rounded-xl p-4 mb-6">
             <div className="flex items-center justify-between">
               <span className="text-purple-900 font-semibold">
                 {selectedServices.length} service(s) selected
@@ -477,7 +477,7 @@ export default function PricingManagement() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowDiscountModal(true)}
-                  className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg hover:bg-lime-400"
+                  className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31]"
                 >
                   Apply Discount
                 </button>
@@ -514,7 +514,7 @@ export default function PricingManagement() {
                     type="checkbox"
                     checked={selectedServices.length === filteredServices.length && filteredServices.length > 0}
                     onChange={handleSelectAll}
-                    className="w-5 h-5 text-lime-400 rounded"
+                    className="w-5 h-5 text-[#BFBD31] rounded"
                   />
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Service Name</th>
@@ -534,7 +534,7 @@ export default function PricingManagement() {
                       type="checkbox"
                       checked={selectedServices.includes(service.id)}
                       onChange={() => handleSelectService(service.id)}
-                      className="w-5 h-5 text-lime-400 rounded"
+                      className="w-5 h-5 text-[#BFBD31] rounded"
                     />
                   </td>
                   <td className="px-4 py-3">
@@ -542,7 +542,7 @@ export default function PricingManagement() {
                     <p className="text-xs text-slate-500">{service.id}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="px-2 py-1 bg-lime-100 text-purple-700 text-xs font-semibold rounded">
+                    <span className="px-2 py-1 bg-[#BFBD31]/15 text-purple-700 text-xs font-semibold rounded">
                       {service.category}
                     </span>
                   </td>
@@ -577,7 +577,7 @@ export default function PricingManagement() {
                           LKR {service.currentPrice.toLocaleString()}
                         </p>
                         {service.seasonalAdjustment !== 0 && (
-                          <p className="text-xs text-lime-300">
+                          <p className="text-xs text-[#BFBD31]">
                             +{service.seasonalAdjustment}% seasonal
                           </p>
                         )}
@@ -600,7 +600,7 @@ export default function PricingManagement() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEditPrice(service)}
-                        className="text-lime-400 hover:text-purple-700"
+                        className="text-[#BFBD31] hover:text-purple-700"
                         title="Edit Price"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -609,7 +609,7 @@ export default function PricingManagement() {
                       </button>
                       <button
                         onClick={() => setShowPriceHistoryModal(service)}
-                        className="text-lime-300 hover:text-blue-300"
+                        className="text-[#BFBD31] hover:text-blue-300"
                         title="Price History"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -643,7 +643,7 @@ export default function PricingManagement() {
                       type="radio"
                       checked={discountForm.type === 'percentage'}
                       onChange={() => setDiscountForm({ ...discountForm, type: 'percentage' })}
-                      className="w-5 h-5 text-lime-400"
+                      className="w-5 h-5 text-[#BFBD31]"
                     />
                     <span className="text-sm text-slate-300">Percentage (%)</span>
                   </label>
@@ -652,7 +652,7 @@ export default function PricingManagement() {
                       type="radio"
                       checked={discountForm.type === 'fixed'}
                       onChange={() => setDiscountForm({ ...discountForm, type: 'fixed' })}
-                      className="w-5 h-5 text-lime-400"
+                      className="w-5 h-5 text-[#BFBD31]"
                     />
                     <span className="text-sm text-slate-300">Fixed Amount (LKR)</span>
                   </label>
@@ -707,7 +707,7 @@ export default function PricingManagement() {
               </button>
               <button
                 onClick={handleApplyDiscount}
-                className="flex-1 px-4 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                className="flex-1 px-4 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
               >
                 Apply Discount
               </button>
@@ -820,7 +820,7 @@ export default function PricingManagement() {
               </button>
               <button
                 onClick={() => setShowPriceHistoryModal(null)}
-                className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg hover:bg-lime-400"
+                className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31]"
               >
                 Close
               </button>

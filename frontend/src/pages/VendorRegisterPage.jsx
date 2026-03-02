@@ -154,7 +154,7 @@ export default function VendorRegistration() {
                 <p className="text-xs text-slate-400">Partner Registration</p>
               </div>
             </div>
-            <a href="#" className="text-sm text-lime-400 hover:text-purple-700 font-medium">
+            <a href="#" className="text-sm text-[#BFBD31] hover:text-purple-700 font-medium">
               Already have an account? Login
             </a>
           </div>
@@ -170,7 +170,7 @@ export default function VendorRegistration() {
                 <div className="flex flex-col items-center flex-1 py-4">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${ 
                     currentStep > step.id ? 'bg-green-500' :
-                    currentStep === step.id ? 'bg-lime-500 text-slate-950' :
+                    currentStep === step.id ? 'bg-[#BFBD31] text-slate-950' :
                     'bg-gray-300'
                   }`}>
                     {currentStep > step.id ? (
@@ -210,34 +210,34 @@ export default function VendorRegistration() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-semibold text-slate-300 mb-2">Business Name <span className="text-red-500">*</span></label>
-                    <input type="text" value={formData.businessName} onChange={(e) => handleInputChange('businessName', e.target.value)} placeholder="Enter your business name" className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                    <input type="text" value={formData.businessName} onChange={(e) => handleInputChange('businessName', e.target.value)} placeholder="Enter your business name" className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-2">Business Type <span className="text-red-500">*</span></label>
-                    <select value={formData.businessType} onChange={(e) => handleInputChange('businessType', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500">
+                    <select value={formData.businessType} onChange={(e) => handleInputChange('businessType', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]">
                       <option value="">Select business type</option>
                       {businessTypes.map(type => <option key={type} value={type}>{type}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-2">Year Established</label>
-                    <input type="number" value={formData.yearEstablished} onChange={(e) => handleInputChange('yearEstablished', e.target.value)} placeholder="e.g., 2015" className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                    <input type="number" value={formData.yearEstablished} onChange={(e) => handleInputChange('yearEstablished', e.target.value)} placeholder="e.g., 2015" className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-2">Registration Number</label>
-                    <input type="text" value={formData.registrationNumber} onChange={(e) => handleInputChange('registrationNumber', e.target.value)} placeholder="Enter registration number" className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                    <input type="text" value={formData.registrationNumber} onChange={(e) => handleInputChange('registrationNumber', e.target.value)} placeholder="Enter registration number" className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-2">Tax ID Number</label>
-                    <input type="text" value={formData.taxId} onChange={(e) => handleInputChange('taxId', e.target.value)} placeholder="Enter TIN" className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                    <input type="text" value={formData.taxId} onChange={(e) => handleInputChange('taxId', e.target.value)} placeholder="Enter TIN" className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-2">Business Email <span className="text-red-500">*</span></label>
-                    <input type="email" value={formData.businessEmail} onChange={(e) => handleInputChange('businessEmail', e.target.value)} placeholder="business@example.com" className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                    <input type="email" value={formData.businessEmail} onChange={(e) => handleInputChange('businessEmail', e.target.value)} placeholder="business@example.com" className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-2">Business Phone <span className="text-red-500">*</span></label>
-                    <input type="tel" value={formData.businessPhone} onChange={(e) => handleInputChange('businessPhone', e.target.value)} placeholder="+94 XX XXX XXXX" className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                    <input type="tel" value={formData.businessPhone} onChange={(e) => handleInputChange('businessPhone', e.target.value)} placeholder="+94 XX XXX XXXX" className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                   </div>
                 </div>
               </div>
@@ -252,19 +252,19 @@ export default function VendorRegistration() {
               <div className="space-y-4 mb-8">
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">Address Line 1 <span className="text-red-500">*</span></label>
-                  <input type="text" value={formData.addressLine1} onChange={(e) => handleInputChange('addressLine1', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                  <input type="text" value={formData.addressLine1} onChange={(e) => handleInputChange('addressLine1', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-2">City <span className="text-red-500">*</span></label>
-                    <select value={formData.city} onChange={(e) => handleInputChange('city', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500">
+                    <select value={formData.city} onChange={(e) => handleInputChange('city', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]">
                       <option value="">Select city</option>
                       {cities.map(city => <option key={city} value={city}>{city}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-2">Province <span className="text-red-500">*</span></label>
-                    <select value={formData.province} onChange={(e) => handleInputChange('province', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500">
+                    <select value={formData.province} onChange={(e) => handleInputChange('province', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]">
                       <option value="">Select province</option>
                       {provinces.map(prov => <option key={prov} value={prov}>{prov}</option>)}
                     </select>
@@ -276,15 +276,15 @@ export default function VendorRegistration() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">Full Name <span className="text-red-500">*</span></label>
-                  <input type="text" value={formData.contactName} onChange={(e) => handleInputChange('contactName', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                  <input type="text" value={formData.contactName} onChange={(e) => handleInputChange('contactName', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">Contact Phone <span className="text-red-500">*</span></label>
-                  <input type="tel" value={formData.contactPhone} onChange={(e) => handleInputChange('contactPhone', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                  <input type="tel" value={formData.contactPhone} onChange={(e) => handleInputChange('contactPhone', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">Contact Email <span className="text-red-500">*</span></label>
-                  <input type="email" value={formData.contactEmail} onChange={(e) => handleInputChange('contactEmail', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                  <input type="email" value={formData.contactEmail} onChange={(e) => handleInputChange('contactEmail', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                 </div>
               </div>
             </div>
@@ -296,8 +296,8 @@ export default function VendorRegistration() {
               <h2 className="text-2xl font-bold text-white mb-6">Services Offered</h2>
               <div className="space-y-3">
                 {servicesOptions.map(service => (
-                  <label key={service} className="flex items-start gap-3 p-4 border-2 border-white/10 rounded-lg hover:border-purple-300 cursor-pointer transition-all">
-                    <input type="checkbox" checked={formData.services.includes(service)} onChange={() => handleServiceToggle(service)} className="w-5 h-5 text-lime-400 rounded mt-0.5" />
+                  <label key={service} className="flex items-start gap-3 p-4 border-2 border-white/10 rounded-lg hover:border-[#BFBD31]/40 cursor-pointer transition-all">
+                    <input type="checkbox" checked={formData.services.includes(service)} onChange={() => handleServiceToggle(service)} className="w-5 h-5 text-[#BFBD31] rounded mt-0.5" />
                     <span className="text-slate-300 font-medium">{service}</span>
                   </label>
                 ))}
@@ -337,18 +337,18 @@ export default function VendorRegistration() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">Bank Name <span className="text-red-500">*</span></label>
-                  <select value={formData.bankName} onChange={(e) => handleInputChange('bankName', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500">
+                  <select value={formData.bankName} onChange={(e) => handleInputChange('bankName', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]">
                     <option value="">Select bank</option>
                     {banks.map(bank => <option key={bank} value={bank}>{bank}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">Account Name <span className="text-red-500">*</span></label>
-                  <input type="text" value={formData.accountName} onChange={(e) => handleInputChange('accountName', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                  <input type="text" value={formData.accountName} onChange={(e) => handleInputChange('accountName', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">Account Number <span className="text-red-500">*</span></label>
-                  <input type="text" value={formData.accountNumber} onChange={(e) => handleInputChange('accountNumber', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                  <input type="text" value={formData.accountNumber} onChange={(e) => handleInputChange('accountNumber', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                 </div>
               </div>
             </div>
@@ -361,33 +361,33 @@ export default function VendorRegistration() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">Username <span className="text-red-500">*</span></label>
-                  <input type="text" value={formData.username} onChange={(e) => handleInputChange('username', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                  <input type="text" value={formData.username} onChange={(e) => handleInputChange('username', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">Email <span className="text-red-500">*</span></label>
-                  <input type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                  <input type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">Password <span className="text-red-500">*</span></label>
-                  <input type="password" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                  <input type="password" value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">Confirm Password <span className="text-red-500">*</span></label>
-                  <input type="password" value={formData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500" />
+                  <input type="password" value={formData.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31]" />
                 </div>
               </div>
 
               <div className="space-y-4 pt-6 border-t border-white/10">
                 <label className="flex items-start gap-3 cursor-pointer">
-                  <input type="checkbox" checked={formData.agreeToTerms} onChange={(e) => handleInputChange('agreeToTerms', e.target.checked)} className="w-5 h-5 text-lime-400 rounded" />
+                  <input type="checkbox" checked={formData.agreeToTerms} onChange={(e) => handleInputChange('agreeToTerms', e.target.checked)} className="w-5 h-5 text-[#BFBD31] rounded" />
                   <span className="text-sm text-slate-300">I agree to the Terms of Service <span className="text-red-500">*</span></span>
                 </label>
                 <label className="flex items-start gap-3 cursor-pointer">
-                  <input type="checkbox" checked={formData.agreeToVendorAgreement} onChange={(e) => handleInputChange('agreeToVendorAgreement', e.target.checked)} className="w-5 h-5 text-lime-400 rounded" />
+                  <input type="checkbox" checked={formData.agreeToVendorAgreement} onChange={(e) => handleInputChange('agreeToVendorAgreement', e.target.checked)} className="w-5 h-5 text-[#BFBD31] rounded" />
                   <span className="text-sm text-slate-300">I agree to the Vendor Agreement <span className="text-red-500">*</span></span>
                 </label>
                 <label className="flex items-start gap-3 cursor-pointer">
-                  <input type="checkbox" checked={formData.consentToDataProcessing} onChange={(e) => handleInputChange('consentToDataProcessing', e.target.checked)} className="w-5 h-5 text-lime-400 rounded" />
+                  <input type="checkbox" checked={formData.consentToDataProcessing} onChange={(e) => handleInputChange('consentToDataProcessing', e.target.checked)} className="w-5 h-5 text-[#BFBD31] rounded" />
                   <span className="text-sm text-slate-300">I consent to data processing <span className="text-red-500">*</span></span>
                 </label>
               </div>
@@ -403,7 +403,7 @@ export default function VendorRegistration() {
             </div>
             <div className="flex gap-3">
               {currentStep < 6 ? (
-                <button onClick={handleNext} className="px-6 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400">Next Step</button>
+                <button onClick={handleNext} className="px-6 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]">Next Step</button>
               ) : (
                 <button onClick={handleSubmit} className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700">Submit for Approval</button>
               )}
@@ -417,11 +417,11 @@ export default function VendorRegistration() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 border border-white/10 rounded-2xl max-w-md w-full p-8 text-center">
             <h2 className="text-2xl font-bold text-white mb-2">Application Submitted!</h2>
-            <div className="bg-lime-50 border border-purple-200 rounded-lg p-4 mb-6 mt-4">
+            <div className="bg-[#BFBD31]/10 border border-[#BFBD31]/30 rounded-lg p-4 mb-6 mt-4">
               <p className="text-sm text-slate-300 mb-1">Application ID</p>
-              <p className="text-2xl font-bold text-lime-400">{applicationId}</p>
+              <p className="text-2xl font-bold text-[#BFBD31]">{applicationId}</p>
             </div>
-            <button onClick={() => navigate('/login')} className="w-full px-6 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400">
+            <button onClick={() => navigate('/login')} className="w-full px-6 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]">
               Return to Login
             </button>
           </div>

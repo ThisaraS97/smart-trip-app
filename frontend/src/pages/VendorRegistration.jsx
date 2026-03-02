@@ -286,7 +286,7 @@ export default function VendorRegistration() {
                 <p className="text-xs text-slate-400">Partner Registration</p>
               </div>
             </div>
-            <a href="/vendor-login" className="text-sm text-lime-400 hover:text-purple-700 font-medium">
+            <a href="/vendor-login" className="text-sm text-[#BFBD31] hover:text-purple-700 font-medium">
               Already have an account? Login
             </a>
           </div>
@@ -302,7 +302,7 @@ export default function VendorRegistration() {
                 <div className="flex flex-col items-center flex-1">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${
                     currentStep > step.id ? 'bg-green-500' :
-                    currentStep === step.id ? 'bg-lime-500 text-slate-950' :
+                    currentStep === step.id ? 'bg-[#BFBD31] text-slate-950' :
                     'bg-gray-300'
                   }`}>
                     {currentStep > step.id ? (
@@ -349,7 +349,7 @@ export default function VendorRegistration() {
                       value={formData.businessName}
                       onChange={(e) => handleInputChange('businessName', e.target.value)}
                       placeholder="Enter your business name"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -360,7 +360,7 @@ export default function VendorRegistration() {
                     <select
                       value={formData.businessType}
                       onChange={(e) => handleInputChange('businessType', e.target.value)}
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     >
                       <option value="">Select business type</option>
                       {businessTypes.map(type => (
@@ -378,7 +378,7 @@ export default function VendorRegistration() {
                       value={formData.yearEstablished}
                       onChange={(e) => handleInputChange('yearEstablished', e.target.value)}
                       placeholder="e.g., 2015"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -391,7 +391,7 @@ export default function VendorRegistration() {
                       value={formData.registrationNumber}
                       onChange={(e) => handleInputChange('registrationNumber', e.target.value)}
                       placeholder="Enter registration number"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -404,7 +404,7 @@ export default function VendorRegistration() {
                       value={formData.taxId}
                       onChange={(e) => handleInputChange('taxId', e.target.value)}
                       placeholder="Enter TIN"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -417,7 +417,7 @@ export default function VendorRegistration() {
                       value={formData.businessEmail}
                       onChange={(e) => handleInputChange('businessEmail', e.target.value)}
                       placeholder="business@example.com"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -430,7 +430,7 @@ export default function VendorRegistration() {
                       value={formData.businessPhone}
                       onChange={(e) => handleInputChange('businessPhone', e.target.value)}
                       placeholder="+94 XX XXX XXXX"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -443,7 +443,7 @@ export default function VendorRegistration() {
                       value={formData.website}
                       onChange={(e) => handleInputChange('website', e.target.value)}
                       placeholder="https://www.yourwebsite.com"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -456,7 +456,7 @@ export default function VendorRegistration() {
                       value={formData.facebookUrl}
                       onChange={(e) => handleInputChange('facebookUrl', e.target.value)}
                       placeholder="https://facebook.com/yourpage"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -469,7 +469,7 @@ export default function VendorRegistration() {
                       value={formData.instagramUrl}
                       onChange={(e) => handleInputChange('instagramUrl', e.target.value)}
                       placeholder="https://instagram.com/yourpage"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -493,7 +493,7 @@ export default function VendorRegistration() {
                     value={formData.addressLine1}
                     onChange={(e) => handleInputChange('addressLine1', e.target.value)}
                     placeholder="Street address, building number"
-                    className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                   />
                 </div>
 
@@ -506,7 +506,7 @@ export default function VendorRegistration() {
                     value={formData.addressLine2}
                     onChange={(e) => handleInputChange('addressLine2', e.target.value)}
                     placeholder="Apartment, suite, unit, etc."
-                    className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                   />
                 </div>
 
@@ -518,7 +518,7 @@ export default function VendorRegistration() {
                     <select
                       value={formData.city}
                       onChange={(e) => handleInputChange('city', e.target.value)}
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     >
                       <option value="">Select city</option>
                       {cities.map(city => (
@@ -534,7 +534,7 @@ export default function VendorRegistration() {
                     <select
                       value={formData.province}
                       onChange={(e) => handleInputChange('province', e.target.value)}
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     >
                       <option value="">Select province</option>
                       {provinces.map(province => (
@@ -552,7 +552,7 @@ export default function VendorRegistration() {
                       value={formData.postalCode}
                       onChange={(e) => handleInputChange('postalCode', e.target.value)}
                       placeholder="e.g., 10400"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -580,7 +580,7 @@ export default function VendorRegistration() {
                       value={formData.contactName}
                       onChange={(e) => handleInputChange('contactName', e.target.value)}
                       placeholder="Contact person's full name"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -593,7 +593,7 @@ export default function VendorRegistration() {
                       value={formData.contactDesignation}
                       onChange={(e) => handleInputChange('contactDesignation', e.target.value)}
                       placeholder="e.g., Manager, Owner"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -606,7 +606,7 @@ export default function VendorRegistration() {
                       value={formData.contactPhone}
                       onChange={(e) => handleInputChange('contactPhone', e.target.value)}
                       placeholder="+94 XX XXX XXXX"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -619,7 +619,7 @@ export default function VendorRegistration() {
                       value={formData.contactEmail}
                       onChange={(e) => handleInputChange('contactEmail', e.target.value)}
                       placeholder="contact@example.com"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -634,12 +634,12 @@ export default function VendorRegistration() {
               <p className="text-slate-400 mb-6">Select all services your business provides</p>
               <div className="space-y-3">
                 {servicesOptions.map(service => (
-                  <label key={service} className="flex items-start gap-3 p-4 border-2 border-white/10 rounded-lg hover:border-purple-300 cursor-pointer transition-all">
+                  <label key={service} className="flex items-start gap-3 p-4 border-2 border-white/10 rounded-lg hover:border-[#BFBD31]/40 cursor-pointer transition-all">
                     <input
                       type="checkbox"
                       checked={formData.services.includes(service)}
                       onChange={() => handleServiceToggle(service)}
-                      className="w-5 h-5 text-lime-400 rounded mt-0.5"
+                      className="w-5 h-5 text-[#BFBD31] rounded mt-0.5"
                     />
                     <span className="text-slate-300 font-medium">{service}</span>
                   </label>
@@ -656,7 +656,7 @@ export default function VendorRegistration() {
                     onChange={(e) => handleInputChange('otherServices', e.target.value)}
                     rows={3}
                     placeholder="Describe your other services..."
-                    className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                   />
                 </div>
               )}
@@ -763,7 +763,7 @@ export default function VendorRegistration() {
                     <select
                       value={formData.bankName}
                       onChange={(e) => handleInputChange('bankName', e.target.value)}
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     >
                       <option value="">Select bank</option>
                       {banks.map(bank => (
@@ -781,7 +781,7 @@ export default function VendorRegistration() {
                       value={formData.bankBranch}
                       onChange={(e) => handleInputChange('bankBranch', e.target.value)}
                       placeholder="Branch name"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -794,7 +794,7 @@ export default function VendorRegistration() {
                       value={formData.accountName}
                       onChange={(e) => handleInputChange('accountName', e.target.value)}
                       placeholder="Account holder name"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -807,7 +807,7 @@ export default function VendorRegistration() {
                       value={formData.accountNumber}
                       onChange={(e) => handleInputChange('accountNumber', e.target.value)}
                       placeholder="Account number"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -818,7 +818,7 @@ export default function VendorRegistration() {
                     <select
                       value={formData.accountType}
                       onChange={(e) => handleInputChange('accountType', e.target.value)}
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     >
                       <option value="">Select type</option>
                       <option value="Savings">Savings</option>
@@ -835,7 +835,7 @@ export default function VendorRegistration() {
                       value={formData.swiftCode}
                       onChange={(e) => handleInputChange('swiftCode', e.target.value)}
                       placeholder="SWIFT/BIC code"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -859,7 +859,7 @@ export default function VendorRegistration() {
                       value={formData.username}
                       onChange={(e) => handleInputChange('username', e.target.value)}
                       placeholder="Choose a unique username"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -872,7 +872,7 @@ export default function VendorRegistration() {
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       placeholder="your.email@example.com"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                   </div>
 
@@ -885,7 +885,7 @@ export default function VendorRegistration() {
                       value={formData.password}
                       onChange={(e) => handleInputChange('password', e.target.value)}
                       placeholder="Create a strong password"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                     {formData.password && (
                       <div className="mt-2">
@@ -914,7 +914,7 @@ export default function VendorRegistration() {
                       value={formData.confirmPassword}
                       onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                       placeholder="Re-enter your password"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                     />
                     {formData.confirmPassword && formData.password !== formData.confirmPassword && (
                       <p className="text-sm text-red-400 mt-1">Passwords do not match</p>
@@ -931,10 +931,10 @@ export default function VendorRegistration() {
                       type="checkbox"
                       checked={formData.agreeToTerms}
                       onChange={(e) => handleInputChange('agreeToTerms', e.target.checked)}
-                      className="w-5 h-5 text-lime-400 rounded mt-0.5"
+                      className="w-5 h-5 text-[#BFBD31] rounded mt-0.5"
                     />
                     <span className="text-sm text-slate-300">
-                      I agree to the <a href="#" className="text-lime-400 hover:text-purple-700 font-medium">Terms of Service</a> <span className="text-red-500">*</span>
+                      I agree to the <a href="#" className="text-[#BFBD31] hover:text-purple-700 font-medium">Terms of Service</a> <span className="text-red-500">*</span>
                     </span>
                   </label>
 
@@ -943,10 +943,10 @@ export default function VendorRegistration() {
                       type="checkbox"
                       checked={formData.agreeToVendorAgreement}
                       onChange={(e) => handleInputChange('agreeToVendorAgreement', e.target.checked)}
-                      className="w-5 h-5 text-lime-400 rounded mt-0.5"
+                      className="w-5 h-5 text-[#BFBD31] rounded mt-0.5"
                     />
                     <span className="text-sm text-slate-300">
-                      I agree to the <a href="#" className="text-lime-400 hover:text-purple-700 font-medium">Vendor Agreement</a> <span className="text-red-500">*</span>
+                      I agree to the <a href="#" className="text-[#BFBD31] hover:text-purple-700 font-medium">Vendor Agreement</a> <span className="text-red-500">*</span>
                     </span>
                   </label>
 
@@ -955,7 +955,7 @@ export default function VendorRegistration() {
                       type="checkbox"
                       checked={formData.consentToDataProcessing}
                       onChange={(e) => handleInputChange('consentToDataProcessing', e.target.checked)}
-                      className="w-5 h-5 text-lime-400 rounded mt-0.5"
+                      className="w-5 h-5 text-[#BFBD31] rounded mt-0.5"
                     />
                     <span className="text-sm text-slate-300">
                       I consent to data processing and privacy policy <span className="text-red-500">*</span>
@@ -964,7 +964,7 @@ export default function VendorRegistration() {
                 </div>
 
                 <div className="mt-4">
-                  <a href="#" className="text-sm text-lime-400 hover:text-purple-700 font-medium">
+                  <a href="#" className="text-sm text-[#BFBD31] hover:text-purple-700 font-medium">
                     📄 Download Vendor Agreement
                   </a>
                 </div>
@@ -985,7 +985,7 @@ export default function VendorRegistration() {
               )}
               <button
                 onClick={handleSaveDraft}
-                className="px-6 py-3 border border-purple-300 text-lime-400 rounded-lg font-semibold hover:bg-lime-50"
+                className="px-6 py-3 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg font-semibold hover:bg-[#BFBD31]/10"
               >
                 Save as Draft
               </button>
@@ -1007,7 +1007,7 @@ export default function VendorRegistration() {
               {currentStep < 6 ? (
                 <button
                   onClick={handleNext}
-                  className="px-6 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                  className="px-6 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
                 >
                   Next Step
                 </button>
@@ -1037,9 +1037,9 @@ export default function VendorRegistration() {
             <p className="text-slate-400 mb-4">
               Your vendor registration application has been received and is under review.
             </p>
-            <div className="bg-lime-50 border border-purple-200 rounded-lg p-4 mb-6">
+            <div className="bg-[#BFBD31]/10 border border-[#BFBD31]/30 rounded-lg p-4 mb-6">
               <p className="text-sm text-slate-300 mb-1">Application ID</p>
-              <p className="text-2xl font-bold text-lime-400">{applicationId}</p>
+              <p className="text-2xl font-bold text-[#BFBD31]">{applicationId}</p>
             </div>
             <p className="text-sm text-slate-400 mb-6">
               We'll review your application within 2-3 business days and notify you via email.
@@ -1047,13 +1047,13 @@ export default function VendorRegistration() {
             <div className="flex gap-3">
               <button
                 onClick={() => alert('Tracking application...')}
-                className="flex-1 px-6 py-3 border border-purple-300 text-lime-400 rounded-lg font-semibold hover:bg-lime-50"
+                className="flex-1 px-6 py-3 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg font-semibold hover:bg-[#BFBD31]/10"
               >
                 Track Status
               </button>
               <button
                 onClick={() => navigate('/vendor-login')}
-                className="flex-1 px-6 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                className="flex-1 px-6 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
               >
                 Return to Login
               </button>

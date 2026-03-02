@@ -1,15 +1,18 @@
-// smart-trip-app/backend/src/routes/dashboardRoutes.js
-import express from 'express';
+﻿import express from 'express';
+import { getDashboardData, getVendorDashboardData, getAdminDashboardData } from '../controllers/dashboardController.js';
+import { protect, adminOnly } from '../middleware/authMiddleware.js';
+
 const router = express.Router();
-import { getDashboardData } from '../controllers/dashboardController.js';
-import { protect } from '../middleware/authMiddleware.js'; // Assuming authMiddleware for protected routes
 
-// Protect all dashboard routes
-router.use(protect); // This middleware should verify JWT and attach user to req
+router.use(protect);
 
-// @route   GET /api/dashboard
-// @desc    Get dashboard data
-// @access  Private
+// User dashboard
 router.get('/', getDashboardData);
+
+// Vendor dashboard
+router.get('/vendor', getVendorDashboardData);
+
+// Admin dashboard
+router.get('/admin', adminOnly, getAdminDashboardData);
 
 export default router;

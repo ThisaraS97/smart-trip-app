@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
 
 export default function MyTrips() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function MyTrips() {
   const [selectedTrips, setSelectedTrips] = useState([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [dateFilter, setDateFilter] = useState({ from: '', to: '' });
+  const [cancelConfirm, setCancelConfirm] = useState({ show: false, tripId: null, tripName: '' });
 
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,11 +27,32 @@ export default function MyTrips() {
       }
       try {
         setLoading(true);
-        const { data } = await axios.get('/api/trips', {
+        const { data } = await axios.get('/api/bookings', {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
-        // Normalize tripId -> id so all existing template references continue to work
-        setTrips(data.map(t => ({ ...t, id: t.tripId || t._id })));
+        // Normalize Booking fields into the shape the template expects
+        setTrips(data.map(b => ({
+          id: b._id,
+          destination: b.destination || 'My Trip',
+          location: b.location || '—',
+          status: b.status,
+          totalCost: b.totalCost || 0,
+          duration: b.duration || '—',
+          dates: {
+            from: b.tripDates?.startDate || '—',
+            to: b.tripDates?.endDate || '—',
+          },
+          travelers: {
+            adults: b.pax?.adults || 1,
+            children: b.pax?.children || 0,
+          },
+          image: null,
+          vendor: '—',
+          bookingDate: b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—',
+          reviewStatus: 'none',
+          paymentStatus: b.paymentStatus,
+          specialRequests: b.specialRequests || '',
+        })));
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load trips');
       } finally {
@@ -78,6 +101,14 @@ export default function MyTrips() {
       filtered = filtered.filter(t => t.status === selectedStatus);
     }
 
+    // Filter by date range
+    if (dateFilter.from) {
+      filtered = filtered.filter(t => new Date(t.dates?.from) >= new Date(dateFilter.from));
+    }
+    if (dateFilter.to) {
+      filtered = filtered.filter(t => new Date(t.dates?.to) <= new Date(dateFilter.to));
+    }
+
     // Sort
     filtered = [...filtered].sort((a, b) => {
       switch (sortBy) {
@@ -118,23 +149,26 @@ export default function MyTrips() {
   };
 
   const handleBulkExport = () => {
-    alert(`Exporting ${selectedTrips.length} trips...`);
+    toast.success(`Exporting ${selectedTrips.length} trip(s) as PDF...`);
   };
 
   const handleBulkPrint = () => {
-    alert(`Printing ${selectedTrips.length} trips...`);
+    toast.success(`Preparing ${selectedTrips.length} trip(s) for print...`);
+    setTimeout(() => window.print(), 500);
   };
 
-  const handleCancelTrip = async (tripId) => {
-    if (!confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) return;
+  const handleCancelTrip = async () => {
+    const { tripId } = cancelConfirm;
+    setCancelConfirm({ show: false, tripId: null, tripName: '' });
     try {
       const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
-      await axios.patch(`/api/trips/${tripId}/cancel`, {}, {
+      await axios.patch(`/api/bookings/${tripId}/cancel`, {}, {
         headers: { Authorization: `Bearer ${userInfo.token}` },
       });
       setTrips(prev => prev.map(t => t.id === tripId ? { ...t, status: 'cancelled' } : t));
+      toast.success('Booking cancelled successfully.');
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to cancel trip');
+      toast.error(err.response?.data?.message || 'Failed to cancel trip');
     }
   };
 
@@ -192,7 +226,7 @@ export default function MyTrips() {
       {loading && (
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-lime-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="w-12 h-12 border-4 border-[#BFBD31] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-slate-400 font-medium">Loading your trips...</p>
           </div>
         </div>
@@ -202,7 +236,7 @@ export default function MyTrips() {
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <p className="text-red-500 font-medium mb-4">{error}</p>
-            <button onClick={() => window.location.reload()} className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg">Retry</button>
+            <button onClick={() => window.location.reload()} className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-xl hover:bg-[#d4d235] transition">Retry</button>
           </div>
         </div>
       )}
@@ -226,8 +260,8 @@ export default function MyTrips() {
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => navigate('/itinerary')}
-                className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400 flex items-center gap-2"
+                onClick={() => navigate('/plan-trip')}
+                className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-xl font-medium hover:bg-[#d4d235] transition flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
@@ -236,7 +270,7 @@ export default function MyTrips() {
               </button>
               <button
                 onClick={() => navigate('/profile')}
-                className="p-2 text-slate-400 hover:bg-slate-800/50 rounded-lg"
+                className="p-2 text-slate-400 hover:bg-slate-800/50 rounded-xl transition"
                 title="Profile"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,17 +289,17 @@ export default function MyTrips() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
+              className={`px-6 py-3 rounded-xl font-medium text-sm whitespace-nowrap transition-all ${
                 activeTab === tab.id
-                  ? 'bg-lime-500 text-slate-950'
+                  ? 'bg-[#BFBD31] text-slate-950'
                   : 'text-slate-300 hover:bg-slate-800/50'
               }`}
             >
               {tab.label}
               <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
                 activeTab === tab.id
-                  ? 'bg-slate-900 border border-white/10/20 text-white'
-                  : 'bg-gray-200 text-slate-300'
+                  ? 'bg-slate-950 text-white'
+                  : 'bg-slate-800 text-slate-400'
               }`}>
                 {tab.count}
               </span>
@@ -279,7 +313,7 @@ export default function MyTrips() {
             {/* Search */}
             <div className="md:col-span-2">
               <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
                 <input
@@ -287,7 +321,7 @@ export default function MyTrips() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by destination, location, or booking ID..."
-                  className="w-full pl-10 pr-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-200 placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/40 outline-none transition"
                 />
               </div>
             </div>
@@ -297,13 +331,13 @@ export default function MyTrips() {
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-200 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/40 outline-none transition"
               >
-                <option value="all">All Statuses</option>
-                <option value="pending">Pending</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
+                <option value="all" className="bg-slate-900">All Statuses</option>
+                <option value="pending" className="bg-slate-900">Pending</option>
+                <option value="confirmed" className="bg-slate-900">Confirmed</option>
+                <option value="completed" className="bg-slate-900">Completed</option>
+                <option value="cancelled" className="bg-slate-900">Cancelled</option>
               </select>
             </div>
 
@@ -312,14 +346,36 @@ export default function MyTrips() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-200 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/40 outline-none transition"
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="date">Travel Date</option>
+                <option value="newest" className="bg-slate-900">Newest First</option>
+                <option value="oldest" className="bg-slate-900">Oldest First</option>
+                <option value="price-high" className="bg-slate-900">Price: High to Low</option>
+                <option value="price-low" className="bg-slate-900">Price: Low to High</option>
+                <option value="date" className="bg-slate-900">Travel Date</option>
               </select>
+            </div>
+          </div>
+
+          {/* Date Range Filter */}
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">Travel Date From</label>
+              <input
+                type="date"
+                value={dateFilter.from}
+                onChange={(e) => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-200 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/40 outline-none transition"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">Travel Date To</label>
+              <input
+                type="date"
+                value={dateFilter.to}
+                onChange={(e) => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-200 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/40 outline-none transition"
+              />
             </div>
           </div>
 
@@ -331,14 +387,14 @@ export default function MyTrips() {
                   type="checkbox"
                   checked={selectedTrips.length === filteredTrips.length && filteredTrips.length > 0}
                   onChange={selectAllTrips}
-                  className="w-5 h-5 text-lime-400 rounded"
+                  className="w-5 h-5 text-[#BFBD31] rounded"
                 />
                 <span className="text-sm font-medium text-slate-300">
                   Select All ({filteredTrips.length})
                 </span>
               </label>
               {selectedTrips.length > 0 && (
-                <span className="text-sm text-lime-400 font-medium">
+                <span className="text-sm text-[#BFBD31] font-medium">
                   {selectedTrips.length} selected
                 </span>
               )}
@@ -347,7 +403,7 @@ export default function MyTrips() {
               <div className="flex gap-2">
                 <button
                   onClick={handleBulkExport}
-                  className="px-4 py-2 text-sm font-medium text-slate-300 border border-white/20 rounded-lg hover:bg-slate-950 flex items-center gap-2"
+                  className="px-4 py-2 text-sm font-medium text-slate-300 border border-white/20 rounded-xl hover:bg-white/5 transition flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -356,7 +412,7 @@ export default function MyTrips() {
                 </button>
                 <button
                   onClick={handleBulkPrint}
-                  className="px-4 py-2 text-sm font-medium text-slate-300 border border-white/20 rounded-lg hover:bg-slate-950 flex items-center gap-2"
+                  className="px-4 py-2 text-sm font-medium text-slate-300 border border-white/20 rounded-xl hover:bg-white/5 transition flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
@@ -376,7 +432,7 @@ export default function MyTrips() {
             </svg>
             <h3 className="text-xl font-bold text-slate-200 mb-2">No trips found</h3>
             <p className="text-slate-400 mb-6">Try adjusting your filters or start planning a new adventure!</p>
-            <button className="px-6 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400">
+            <button onClick={() => navigate('/plan-trip')} className="px-6 py-3 bg-[#BFBD31] text-slate-950 rounded-xl font-semibold hover:bg-[#d4d235] transition">
               Plan New Trip
             </button>
           </div>
@@ -391,20 +447,28 @@ export default function MyTrips() {
                 <div
                   key={trip.id}
                   className={`trip-card bg-slate-900 border border-white/10 rounded-xl shadow-md overflow-hidden ${
-                    isSelected ? 'ring-2 ring-lime-500' : ''
+                    isSelected ? 'ring-2 ring-[#BFBD31]' : ''
                   }`}
                 >
                   {/* Trip Header */}
-                  <div className="relative h-40" style={{ background: trip.image }}>
+                  <div className="relative h-40 overflow-hidden">
+                    {trip.image ? (
+                      <img src={trip.image} alt={trip.destination} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
+                        <span className="text-5xl font-bold text-white/20">{trip.destination?.[0] || '?'}</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
                     <div className="absolute top-4 left-4 right-4 flex items-start justify-between">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 border border-white/10/90 text-${status.color}-700`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-slate-900/90 backdrop-blur-sm border border-white/10 text-${status.color}-400`}>
                         {status.label}
                       </span>
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => toggleTripSelection(trip.id)}
-                        className="w-5 h-5 text-lime-400 rounded bg-slate-900 border border-white/10"
+                        className="w-5 h-5 text-[#BFBD31] rounded bg-slate-900 border border-white/10"
                       />
                     </div>
                     <div className="absolute bottom-4 left-4 right-4">
@@ -438,7 +502,7 @@ export default function MyTrips() {
                       </div>
                       <div>
                         <p className="text-xs text-slate-400 mb-1">Total Cost</p>
-                        <p className="text-sm font-semibold text-lime-400">
+                        <p className="text-sm font-semibold text-[#BFBD31]">
                           LKR {trip.totalCost.toLocaleString()}
                         </p>
                       </div>
@@ -459,77 +523,57 @@ export default function MyTrips() {
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-wrap gap-2">
-                      {actions.slice(0, 3).map(action => (
+                    {/* Action Buttons - All Visible */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {actions.map(action => (
                         <button
                           key={action.id}
                           onClick={() => {
                             if (action.id === 'cancel') {
-                              handleCancelTrip(trip.id);
+                              setCancelConfirm({ show: true, tripId: trip.id, tripName: trip.destination });
                             } else if (action.id === 'details') {
                               navigate(`/trip/${trip.id}`);
-                            } else if (action.id === 'modify' || action.id === 'book-again') {
-                              navigate('/itinerary');
-                            } else {
-                              alert(`${action.label} for ${trip.id}`);
+                            } else if (action.id === 'modify') {
+                              navigate(`/itinerary?edit=${trip.id}`);
+                            } else if (action.id === 'book-again') {
+                              navigate('/plan-trip');
+                            } else if (action.id === 'review') {
+                              navigate(`/reviews?trip=${trip.id}`);
+                            } else if (action.id === 'contact') {
+                              navigate(`/help?trip=${trip.id}`);
+                            } else if (action.id === 'track') {
+                              toast(`Tracking status for booking ${trip.id}`, { icon: '🔍' });
+                            } else if (action.id === 'share') {
+                              if (navigator.share) {
+                                navigator.share({ title: trip.destination, text: `Check out my trip to ${trip.destination}!` });
+                              } else {
+                                navigator.clipboard.writeText(window.location.origin + `/trip/${trip.id}`);
+                                toast.success('Trip link copied to clipboard!');
+                              }
+                            } else if (action.id === 'pdf') {
+                              toast.success(`Downloading PDF for ${trip.id}...`);
                             }
                           }}
-                          className={`flex-1 min-w-[120px] px-3 py-2 text-xs font-medium rounded-lg transition-all ${
+                          className={`px-3 py-2 text-xs font-medium rounded-xl transition-all ${
                             action.color === 'purple'
-                              ? 'bg-lime-500 text-slate-950 hover:bg-lime-400'
+                              ? 'bg-[#BFBD31] text-slate-950 hover:bg-[#d4d235]'
                               : action.color === 'red'
-                              ? 'border border-red-300 text-red-400 hover:bg-red-500/10'
-                              : 'border border-white/20 text-slate-300 hover:bg-slate-950'
+                              ? 'border border-red-500/40 text-red-400 hover:bg-red-500/10'
+                              : action.color === 'yellow'
+                              ? 'border border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10'
+                              : action.color === 'blue'
+                              ? 'border border-[#BFBD31]/40 text-[#BFBD31] hover:bg-[#BFBD31]/10'
+                              : action.color === 'green'
+                              ? 'border border-green-500/40 text-green-400 hover:bg-green-500/10'
+                              : action.color === 'orange'
+                              ? 'border border-orange-500/40 text-orange-400 hover:bg-orange-500/10'
+                              : 'border border-white/10 text-slate-300 hover:bg-white/5'
                           }`}
                         >
                           {action.label}
                         </button>
                       ))}
                     </div>
-
-                    {actions.length > 3 && (
-                      <details className="mt-3">
-                        <summary className="text-sm text-lime-400 hover:text-purple-700 cursor-pointer font-medium">
-                          More Actions ({actions.length - 3})
-                        </summary>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {actions.slice(3).map(action => (
-                            <button
-                              key={action.id}
-                              onClick={() => {
-                                if (action.id === 'cancel') {
-                                  handleCancelTrip(trip.id);
-                                } else if (action.id === 'details') {
-                                  navigate(`/trip/${trip.id}`);
-                                } else if (action.id === 'modify' || action.id === 'book-again') {
-                                  navigate('/itinerary');
-                                } else {
-                                  alert(`${action.label} for ${trip.id}`);
-                                }
-                              }}
-                              className={`px-3 py-2 text-xs font-medium rounded-lg transition-all ${
-                                action.color === 'red'
-                                  ? 'border border-red-300 text-red-400 hover:bg-red-500/10'
-                                  : action.color === 'yellow'
-                                  ? 'border border-yellow-300 text-yellow-700 hover:bg-yellow-500/10'
-                                  : action.color === 'blue'
-                                  ? 'border border-blue-300 text-lime-300 hover:bg-lime-500/10'
-                                  : action.color === 'green'
-                                  ? 'border border-green-300 text-green-600 hover:bg-green-500/10'
-                                  : action.color === 'orange'
-                                  ? 'border border-orange-300 text-orange-600 hover:bg-orange-50'
-                                  : action.color === 'purple'
-                                  ? 'bg-lime-500 text-slate-950 hover:bg-lime-400'
-                                  : 'border border-white/20 text-slate-300 hover:bg-slate-950'
-                              }`}
-                            >
-                              {action.label}
-                            </button>
-                          ))}
-                        </div>
-                      </details>
-                    )}
                   </div>
                 </div>
               );
@@ -540,25 +584,56 @@ export default function MyTrips() {
         {/* Pagination */}
         {filteredTrips.length > 0 && (
           <div className="mt-8 flex items-center justify-center gap-2">
-            <button className="px-4 py-2 border border-white/20 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-950">
+            <button className="px-4 py-2 border border-white/20 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/5 transition">
               Previous
             </button>
-            <button className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg text-sm font-medium">
+            <button className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-xl text-sm font-medium">
               1
             </button>
-            <button className="px-4 py-2 border border-white/20 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-950">
+            <button className="px-4 py-2 border border-white/20 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/5 transition">
               2
             </button>
-            <button className="px-4 py-2 border border-white/20 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-950">
+            <button className="px-4 py-2 border border-white/20 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/5 transition">
               3
             </button>
-            <button className="px-4 py-2 border border-white/20 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-950">
+            <button className="px-4 py-2 border border-white/20 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/5 transition">
               Next
             </button>
           </div>
         )}
       </div>
         </>
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      {cancelConfirm.show && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-white/10 rounded-2xl shadow-2xl p-8 max-w-md w-full">
+            <div className="w-14 h-14 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
+              <svg className="w-7 h-7 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-slate-100 text-center mb-2">Cancel Booking</h3>
+            <p className="text-slate-400 text-center mb-2">Are you sure you want to cancel your trip to</p>
+            <p className="text-[#BFBD31] font-semibold text-center text-lg mb-4">{cancelConfirm.tripName}</p>
+            <p className="text-slate-500 text-xs text-center mb-6">This action cannot be undone. Refund eligibility depends on the vendor's cancellation policy.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setCancelConfirm({ show: false, tripId: null, tripName: '' })}
+                className="flex-1 py-3 border border-white/10 text-slate-300 rounded-xl font-semibold hover:bg-white/5 transition"
+              >
+                Keep Booking
+              </button>
+              <button
+                onClick={handleCancelTrip}
+                className="flex-1 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition"
+              >
+                Yes, Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

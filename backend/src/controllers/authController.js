@@ -6,7 +6,7 @@ import generateToken from '../utils/generateToken.js';
 // @route   POST /api/auth/register
 // @access  Public
 export const registerUser = async (req, res) => {
-    const { name, email, password, role, phone, dateOfBirth, location, preferredLanguage, bio } = req.body;
+    const { name, email, password, phone, dateOfBirth, location, preferredLanguage, bio, travelInterests } = req.body;
 
     try {
         const userExists = await User.findOne({ email });
@@ -22,12 +22,13 @@ export const registerUser = async (req, res) => {
             name,
             email,
             password: hashedPassword,
-            role: role || 'user',
+            role: 'user', // role is always set server-side; never trusted from client
             phone: phone || '',
             dateOfBirth: dateOfBirth || '',
             location: location || '',
             preferredLanguage: preferredLanguage || 'English',
             bio: bio || '',
+            travelInterests: travelInterests || [],
         });
 
         if (user) {
@@ -42,6 +43,8 @@ export const registerUser = async (req, res) => {
                 preferredLanguage: user.preferredLanguage,
                 bio: user.bio,
                 photo: user.photo,
+                travelInterests: user.travelInterests,
+                travelPreferences: user.travelPreferences,
                 token: generateToken(user._id),
             });
         } else {
@@ -73,6 +76,8 @@ export const loginUser = async (req, res) => {
                 preferredLanguage: user.preferredLanguage,
                 bio: user.bio,
                 photo: user.photo,
+                travelInterests: user.travelInterests,
+                travelPreferences: user.travelPreferences,
                 token: generateToken(user._id),
             });
         } else {
@@ -97,4 +102,63 @@ export const forgotPassword = async (req, res) => {
 export const resetPassword = async (req, res) => {
     // Placeholder function
     res.status(200).json({ message: "Password reset successful (placeholder)" });
+};
+
+// @desc    Get current user profile
+// @route   GET /api/auth/profile
+// @access  Private
+export const getUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).select('-password');
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Update current user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+export const updateUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const { name, phone, dateOfBirth, location, preferredLanguage, bio, photo, travelInterests, travelPreferences, password } = req.body;
+
+        if (name) user.name = name;
+        if (phone !== undefined) user.phone = phone;
+        if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth;
+        if (location !== undefined) user.location = location;
+        if (preferredLanguage !== undefined) user.preferredLanguage = preferredLanguage;
+        if (bio !== undefined) user.bio = bio;
+        if (photo !== undefined) user.photo = photo;
+        if (travelInterests !== undefined) user.travelInterests = travelInterests;
+        if (travelPreferences !== undefined) user.travelPreferences = { ...user.travelPreferences.toObject(), ...travelPreferences };
+
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(password, salt);
+        }
+
+        const updated = await user.save();
+        res.json({
+            _id: updated._id,
+            name: updated.name,
+            email: updated.email,
+            role: updated.role,
+            phone: updated.phone,
+            dateOfBirth: updated.dateOfBirth,
+            location: updated.location,
+            preferredLanguage: updated.preferredLanguage,
+            bio: updated.bio,
+            photo: updated.photo,
+            travelInterests: updated.travelInterests,
+            travelPreferences: updated.travelPreferences,
+            token: generateToken(updated._id),
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
 };

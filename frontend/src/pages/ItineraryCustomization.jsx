@@ -1,9 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function ItineraryCustomization() {
   const navigate = useNavigate();
-  const [budget] = useState(150000); // total trip budget in LKR
+  const { state: tripState } = useLocation();
+
+  // --- Dynamic trip info from navigation state ---
+  const tripDestination = tripState?.destination || 'Kandy Tour';
+  const tripLocation    = tripState?.location    || 'Kandy';
+  const tripDuration    = tripState?.duration    || '3 Days';
+  const tripBudgetInit  = tripState?.budget      || 150000;
+
+  // Parse travelers: object OR string like "2 Adults 1 Child"
+  const parseTravelers = (t) => {
+    if (!t) return { adults: 2, children: 0, infants: 0 };
+    if (typeof t === 'object') return { adults: t.adults || 2, children: t.children || 0, infants: t.infants || 0 };
+    const am = t.match(/(\d+)\s*adult/i);
+    const cm = t.match(/(\d+)\s*child/i);
+    return { adults: am ? parseInt(am[1]) : 2, children: cm ? parseInt(cm[1]) : 0, infants: 0 };
+  };
+  const tripTravelers = parseTravelers(tripState?.travelers);
+
+  const [budget] = useState(tripBudgetInit); // total trip budget in LKR
   const [currentTotal, setCurrentTotal] = useState(125000);
   const [showBudgetAlert, setShowBudgetAlert] = useState(false);
   const [mapCollapsed, setMapCollapsed] = useState(false);
@@ -282,6 +300,52 @@ export default function ItineraryCustomization() {
     }
   };
 
+  const handleProceedToBooking = () => {
+    const days = Object.values(itinerary);
+
+    const accommodationCost = days.reduce((s, d) => s + (d.hotel?.price || 0), 0);
+    const transportCost = days.reduce((s, d) => s + (d.transport?.price || 0), 0);
+    const activitiesCost = days.reduce((s, d) =>
+      s + (d.activities || []).reduce((a, b) => a + (b.price || 0), 0), 0);
+    const mealsCost = days.reduce((s, d) =>
+      s + (d.meals || []).reduce((a, b) => a + (b.price || 0), 0), 0);
+    const taxes = Math.round(currentTotal * 0.1);
+    const serviceFee = Math.round(currentTotal * 0.03);
+
+    navigate('/booking-review', {
+      state: {
+        destination: tripDestination,
+        location: tripLocation,
+        dates: {
+          from: tripState?.dates?.from || days[0]?.date || '',
+          to:   tripState?.dates?.to   || days[days.length - 1]?.date || '',
+        },
+        duration: `${days.length} Days / ${Math.max(days.length - 1, 1)} Nights`,
+        totalCost: currentTotal,
+        travelers: tripTravelers,
+        itinerary: days.map((day, i) => ({
+          day: i + 1,
+          date: day.date,
+          hotel: day.hotel?.name || null,
+          transport: day.transport ? day.transport.type : null,
+          activities: (day.activities || []).map(a => a.name),
+          meals: (day.meals || []).map(m => `${m.type ? m.type + ' - ' : ''}${m.name}`),
+        })),
+        costs: {
+          accommodation: accommodationCost,
+          transport: transportCost,
+          activities: activitiesCost,
+          meals: mealsCost,
+          addOns: (selectedAddOns || []).reduce((s, a) => s + (a.price || 0), 0),
+          subtotal: currentTotal - taxes - serviceFee,
+          taxes,
+          serviceFee,
+          total: currentTotal,
+        },
+      },
+    });
+  };
+
   const toggleCompare = (hotelId) => {
     if (selectedForCompare.includes(hotelId)) {
       setSelectedForCompare(selectedForCompare.filter(id => id !== hotelId));
@@ -327,14 +391,14 @@ export default function ItineraryCustomization() {
               </button>
               <div>
                 <h1 className="text-xl font-bold text-slate-200">Customize Your Trip</h1>
-                <p className="text-sm text-slate-400">Kandy Cultural Tour • 3 Days</p>
+                <p className="text-sm text-slate-400">{tripDestination} • {tripDuration}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               {undoStack.length > 0 && (
                 <button 
                   onClick={undoLastChange}
-                  className="px-4 py-2 text-sm font-medium text-lime-400 hover:bg-lime-50 rounded-lg flex items-center gap-2"
+                  className="px-4 py-2 text-sm font-medium text-[#BFBD31] hover:bg-[#BFBD31]/10 rounded-lg flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
@@ -401,7 +465,7 @@ export default function ItineraryCustomization() {
                   <div 
                     key={dayKey}
                     className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedDay === dayNumber ? 'border-lime-500 bg-lime-50' : 'border-white/10 hover:border-purple-300'
+                      selectedDay === dayNumber ? 'border-[#BFBD31] bg-[#BFBD31]/10' : 'border-white/10 hover:border-[#BFBD31]/40'
                     }`}
                     onClick={() => setSelectedDay(dayNumber)}
                   >
@@ -410,7 +474,7 @@ export default function ItineraryCustomization() {
                         <h3 className="font-semibold text-slate-200">Day {dayNumber}</h3>
                         <p className="text-xs text-slate-400">{dayData.date}</p>
                       </div>
-                      <span className="text-sm font-bold text-lime-400">
+                      <span className="text-sm font-bold text-[#BFBD31]">
                         LKR {dayTotal.toLocaleString()}
                       </span>
                     </div>
@@ -418,7 +482,7 @@ export default function ItineraryCustomization() {
                     <div className="space-y-2">
                       {dayData.hotel && (
                         <div className="flex items-start gap-2 text-xs">
-                          <svg className="w-4 h-4 text-lime-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-[#BFBD31] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                           </svg>
                           <div className="flex-1">
@@ -430,7 +494,7 @@ export default function ItineraryCustomization() {
 
                       {dayData.transport && (
                         <div className="flex items-start gap-2 text-xs">
-                          <svg className="w-4 h-4 text-lime-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-[#BFBD31] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                           </svg>
                           <div className="flex-1">
@@ -442,7 +506,7 @@ export default function ItineraryCustomization() {
 
                       {dayData.activities && dayData.activities.length > 0 && (
                         <div className="flex items-start gap-2 text-xs">
-                          <svg className="w-4 h-4 text-lime-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-[#BFBD31] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                           </svg>
                           <div className="flex-1">
@@ -454,7 +518,7 @@ export default function ItineraryCustomization() {
 
                       {dayData.meals && dayData.meals.length > 0 && (
                         <div className="flex items-start gap-2 text-xs">
-                          <svg className="w-4 h-4 text-lime-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-[#BFBD31] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                           </svg>
                           <div className="flex-1">
@@ -498,17 +562,18 @@ export default function ItineraryCustomization() {
             <div className="mt-6 pt-4 border-t border-white/10">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-lg font-bold text-slate-200">Total Cost</span>
-                <span className="text-2xl font-bold text-lime-400">
+                <span className="text-2xl font-bold text-[#BFBD31]">
                   LKR {currentTotal.toLocaleString()}
                 </span>
               </div>
               <button 
                 className={`w-full py-3 rounded-lg font-semibold text-white transition-all ${
                   currentTotal <= budget 
-                    ? 'bg-lime-500 text-slate-950 hover:bg-lime-400' 
+                    ? 'bg-[#BFBD31] text-slate-950 hover:bg-[#BFBD31]' 
                     : 'bg-gray-400 cursor-not-allowed'
                 }`}
                 disabled={currentTotal > budget}
+                onClick={handleProceedToBooking}
               >
                 {currentTotal <= budget ? 'Proceed to Booking' : 'Over Budget - Adjust Items'}
               </button>
@@ -523,36 +588,36 @@ export default function ItineraryCustomization() {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
               <button 
                 onClick={() => setShowHotelModal(true)}
-                className="px-4 py-3 bg-slate-900 border border-white/10 border-2 border-purple-200 rounded-lg hover:border-lime-400 transition-all text-sm font-medium text-slate-300 flex items-center justify-center gap-2"
+                className="px-4 py-3 bg-slate-900 border border-white/10 border-2 border-[#BFBD31]/30 rounded-lg hover:border-[#BFBD31] transition-all text-sm font-medium text-slate-300 flex items-center justify-center gap-2"
               >
-                <svg className="w-5 h-5 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
                 </svg>
                 Add Hotel
               </button>
               <button 
                 onClick={() => setShowActivityModal(true)}
-                className="px-4 py-3 bg-slate-900 border border-white/10 border-2 border-purple-200 rounded-lg hover:border-lime-400 transition-all text-sm font-medium text-slate-300 flex items-center justify-center gap-2"
+                className="px-4 py-3 bg-slate-900 border border-white/10 border-2 border-[#BFBD31]/30 rounded-lg hover:border-[#BFBD31] transition-all text-sm font-medium text-slate-300 flex items-center justify-center gap-2"
               >
-                <svg className="w-5 h-5 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
                 </svg>
                 Add Activity
               </button>
-              <button className="px-4 py-3 bg-slate-900 border border-white/10 border-2 border-purple-200 rounded-lg hover:border-lime-400 transition-all text-sm font-medium text-slate-300 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button className="px-4 py-3 bg-slate-900 border border-white/10 border-2 border-[#BFBD31]/30 rounded-lg hover:border-[#BFBD31] transition-all text-sm font-medium text-slate-300 flex items-center justify-center gap-2">
+                <svg className="w-5 h-5 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
                 </svg>
                 Add Transport
               </button>
-              <button className="px-4 py-3 bg-slate-900 border border-white/10 border-2 border-purple-200 rounded-lg hover:border-lime-400 transition-all text-sm font-medium text-slate-300 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button className="px-4 py-3 bg-slate-900 border border-white/10 border-2 border-[#BFBD31]/30 rounded-lg hover:border-[#BFBD31] transition-all text-sm font-medium text-slate-300 flex items-center justify-center gap-2">
+                <svg className="w-5 h-5 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
                 </svg>
                 Add Meals
               </button>
-              <button className="px-4 py-3 bg-slate-900 border border-white/10 border-2 border-purple-200 rounded-lg hover:border-lime-400 transition-all text-sm font-medium text-slate-300 flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button className="px-4 py-3 bg-slate-900 border border-white/10 border-2 border-[#BFBD31]/30 rounded-lg hover:border-[#BFBD31] transition-all text-sm font-medium text-slate-300 flex items-center justify-center gap-2">
+                <svg className="w-5 h-5 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
                 </svg>
                 Add Guide
@@ -595,7 +660,7 @@ export default function ItineraryCustomization() {
                 <h3 className="text-lg font-bold text-slate-200">Accommodation</h3>
                 <button 
                   onClick={() => setShowHotelModal(true)}
-                  className="text-sm text-lime-400 hover:text-purple-700 font-medium"
+                  className="text-sm text-[#BFBD31] hover:text-purple-700 font-medium"
                 >
                   Change Hotel
                 </button>
@@ -603,7 +668,7 @@ export default function ItineraryCustomization() {
 
               {/* Current Hotel */}
               {itinerary[`day${selectedDay}`]?.hotel && (
-                <div className="border-2 border-lime-500 rounded-lg p-4 mb-4 bg-lime-50">
+                <div className="border-2 border-[#BFBD31] rounded-lg p-4 mb-4 bg-[#BFBD31]/10">
                   <div className="flex items-start gap-4">
                     <div 
                       className="w-24 h-24 rounded-lg flex-shrink-0"
@@ -615,7 +680,7 @@ export default function ItineraryCustomization() {
                           <h4 className="font-semibold text-slate-200">{itinerary[`day${selectedDay}`].hotel.name}</h4>
                           <p className="text-sm text-slate-400">{itinerary[`day${selectedDay}`].hotel.location}</p>
                         </div>
-                        <span className="px-3 py-1 bg-lime-500 text-slate-950 text-sm font-semibold rounded-full">
+                        <span className="px-3 py-1 bg-[#BFBD31] text-slate-950 text-sm font-semibold rounded-full">
                           Current
                         </span>
                       </div>
@@ -636,11 +701,11 @@ export default function ItineraryCustomization() {
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-lime-400">
+                        <span className="text-lg font-bold text-[#BFBD31]">
                           LKR {itinerary[`day${selectedDay}`].hotel.price.toLocaleString()}
                         </span>
                         <div className="flex gap-2">
-                          <button className="px-3 py-1 text-sm text-lime-400 hover:bg-lime-100 rounded-lg">
+                          <button className="px-3 py-1 text-sm text-[#BFBD31] hover:bg-[#BFBD31]/20 rounded-lg">
                             View Details
                           </button>
                         </div>
@@ -654,7 +719,7 @@ export default function ItineraryCustomization() {
               <div className="space-y-3">
                 <h4 className="text-sm font-semibold text-slate-300">Alternative Options</h4>
                 {alternativeHotels.slice(0, 3).map(hotel => (
-                  <div key={hotel.id} className="border border-white/10 rounded-lg p-4 hover:border-purple-300 transition-all">
+                  <div key={hotel.id} className="border border-white/10 rounded-lg p-4 hover:border-[#BFBD31]/40 transition-all">
                     <div className="flex items-start gap-4">
                       <div 
                         className="w-20 h-20 rounded-lg flex-shrink-0"
@@ -670,7 +735,7 @@ export default function ItineraryCustomization() {
                             type="checkbox"
                             checked={selectedForCompare.includes(hotel.id)}
                             onChange={() => toggleCompare(hotel.id)}
-                            className="w-5 h-5 text-lime-400 rounded"
+                            className="w-5 h-5 text-[#BFBD31] rounded"
                           />
                         </div>
                         <div className="flex items-center gap-2 mb-2">
@@ -691,12 +756,12 @@ export default function ItineraryCustomization() {
                             </span>
                           </div>
                           <div className="flex gap-2">
-                            <button className="px-3 py-1 text-sm text-lime-400 hover:bg-lime-50 rounded-lg">
+                            <button className="px-3 py-1 text-sm text-[#BFBD31] hover:bg-[#BFBD31]/10 rounded-lg">
                               Details
                             </button>
                             <button 
                               onClick={() => changeHotel(hotel, `day${selectedDay}`)}
-                              className="px-4 py-1 text-sm bg-lime-500 text-slate-950 rounded-lg hover:bg-lime-400"
+                              className="px-4 py-1 text-sm bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31]"
                             >
                               Select
                             </button>
@@ -709,7 +774,7 @@ export default function ItineraryCustomization() {
               </div>
 
               {selectedForCompare.length > 0 && (
-                <button className="w-full mt-3 py-2 bg-lime-50 text-lime-400 rounded-lg font-medium hover:bg-lime-100">
+                <button className="w-full mt-3 py-2 bg-[#BFBD31]/10 text-[#BFBD31] rounded-lg font-medium hover:bg-[#BFBD31]/20">
                   Compare Selected ({selectedForCompare.length})
                 </button>
               )}
@@ -725,22 +790,22 @@ export default function ItineraryCustomization() {
                     key={transport.id}
                     className={`border rounded-lg p-4 cursor-pointer transition-all ${
                       itinerary[`day${selectedDay}`]?.transport?.id === transport.id
-                        ? 'border-lime-500 bg-lime-50'
-                        : 'border-white/10 hover:border-purple-300'
+                        ? 'border-[#BFBD31] bg-[#BFBD31]/10'
+                        : 'border-white/10 hover:border-[#BFBD31]/40'
                     }`}
                     onClick={() => changeTransport(transport, `day${selectedDay}`)}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold text-slate-200">{transport.type}</h4>
                       {itinerary[`day${selectedDay}`]?.transport?.id === transport.id && (
-                        <svg className="w-5 h-5 text-lime-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-5 h-5 text-[#BFBD31]" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                         </svg>
                       )}
                     </div>
                     <p className="text-sm text-slate-400 mb-2">{transport.duration}</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-lime-400">
+                      <span className="text-sm font-semibold text-[#BFBD31]">
                         LKR {transport.price.toLocaleString()}
                       </span>
                       <span className="text-xs px-2 py-1 bg-slate-800/50 rounded-full text-slate-400">
@@ -758,7 +823,7 @@ export default function ItineraryCustomization() {
                 <h3 className="text-lg font-bold text-slate-200">Available Activities</h3>
                 <button 
                   onClick={() => setShowActivityModal(true)}
-                  className="text-sm text-lime-400 hover:text-purple-700 font-medium"
+                  className="text-sm text-[#BFBD31] hover:text-purple-700 font-medium"
                 >
                   View All
                 </button>
@@ -772,7 +837,7 @@ export default function ItineraryCustomization() {
                     onClick={() => setActiveCategory(category)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                       activeCategory === category
-                        ? 'bg-lime-500 text-slate-950'
+                        ? 'bg-[#BFBD31] text-slate-950'
                         : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
                     }`}
                   >
@@ -787,9 +852,9 @@ export default function ItineraryCustomization() {
                   <h4 className="text-sm font-semibold text-slate-300 mb-3">Selected Activities</h4>
                   <div className="space-y-2">
                     {itinerary[`day${selectedDay}`].activities.map(activity => (
-                      <div key={activity.id} className="flex items-center justify-between p-3 bg-lime-50 border border-purple-200 rounded-lg">
+                      <div key={activity.id} className="flex items-center justify-between p-3 bg-[#BFBD31]/10 border border-[#BFBD31]/30 rounded-lg">
                         <div className="flex items-center gap-3">
-                          <svg className="w-5 h-5 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
                           </svg>
                           <div>
@@ -798,7 +863,7 @@ export default function ItineraryCustomization() {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="font-semibold text-lime-400">
+                          <span className="font-semibold text-[#BFBD31]">
                             LKR {activity.price.toLocaleString()}
                           </span>
                           <button 
@@ -830,13 +895,13 @@ export default function ItineraryCustomization() {
                       <h4 className="font-semibold text-slate-200 text-sm mb-1">{activity.name}</h4>
                       <p className="text-xs text-slate-400 mb-2">{activity.duration} • {activity.category}</p>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-lime-400">
+                        <span className="text-sm font-bold text-[#BFBD31]">
                           LKR {activity.price.toLocaleString()}
                         </span>
                         {activity.available ? (
                           <button 
                             onClick={() => addActivityToDay(activity, `day${selectedDay}`)}
-                            className="px-3 py-1 bg-lime-500 text-slate-950 text-xs rounded-lg hover:bg-lime-400"
+                            className="px-3 py-1 bg-[#BFBD31] text-slate-950 text-xs rounded-lg hover:bg-[#BFBD31]"
                           >
                             Add
                           </button>
@@ -864,7 +929,7 @@ export default function ItineraryCustomization() {
                       <div 
                         key={meal.id}
                         className={`border rounded-lg p-3 cursor-pointer transition-all ${
-                          isSelected ? 'border-lime-500 bg-lime-50' : 'border-white/10 hover:border-purple-300'
+                          isSelected ? 'border-[#BFBD31] bg-[#BFBD31]/10' : 'border-white/10 hover:border-[#BFBD31]/40'
                         }`}
                         onClick={() => isSelected ? removeAddon(meal.id) : addAddon(meal)}
                       >
@@ -874,11 +939,11 @@ export default function ItineraryCustomization() {
                             <p className="text-xs text-slate-400">{meal.type}</p>
                           </div>
                           {isSelected ? (
-                            <svg className="w-5 h-5 text-lime-400" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-5 h-5 text-[#BFBD31]" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                             </svg>
                           ) : (
-                            <span className="text-sm font-semibold text-lime-400">
+                            <span className="text-sm font-semibold text-[#BFBD31]">
                               +{meal.price.toLocaleString()}
                             </span>
                           )}
@@ -899,24 +964,24 @@ export default function ItineraryCustomization() {
                       <div 
                         key={service.id}
                         className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${
-                          isSelected ? 'border-lime-500 bg-lime-50' : 'border-white/10 hover:border-purple-300'
+                          isSelected ? 'border-[#BFBD31] bg-[#BFBD31]/10' : 'border-white/10 hover:border-[#BFBD31]/40'
                         }`}
                         onClick={() => isSelected ? removeAddon(service.id) : addAddon(service)}
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-lime-100 flex items-center justify-center">
-                            <svg className="w-5 h-5 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-10 h-10 rounded-lg bg-[#BFBD31]/15 flex items-center justify-center">
+                            <svg className="w-5 h-5 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
                           </div>
                           <span className="text-sm font-medium text-slate-200">{service.name}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-lime-400">
+                          <span className="text-sm font-semibold text-[#BFBD31]">
                             LKR {service.price.toLocaleString()}
                           </span>
                           {isSelected && (
-                            <svg className="w-5 h-5 text-lime-400" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-5 h-5 text-[#BFBD31]" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                             </svg>
                           )}
@@ -937,19 +1002,19 @@ export default function ItineraryCustomization() {
                       <div 
                         key={upgrade.id}
                         className={`border rounded-lg p-3 cursor-pointer transition-all ${
-                          isSelected ? 'border-lime-500 bg-lime-50' : 'border-white/10 hover:border-purple-300'
+                          isSelected ? 'border-[#BFBD31] bg-[#BFBD31]/10' : 'border-white/10 hover:border-[#BFBD31]/40'
                         }`}
                         onClick={() => isSelected ? removeAddon(upgrade.id) : addAddon(upgrade)}
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-medium text-slate-200">{upgrade.name}</span>
                           {isSelected && (
-                            <svg className="w-5 h-5 text-lime-400" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-5 h-5 text-[#BFBD31]" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                             </svg>
                           )}
                         </div>
-                        <span className="text-sm font-semibold text-lime-400">
+                        <span className="text-sm font-semibold text-[#BFBD31]">
                           +LKR {upgrade.price.toLocaleString()}
                         </span>
                       </div>
@@ -980,7 +1045,7 @@ export default function ItineraryCustomization() {
               {/* Map Placeholder */}
               <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl h-64 mb-4 flex items-center justify-center">
                 <div className="text-center">
-                  <svg className="w-12 h-12 text-lime-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-12 h-12 text-[#BFBD31] mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
                   </svg>
                   <p className="text-sm text-slate-400">Interactive Map</p>
@@ -988,7 +1053,7 @@ export default function ItineraryCustomization() {
               </div>
 
               <div className="space-y-3">
-                <button className="w-full py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400">
+                <button className="w-full py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31]">
                   Recalculate Route
                 </button>
                 <button className="w-full py-2 border border-white/20 text-slate-300 rounded-lg font-medium hover:bg-slate-950">
@@ -1002,7 +1067,7 @@ export default function ItineraryCustomization() {
                 <div className="space-y-2">
                   {itinerary[`day${selectedDay}`]?.hotel && (
                     <div className="flex items-start gap-2 p-2 bg-slate-950 rounded-lg">
-                      <div className="w-8 h-8 rounded-full bg-lime-500 text-slate-950 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-[#BFBD31] text-slate-950 flex items-center justify-center text-xs font-bold flex-shrink-0">
                         H
                       </div>
                       <div className="flex-1">
@@ -1013,7 +1078,7 @@ export default function ItineraryCustomization() {
                   )}
                   {itinerary[`day${selectedDay}`]?.activities?.map((activity, idx) => (
                     <div key={activity.id} className="flex items-start gap-2 p-2 bg-slate-950 rounded-lg">
-                      <div className="w-8 h-8 rounded-full bg-lime-500 text-slate-950 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-[#BFBD31] text-slate-950 flex items-center justify-center text-xs font-bold flex-shrink-0">
                         {idx + 1}
                       </div>
                       <div className="flex-1">
@@ -1032,7 +1097,7 @@ export default function ItineraryCustomization() {
         {mapCollapsed && (
           <button 
             onClick={() => setMapCollapsed(false)}
-            className="fixed right-0 top-1/2 -translate-y-1/2 bg-lime-500 text-slate-950 p-3 rounded-l-lg shadow-lg hover:bg-lime-400 z-50"
+            className="fixed right-0 top-1/2 -translate-y-1/2 bg-[#BFBD31] text-slate-950 p-3 rounded-l-lg shadow-lg hover:bg-[#BFBD31] z-50"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"/>
@@ -1058,7 +1123,7 @@ export default function ItineraryCustomization() {
           <div className="flex items-center gap-3">
             <div className="text-right">
               <p className="text-xs text-slate-400">Total Cost</p>
-              <p className="text-lg font-bold text-lime-400">LKR {currentTotal.toLocaleString()}</p>
+              <p className="text-lg font-bold text-[#BFBD31]">LKR {currentTotal.toLocaleString()}</p>
             </div>
             <button className="px-4 py-2 text-sm font-medium text-slate-300 border border-white/20 rounded-lg hover:bg-slate-950">
               Cancel Changes
@@ -1066,10 +1131,11 @@ export default function ItineraryCustomization() {
             <button 
               className={`px-6 py-2 text-sm font-semibold rounded-lg transition-all ${
                 currentTotal <= budget 
-                  ? 'bg-lime-500 text-slate-950 hover:bg-lime-400' 
+                  ? 'bg-[#BFBD31] text-slate-950 hover:bg-[#BFBD31]' 
                   : 'bg-gray-400 text-white cursor-not-allowed'
               }`}
               disabled={currentTotal > budget}
+              onClick={handleProceedToBooking}
             >
               {currentTotal <= budget ? 'Proceed to Booking' : 'Over Budget'}
             </button>
@@ -1095,15 +1161,15 @@ export default function ItineraryCustomization() {
               <h4 className="text-sm font-semibold text-slate-300 mb-2">Suggested Actions:</h4>
               <ul className="space-y-2 text-sm text-slate-400">
                 <li className="flex items-start gap-2">
-                  <span className="text-lime-400">•</span>
+                  <span className="text-[#BFBD31]">•</span>
                   <span>Remove the last added item</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-lime-400">•</span>
+                  <span className="text-[#BFBD31]">•</span>
                   <span>Choose a more affordable hotel option</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-lime-400">•</span>
+                  <span className="text-[#BFBD31]">•</span>
                   <span>Remove some add-ons or activities</span>
                 </li>
               </ul>
@@ -1112,7 +1178,7 @@ export default function ItineraryCustomization() {
             <div className="flex gap-3">
               <button 
                 onClick={undoLastChange}
-                className="flex-1 px-4 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400"
+                className="flex-1 px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31]"
               >
                 Remove Last Item
               </button>
@@ -1123,7 +1189,7 @@ export default function ItineraryCustomization() {
                 Keep Editing
               </button>
             </div>
-            <button className="w-full mt-3 py-2 text-sm text-lime-400 hover:text-purple-700 font-medium">
+            <button className="w-full mt-3 py-2 text-sm text-[#BFBD31] hover:text-purple-700 font-medium">
               Increase Budget
             </button>
           </div>
@@ -1147,7 +1213,7 @@ export default function ItineraryCustomization() {
             </div>
             <div className="p-6 space-y-4">
               {alternativeHotels.map(hotel => (
-                <div key={hotel.id} className="border border-white/10 rounded-lg p-4 hover:border-purple-300 transition-all">
+                <div key={hotel.id} className="border border-white/10 rounded-lg p-4 hover:border-[#BFBD31]/40 transition-all">
                   <div className="flex items-start gap-4">
                     <div 
                       className="w-32 h-32 rounded-lg flex-shrink-0"
@@ -1183,7 +1249,7 @@ export default function ItineraryCustomization() {
                         </div>
                         <button 
                           onClick={() => changeHotel(hotel, `day${selectedDay}`)}
-                          className="px-6 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400"
+                          className="px-6 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31]"
                         >
                           Select This Hotel
                         </button>
@@ -1222,7 +1288,7 @@ export default function ItineraryCustomization() {
                     onClick={() => setActiveCategory(category)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                       activeCategory === category
-                        ? 'bg-lime-500 text-slate-950'
+                        ? 'bg-[#BFBD31] text-slate-950'
                         : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
                     }`}
                   >
@@ -1245,7 +1311,7 @@ export default function ItineraryCustomization() {
                     <h4 className="font-semibold text-slate-200 mb-1">{activity.name}</h4>
                     <p className="text-sm text-slate-400 mb-3">{activity.duration} • {activity.category}</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-lime-400">
+                      <span className="text-lg font-bold text-[#BFBD31]">
                         LKR {activity.price.toLocaleString()}
                       </span>
                       {activity.available ? (
@@ -1254,7 +1320,7 @@ export default function ItineraryCustomization() {
                             addActivityToDay(activity, `day${selectedDay}`);
                             setShowActivityModal(false);
                           }}
-                          className="px-4 py-2 bg-lime-500 text-slate-950 text-sm rounded-lg hover:bg-lime-400 font-medium"
+                          className="px-4 py-2 bg-[#BFBD31] text-slate-950 text-sm rounded-lg hover:bg-[#BFBD31] font-medium"
                         >
                           Add to Trip
                         </button>

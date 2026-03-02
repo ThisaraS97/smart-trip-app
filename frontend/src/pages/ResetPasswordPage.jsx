@@ -65,7 +65,7 @@ export default function ResetPasswordPage() {
                 name="password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-white/20 placeholder-gray-500 text-white rounded-t-md focus:outline-none focus:ring-lime-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-white/20 placeholder-gray-500 text-white rounded-t-md focus:outline-none focus:ring-[#BFBD31] focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="New password"
                 value={password}
                 onChange={onChange}
@@ -78,7 +78,7 @@ export default function ResetPasswordPage() {
                 name="confirmPassword"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-white/20 placeholder-gray-500 text-white rounded-b-md focus:outline-none focus:ring-lime-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-white/20 placeholder-gray-500 text-white rounded-b-md focus:outline-none focus:ring-[#BFBD31] focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Confirm new password"
                 value={confirmPassword}
                 onChange={onChange}
@@ -89,13 +89,13 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-lime-500 text-slate-950 font-bold tracking-wide hover:bg-lime-400 hover:shadow-[0_0_20px_rgba(190,242,100,0.4)] transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lime-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#BFBD31] text-slate-950 font-bold tracking-wide hover:bg-[#BFBD31] hover:shadow-[0_0_20px_rgba(190,242,100,0.4)] transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BFBD31] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Resetting...' : 'Reset password'}
             </button>
           </div>
           <div className="text-center">
-            <Link to="/login" className="font-medium text-lime-400 hover:text-lime-300 text-sm">
+            <Link to="/login" className="font-medium text-[#BFBD31] hover:text-[#BFBD31] text-sm">
               Back to sign in
             </Link>
           </div>

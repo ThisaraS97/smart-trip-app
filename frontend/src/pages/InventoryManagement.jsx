@@ -1,10 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+
+// ── field normalization helpers ─────────────────────────────────────────────
+const TYPE_COLORS = {
+  accommodation: '#667eea', transport: '#FF9500', activity: '#34C759',
+  meal: '#FF3B30', package: '#764ba2', other: '#1E90FF',
+};
+const PRICE_UNITS = {
+  accommodation: 'per night', transport: 'per day',
+  activity: 'per person', meal: 'per person', package: 'per package', other: 'per unit',
+};
+const deriveAvailability = (item) => {
+  if (!item.isActive) return 'inactive';
+  if (item.availableCount === 0) return 'booked';
+  if (item.availableCount <= 2) return 'limited';
+  return 'available';
+};
+const mapItem = (raw) => ({
+  id:           raw._id,
+  name:         raw.name,
+  category:     raw.type ? (raw.type.charAt(0).toUpperCase() + raw.type.slice(1)) : 'Other',
+  image:        TYPE_COLORS[raw.type] || '#667eea',
+  rating:       0,
+  reviewCount:  0,
+  price:        raw.price || 0,
+  priceUnit:    PRICE_UNITS[raw.type] || 'per unit',
+  location:     raw.location || '—',
+  availability: deriveAvailability(raw),
+  active:       raw.isActive,
+  lastUpdated:  raw.updatedAt ? new Date(raw.updatedAt).toISOString().split('T')[0] : '—',
+  bookingsToday: 0,
+  totalBookings: 0,
+  description:  raw.description || '',
+  amenities:    raw.amenities || [],
+  capacity:     raw.capacity || 0,
+  availableCount: raw.availableCount || 0,
+});
 
 export default function InventoryManagement() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
   const [viewMode, setViewMode] = useState('grid'); // grid, list, compact
   const [selectedServices, setSelectedServices] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState(null);
 
   const [filters, setFilters] = useState({
     search: '',
@@ -16,112 +58,42 @@ export default function InventoryManagement() {
     sortBy: 'name'
   });
 
-  const [services, setServices] = useState([
-    {
-      id: 'SRV-001',
-      name: 'Deluxe Room with Garden View',
-      category: 'Hotel',
-      image: '#667eea',
-      rating: 4.8,
-      reviewCount: 156,
-      price: 15000,
-      priceUnit: 'per night',
-      location: 'Kandy',
-      availability: 'available',
-      active: true,
-      lastUpdated: '2025-02-10',
-      bookingsToday: 3,
-      totalBookings: 234
-    },
-    {
-      id: 'SRV-002',
-      name: 'Cultural Dance Show Experience',
-      category: 'Activity',
-      image: '#34C759',
-      rating: 4.9,
-      reviewCount: 89,
-      price: 2500,
-      priceUnit: 'per person',
-      location: 'Kandy',
-      availability: 'available',
-      active: true,
-      lastUpdated: '2025-02-11',
-      bookingsToday: 2,
-      totalBookings: 145
-    },
-    {
-      id: 'SRV-003',
-      name: 'Private Car with Driver - Full Day',
-      category: 'Transport',
-      image: '#FF9500',
-      rating: 4.7,
-      reviewCount: 67,
-      price: 8000,
-      priceUnit: 'per day',
-      location: 'Colombo',
-      availability: 'limited',
-      active: true,
-      lastUpdated: '2025-02-09',
-      bookingsToday: 1,
-      totalBookings: 98
-    },
-    {
-      id: 'SRV-004',
-      name: 'Suite with Ocean View',
-      category: 'Hotel',
-      image: '#1E90FF',
-      rating: 5.0,
-      reviewCount: 234,
-      price: 25000,
-      priceUnit: 'per night',
-      location: 'Galle',
-      availability: 'booked',
-      active: true,
-      lastUpdated: '2025-02-11',
-      bookingsToday: 5,
-      totalBookings: 456
-    },
-    {
-      id: 'SRV-005',
-      name: 'Standard Room',
-      category: 'Hotel',
-      image: '#764ba2',
-      rating: 4.5,
-      reviewCount: 123,
-      price: 10000,
-      priceUnit: 'per night',
-      location: 'Kandy',
-      availability: 'available',
-      active: false,
-      lastUpdated: '2025-02-05',
-      bookingsToday: 0,
-      totalBookings: 189
-    },
-    {
-      id: 'SRV-006',
-      name: 'Tea Plantation Tour',
-      category: 'Activity',
-      image: '#FF3B30',
-      rating: 4.6,
-      reviewCount: 45,
-      price: 3500,
-      priceUnit: 'per person',
-      location: 'Nuwara Eliya',
-      availability: 'inactive',
-      active: false,
-      lastUpdated: '2025-01-28',
-      bookingsToday: 0,
-      totalBookings: 67
+  const [services, setServices] = useState([]);
+
+  // ── auth helper ────────────────────────────────────────────────────────────
+  const getToken = useCallback(() => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+    if (!userInfo?.token) { navigate('/vendor/login'); return null; }
+    return userInfo.token;
+  }, [navigate]);
+
+  // ── fetch inventory from DB ────────────────────────────────────────────────
+  const fetchInventory = useCallback(async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      setLoading(true); setError(null);
+      const { data } = await axios.get('/api/inventory', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setServices(data.map(mapItem));
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to load inventory');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  }, [getToken]);
+
+  useEffect(() => { fetchInventory(); }, [fetchInventory]);
 
   const tabs = [
-    { id: 'all', label: 'All Services' },
-    { id: 'hotel', label: 'Hotels/Accommodation' },
-    { id: 'transport', label: 'Transport/Vehicles' },
-    { id: 'activity', label: 'Activities/Experiences' },
-    { id: 'guide', label: 'Tour Guides' },
-    { id: 'meal', label: 'Meal Packages' }
+    { id: 'all',           label: 'All Services' },
+    { id: 'accommodation', label: 'Hotels / Accommodation' },
+    { id: 'transport',     label: 'Transport / Vehicles' },
+    { id: 'activity',      label: 'Activities / Experiences' },
+    { id: 'meal',          label: 'Meal Packages' },
+    { id: 'package',       label: 'Tour Packages' },
+    { id: 'other',         label: 'Other' },
   ];
 
   const getFilteredServices = () => {
@@ -129,14 +101,8 @@ export default function InventoryManagement() {
     // TODO: debounce the search
     // Filter by tab
     if (activeTab !== 'all') {
-      const categoryMap = {
-        hotel: 'Hotel',
-        transport: 'Transport',
-        activity: 'Activity',
-        guide: 'Tour Guide',
-        meal: 'Meal'
-      };
-      filtered = filtered.filter(s => s.category === categoryMap[activeTab]);
+      // activeTab id matches the DB type value directly (accommodation / transport / etc.)
+      filtered = filtered.filter(s => s.category.toLowerCase() === activeTab);
     }
 
     // Filter by search
@@ -165,11 +131,25 @@ export default function InventoryManagement() {
     availableToday: services.filter(s => s.availability === 'available').length
   };
 
-  const handleToggleActive = (serviceId) => {
-    // flips active status on/off
-    setServices(services.map(s => 
-      s.id === serviceId ? { ...s, active: !s.active } : s
-    ));
+  // ── toggle active — calls PUT /api/inventory/:id ─────────────────────────
+  const handleToggleActive = async (serviceId) => {
+    const token = getToken();
+    if (!token) return;
+    const svc = services.find(s => s.id === serviceId);
+    if (!svc) return;
+    // Optimistic update
+    setServices(prev => prev.map(s => s.id === serviceId ? { ...s, active: !s.active } : s));
+    try {
+      await axios.put(`/api/inventory/${serviceId}`,
+        { isActive: !svc.active },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(`Service ${!svc.active ? 'activated' : 'deactivated'}`);
+    } catch {
+      // Revert on failure
+      setServices(prev => prev.map(s => s.id === serviceId ? { ...s, active: svc.active } : s));
+      toast.error('Failed to update service status');
+    }
   };
 
   const handleSelectService = (serviceId) => {
@@ -186,9 +166,21 @@ export default function InventoryManagement() {
     }
   };
 
-  const handleDeleteService = (serviceId) => {
-    setServices(services.filter(s => s.id !== serviceId));
-    setShowDeleteConfirm(null);
+  // ── delete — calls DELETE /api/inventory/:id ──────────────────────────────
+  const handleDeleteService = async (serviceId) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await axios.delete(`/api/inventory/${serviceId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setServices(prev => prev.filter(s => s.id !== serviceId));
+      setShowDeleteConfirm(null);
+      toast.success('Service deleted');
+    } catch {
+      toast.error('Failed to delete service');
+      setShowDeleteConfirm(null);
+    }
   };
 
   const getAvailabilityColor = (status) => {
@@ -211,6 +203,27 @@ export default function InventoryManagement() {
     }
   };
 
+  // ── loading / error guards ────────────────────────────────────────────────
+  if (loading) return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-[#BFBD31] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-slate-400">Loading inventory...</p>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-red-400 text-lg mb-4">{error}</p>
+        <button onClick={fetchInventory} className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold">
+          Retry
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans flex flex-col items-center justify-center p-4 z-0">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(66,153,132,0.15),_transparent_45%),radial-gradient(circle_at_20%_20%,_rgba(190,242,100,0.05),_transparent_35%)]" />
@@ -231,7 +244,9 @@ export default function InventoryManagement() {
               <p className="text-slate-400 mt-1">Manage all your service listings and availability</p>
             </div>
             <div className="flex gap-2">
-              <button className="px-4 py-2 border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950 flex items-center gap-2">
+              <button
+                onClick={fetchInventory}
+                className="px-4 py-2 border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950 flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
@@ -265,11 +280,11 @@ export default function InventoryManagement() {
               <p className="text-sm text-slate-400 mt-1">Inactive</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-lime-300">{statistics.bookedToday}</p>
+              <p className="text-3xl font-bold text-[#BFBD31]">{statistics.bookedToday}</p>
               <p className="text-sm text-slate-400 mt-1">Booked Today</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-lime-400">{statistics.availableToday}</p>
+              <p className="text-3xl font-bold text-[#BFBD31]">{statistics.availableToday}</p>
               <p className="text-sm text-slate-400 mt-1">Available Today</p>
             </div>
           </div>
@@ -286,7 +301,7 @@ export default function InventoryManagement() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-6 py-4 font-semibold border-b-2 transition-all whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'border-lime-500 text-lime-400'
+                    ? 'border-[#BFBD31] text-[#BFBD31]'
                     : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
@@ -324,10 +339,10 @@ export default function InventoryManagement() {
 
             {selectedServices.length > 0 && (
               <div className="flex gap-2">
-                <button className="px-4 py-2 border border-purple-300 text-lime-400 rounded-lg hover:bg-lime-50">
+                <button className="px-4 py-2 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg hover:bg-[#BFBD31]/10">
                   Bulk Edit Pricing ({selectedServices.length})
                 </button>
-                <button className="px-4 py-2 border border-blue-300 text-lime-300 rounded-lg hover:bg-lime-500/10">
+                <button className="px-4 py-2 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg hover:bg-[#d4d235]/10">
                   Bulk Update Availability
                 </button>
                 <button className="px-4 py-2 border border-green-300 text-green-600 rounded-lg hover:bg-green-500/10">
@@ -349,7 +364,7 @@ export default function InventoryManagement() {
               <button
                 onClick={() => setViewMode('grid')}
                 className={`px-4 py-2 rounded-lg font-medium ${
-                  viewMode === 'grid' ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300'
+                  viewMode === 'grid' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300'
                 }`}
               >
                 Grid View
@@ -357,7 +372,7 @@ export default function InventoryManagement() {
               <button
                 onClick={() => setViewMode('list')}
                 className={`px-4 py-2 rounded-lg font-medium ${
-                  viewMode === 'list' ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300'
+                  viewMode === 'list' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300'
                 }`}
               >
                 List View
@@ -365,7 +380,7 @@ export default function InventoryManagement() {
               <button
                 onClick={() => setViewMode('compact')}
                 className={`px-4 py-2 rounded-lg font-medium ${
-                  viewMode === 'compact' ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300'
+                  viewMode === 'compact' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300'
                 }`}
               >
                 Compact View
@@ -382,12 +397,12 @@ export default function InventoryManagement() {
               placeholder="Search by name or ID..."
               value={filters.search}
               onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-              className="px-4 py-2 border border-white/20 rounded-lg"
+              className="px-4 py-2 bg-slate-800 border border-white/20 text-white placeholder-slate-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#BFBD31]/40"
             />
             <select
               value={filters.availability}
               onChange={(e) => setFilters({ ...filters, availability: e.target.value })}
-              className="px-4 py-2 border border-white/20 rounded-lg"
+              className="px-4 py-2 bg-slate-800 border border-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#BFBD31]/40"
             >
               <option value="all">All Availability</option>
               <option value="available">Available</option>
@@ -398,7 +413,7 @@ export default function InventoryManagement() {
             <select
               value={filters.sortBy}
               onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
-              className="px-4 py-2 border border-white/20 rounded-lg"
+              className="px-4 py-2 bg-slate-800 border border-white/20 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#BFBD31]/40"
             >
               <option value="name">Sort by Name</option>
               <option value="price">Sort by Price</option>
@@ -407,20 +422,7 @@ export default function InventoryManagement() {
               <option value="popularity">Sort by Popularity</option>
             </select>
             <div className="flex gap-2">
-              <input
-                type="number"
-                placeholder="Min Price"
-                value={filters.priceMin}
-                onChange={(e) => setFilters({ ...filters, priceMin: e.target.value })}
-                className="flex-1 px-4 py-2 border border-white/20 rounded-lg"
-              />
-              <input
-                type="number"
-                placeholder="Max Price"
-                value={filters.priceMax}
-                onChange={(e) => setFilters({ ...filters, priceMax: e.target.value })}
-                className="flex-1 px-4 py-2 border border-white/20 rounded-lg"
-              />
+             
             </div>
           </div>
         </div>
@@ -433,7 +435,7 @@ export default function InventoryManagement() {
                 type="checkbox"
                 checked={selectedServices.length === filteredServices.length}
                 onChange={handleSelectAll}
-                className="w-5 h-5 text-lime-400 rounded"
+                className="w-5 h-5 text-[#BFBD31] rounded"
               />
               <span className="text-sm font-medium text-slate-300">
                 Select All ({filteredServices.length})
@@ -449,27 +451,34 @@ export default function InventoryManagement() {
               const availColors = getAvailabilityColor(service.availability);
               
               return (
-                <div key={service.id} className="bg-slate-900 border border-white/10 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all">
-                  <div className="relative">
-                    <div className="h-48 flex items-center justify-center text-white text-6xl font-bold" style={{ background: service.image }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedServices.includes(service.id)}
-                        onChange={() => handleSelectService(service.id)}
-                        className="absolute top-4 left-4 w-5 h-5 text-lime-400 rounded"
-                      />
-                      <span className={`absolute top-4 right-4 px-3 py-1 ${availColors.bg} ${availColors.text} text-xs font-semibold rounded-full flex items-center gap-2`}>
-                        <span className={`w-2 h-2 rounded-full ${availColors.dot}`}></span>
-                        {getAvailabilityLabel(service.availability)}
-                      </span>
-                    </div>
+                <div key={service.id} className="bg-slate-900 border border-white/10 rounded-xl shadow-md overflow-hidden hover:shadow-lg hover:border-white/20 transition-all">
+                  <div className="relative h-36 flex flex-col items-center justify-center gap-2" style={{ background: `linear-gradient(135deg, ${service.image}cc, ${service.image}88)` }}>
+                    <span className="text-4xl">
+                      {service.category.toLowerCase() === 'accommodation' ? '🏨'
+                        : service.category.toLowerCase() === 'transport' ? '🚗'
+                        : service.category.toLowerCase() === 'activity'  ? '🎭'
+                        : service.category.toLowerCase() === 'meal'      ? '🍽️'
+                        : service.category.toLowerCase() === 'package'   ? '📦'
+                        : '📋'}
+                    </span>
+                    <p className="text-white font-semibold text-sm px-4 text-center line-clamp-1 drop-shadow">{service.name}</p>
+                    <input
+                      type="checkbox"
+                      checked={selectedServices.includes(service.id)}
+                      onChange={() => handleSelectService(service.id)}
+                      className="absolute top-3 left-3 w-4 h-4 rounded"
+                    />
+                    <span className={`absolute top-3 right-3 px-2 py-0.5 ${availColors.bg} ${availColors.text} text-xs font-semibold rounded-full flex items-center gap-1`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${availColors.dot}`}></span>
+                      {getAvailabilityLabel(service.availability)}
+                    </span>
                   </div>
 
                   <div className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <h3 className="text-lg font-bold text-white">{service.name}</h3>
-                        <span className="px-2 py-1 bg-lime-100 text-purple-700 text-xs font-semibold rounded">
+                        <h3 className="text-base font-bold text-white leading-snug">{service.name}</h3>
+                        <span className="px-2 py-0.5 bg-slate-700 text-slate-300 text-xs font-medium rounded mt-0.5 inline-block">
                           {service.category}
                         </span>
                       </div>
@@ -480,7 +489,7 @@ export default function InventoryManagement() {
                           onChange={() => handleToggleActive(service.id)}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-900 border border-white/10 after:border-white/20 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-lime-500 text-slate-950"></div>
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#BFBD31]/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-900 border border-white/10 after:border-white/20 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#BFBD31] text-slate-950"></div>
                       </label>
                     </div>
 
@@ -499,7 +508,7 @@ export default function InventoryManagement() {
 
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <p className="text-2xl font-bold text-lime-400">LKR {service.price.toLocaleString()}</p>
+                        <p className="text-2xl font-bold text-[#BFBD31]">LKR {service.price.toLocaleString()}</p>
                         <p className="text-xs text-slate-400">{service.priceUnit}</p>
                       </div>
                       <div className="text-right">
@@ -546,13 +555,13 @@ export default function InventoryManagement() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
-                      <button className="px-3 py-2 text-xs border border-purple-300 text-lime-400 rounded-lg hover:bg-lime-50 flex items-center justify-center gap-1">
+                      <button className="px-3 py-2 text-xs border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg hover:bg-[#BFBD31]/10 flex items-center justify-center gap-1">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
                         Availability
                       </button>
-                      <button className="px-3 py-2 text-xs border border-blue-300 text-lime-300 rounded-lg hover:bg-lime-500/10 flex items-center justify-center gap-1">
+                      <button className="px-3 py-2 text-xs border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg hover:bg-[#d4d235]/10 flex items-center justify-center gap-1">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
@@ -589,7 +598,7 @@ export default function InventoryManagement() {
                       type="checkbox"
                       checked={selectedServices.length === filteredServices.length}
                       onChange={handleSelectAll}
-                      className="w-5 h-5 text-lime-400 rounded"
+                      className="w-5 h-5 text-[#BFBD31] rounded"
                     />
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Service</th>
@@ -613,7 +622,7 @@ export default function InventoryManagement() {
                           type="checkbox"
                           checked={selectedServices.includes(service.id)}
                           onChange={() => handleSelectService(service.id)}
-                          className="w-5 h-5 text-lime-400 rounded"
+                          className="w-5 h-5 text-[#BFBD31] rounded"
                         />
                       </td>
                       <td className="px-4 py-3">
@@ -626,7 +635,7 @@ export default function InventoryManagement() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="px-2 py-1 bg-lime-100 text-purple-700 text-xs font-semibold rounded">
+                        <span className="px-2 py-1 bg-slate-700 text-slate-300 text-xs font-medium rounded">
                           {service.category}
                         </span>
                       </td>
@@ -655,18 +664,18 @@ export default function InventoryManagement() {
                             onChange={() => handleToggleActive(service.id)}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-lime-500 text-slate-950 peer-focus:ring-4 peer-focus:ring-purple-300"></div>
+                          <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-[#BFBD31] text-slate-950 peer-focus:ring-4 peer-focus:ring-[#BFBD31]/30"></div>
                           <div className="absolute left-[2px] top-[2px] bg-slate-900 border border-white/10 w-5 h-5 rounded-full transition-all peer-checked:translate-x-5"></div>
                         </label>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
-                          <button title="Edit" className="text-lime-400 hover:text-purple-700">
+                          <button title="Edit" className="text-[#BFBD31] hover:text-purple-700">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
                           </button>
-                          <button title="View" className="text-lime-300 hover:text-blue-300">
+                          <button title="View" className="text-[#BFBD31] hover:text-blue-300">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -703,13 +712,13 @@ export default function InventoryManagement() {
                     type="checkbox"
                     checked={selectedServices.includes(service.id)}
                     onChange={() => handleSelectService(service.id)}
-                    className="w-5 h-5 text-lime-400 rounded"
+                    className="w-5 h-5 text-[#BFBD31] rounded"
                   />
                   <div className="w-16 h-16 rounded-lg" style={{ background: service.image }}></div>
                   <div className="flex-1">
                     <h3 className="font-bold text-white">{service.name}</h3>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="px-2 py-0.5 bg-lime-100 text-purple-700 text-xs font-semibold rounded">
+                      <span className="px-2 py-0.5 bg-slate-700 text-slate-300 text-xs font-medium rounded">
                         {service.category}
                       </span>
                       <span className="text-sm text-slate-400">📍 {service.location}</span>
@@ -717,7 +726,7 @@ export default function InventoryManagement() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-lime-400">LKR {service.price.toLocaleString()}</p>
+                    <p className="text-lg font-bold text-[#BFBD31]">LKR {service.price.toLocaleString()}</p>
                     <p className="text-xs text-slate-500">{service.priceUnit}</p>
                   </div>
                   <span className={`px-3 py-1 ${availColors.bg} ${availColors.text} text-xs font-semibold rounded-full flex items-center gap-2`}>
@@ -731,11 +740,11 @@ export default function InventoryManagement() {
                       onChange={() => handleToggleActive(service.id)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-lime-500 text-slate-950"></div>
+                    <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-[#BFBD31] text-slate-950"></div>
                     <div className="absolute left-[2px] top-[2px] bg-slate-900 border border-white/10 w-5 h-5 rounded-full transition-all peer-checked:translate-x-5"></div>
                   </label>
                   <div className="flex gap-2">
-                    <button className="text-lime-400 hover:text-purple-700">
+                    <button className="text-[#BFBD31] hover:text-purple-700">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                       </svg>

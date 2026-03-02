@@ -66,7 +66,7 @@ export default function AvailabilityCalendar() {
       case 'available': return { bg: 'bg-green-500/10', border: 'border-green-300', text: 'text-green-300' };
       case 'limited': return { bg: 'bg-yellow-500/10', border: 'border-yellow-300', text: 'text-yellow-700' };
       case 'booked': return { bg: 'bg-red-500/10', border: 'border-red-300', text: 'text-red-300' };
-      case 'maintenance': return { bg: 'bg-lime-500/10', border: 'border-blue-300', text: 'text-blue-300' };
+      case 'maintenance': return { bg: 'bg-[#BFBD31]/10', border: 'border-[#BFBD31]/40', text: 'text-blue-300' };
       default: return { bg: 'bg-slate-950', border: 'border-white/20', text: 'text-slate-300' };
     }
   };
@@ -243,7 +243,7 @@ export default function AvailabilityCalendar() {
                   type="checkbox"
                   checked={showMultipleServices}
                   onChange={(e) => setShowMultipleServices(e.target.checked)}
-                  className="w-5 h-5 text-lime-400 rounded"
+                  className="w-5 h-5 text-[#BFBD31] rounded"
                 />
                 <span className="text-sm text-slate-300">Show Multiple Services (Color-Coded)</span>
               </label>
@@ -271,7 +271,7 @@ export default function AvailabilityCalendar() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowBulkModal(true)}
-                className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg hover:bg-lime-400 flex items-center gap-2"
+                className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31] flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -284,7 +284,7 @@ export default function AvailabilityCalendar() {
               <button className="px-4 py-2 border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950">
                 Set Weekly Pattern
               </button>
-              <button className="px-4 py-2 border border-blue-300 text-lime-300 rounded-lg hover:bg-lime-500/10">
+              <button className="px-4 py-2 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg hover:bg-[#d4d235]/10">
                 Sync with Booking.com
               </button>
             </div>
@@ -517,7 +517,7 @@ export default function AvailabilityCalendar() {
                   type="checkbox"
                   checked={editForm.applyToRange}
                   onChange={(e) => setEditForm({ ...editForm, applyToRange: e.target.checked })}
-                  className="w-5 h-5 text-lime-400 rounded"
+                  className="w-5 h-5 text-[#BFBD31] rounded"
                 />
                 <span className="text-sm text-slate-300">Apply to Date Range</span>
               </label>
@@ -562,7 +562,7 @@ export default function AvailabilityCalendar() {
               </button>
               <button
                 onClick={handleSaveDateChanges}
-                className="flex-1 px-4 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                className="flex-1 px-4 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
               >
                 Save Changes
               </button>
@@ -659,7 +659,7 @@ export default function AvailabilityCalendar() {
               </button>
               <button
                 onClick={handleBulkApply}
-                className="flex-1 px-4 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                className="flex-1 px-4 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
               >
                 Apply to Range
               </button>

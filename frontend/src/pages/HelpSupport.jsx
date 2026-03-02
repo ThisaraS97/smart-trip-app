@@ -235,7 +235,7 @@ export default function HelpSupport() {
                 </svg>
                 Live Chat
               </button>
-              <button className="px-4 py-2 text-sm font-medium text-lime-400 border border-purple-300 rounded-lg hover:bg-lime-50 flex items-center gap-2">
+              <button className="px-4 py-2 text-sm font-medium text-[#BFBD31] border border-[#BFBD31]/40 rounded-lg hover:bg-[#BFBD31]/10 flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                 </svg>
@@ -271,8 +271,8 @@ export default function HelpSupport() {
             onClick={() => setShowSupportForm(true)}
             className="p-6 bg-slate-900 border border-white/10 rounded-xl shadow-md hover:shadow-lg transition-all text-center"
           >
-            <div className="w-12 h-12 bg-lime-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg className="w-6 h-6 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-12 h-12 bg-[#BFBD31]/15 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
               </svg>
             </div>
@@ -292,7 +292,7 @@ export default function HelpSupport() {
 
           <button className="p-6 bg-slate-900 border border-white/10 rounded-xl shadow-md hover:shadow-lg transition-all text-center">
             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg className="w-6 h-6 text-lime-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
               </svg>
             </div>
@@ -319,7 +319,7 @@ export default function HelpSupport() {
               onClick={() => setActiveSection(section.id)}
               className={`px-6 py-3 rounded-lg font-medium text-sm whitespace-nowrap transition-all flex items-center gap-2 ${
                 activeSection === section.id
-                  ? 'bg-lime-500 text-slate-950'
+                  ? 'bg-[#BFBD31] text-slate-950'
                   : 'text-slate-300 hover:bg-slate-800/50'
               }`}
             >
@@ -343,7 +343,7 @@ export default function HelpSupport() {
                     className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-950 transition-colors"
                   >
                     <div className="flex items-center gap-3 flex-1">
-                      <span className="px-2 py-1 bg-lime-100 text-purple-700 text-xs font-semibold rounded">
+                      <span className="px-2 py-1 bg-[#BFBD31]/15 text-purple-700 text-xs font-semibold rounded">
                         {faq.category}
                       </span>
                       <span className="font-semibold text-white">{faq.question}</span>
@@ -376,10 +376,10 @@ export default function HelpSupport() {
             <h2 className="text-2xl font-bold text-white mb-6">Knowledge Base</h2>
             <div className="space-y-4">
               {filteredKnowledgeBase.map(article => (
-                <div key={article.id} className="border border-white/10 rounded-lg p-6 hover:border-purple-300 hover:shadow-md transition-all cursor-pointer">
+                <div key={article.id} className="border border-white/10 rounded-lg p-6 hover:border-[#BFBD31]/40 hover:shadow-md transition-all cursor-pointer">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-lime-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-12 h-12 bg-[#BFBD31]/15 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-6 h-6 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                       </svg>
                     </div>
@@ -412,7 +412,7 @@ export default function HelpSupport() {
                   <div className="relative h-40" style={{ background: tutorial.thumbnail }}>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-16 h-16 bg-slate-900 border border-white/10/90 backdrop-blur-sm rounded-full flex items-center justify-center">
-                        <svg className="w-8 h-8 text-lime-400" fill="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-8 h-8 text-[#BFBD31]" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M8 5v14l11-7z"/>
                         </svg>
                       </div>
@@ -436,9 +436,9 @@ export default function HelpSupport() {
           <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Contact Support</h2>
             <div className="space-y-6">
-              <div className="p-6 bg-lime-500/10 border border-lime-500/20 rounded-lg">
+              <div className="p-6 bg-[#BFBD31]/10 border border-[#BFBD31]/20 rounded-lg">
                 <h3 className="font-semibold text-blue-900 mb-2">📧 Email Support</h3>
-                <p className="text-lime-300 mb-2">support@smarttrip.lk</p>
+                <p className="text-[#BFBD31] mb-2">support@smarttrip.lk</p>
                 <p className="text-sm text-blue-300">Response time: Within 24 hours</p>
               </div>
 
@@ -451,7 +451,7 @@ export default function HelpSupport() {
                 </button>
               </div>
 
-              <div className="p-6 bg-lime-50 border border-purple-200 rounded-lg">
+              <div className="p-6 bg-[#BFBD31]/10 border border-[#BFBD31]/30 rounded-lg">
                 <h3 className="font-semibold text-purple-900 mb-2">📞 Phone Support</h3>
                 <p className="text-purple-800 mb-2">+94 11 234 5678</p>
                 <p className="text-sm text-purple-700">Available: Mon-Fri, 9 AM - 6 PM (GMT+5:30)</p>
@@ -459,7 +459,7 @@ export default function HelpSupport() {
 
               <button
                 onClick={() => setShowSupportForm(true)}
-                className="w-full px-6 py-4 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400 flex items-center justify-center gap-2"
+                className="w-full px-6 py-4 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31] flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
@@ -493,7 +493,7 @@ export default function HelpSupport() {
                 <select
                   value={supportForm.category}
                   onChange={(e) => setSupportForm({ ...supportForm, category: e.target.value })}
-                  className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                 >
                   <option value="">Select a category</option>
                   {issueCategories.map(category => (
@@ -511,7 +511,7 @@ export default function HelpSupport() {
                   value={supportForm.subject}
                   onChange={(e) => setSupportForm({ ...supportForm, subject: e.target.value })}
                   placeholder="Brief summary of your issue"
-                  className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                 />
               </div>
 
@@ -524,7 +524,7 @@ export default function HelpSupport() {
                   onChange={(e) => setSupportForm({ ...supportForm, description: e.target.value })}
                   rows={6}
                   placeholder="Please provide detailed information about your issue..."
-                  className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                 />
               </div>
 
@@ -537,7 +537,7 @@ export default function HelpSupport() {
                   value={supportForm.bookingReference}
                   onChange={(e) => setSupportForm({ ...supportForm, bookingReference: e.target.value })}
                   placeholder="e.g., ST2025-KND-1847"
-                  className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                 />
               </div>
 
@@ -549,7 +549,7 @@ export default function HelpSupport() {
                   type="file"
                   accept="image/*"
                   onChange={handleFileUpload}
-                  className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-[#BFBD31] focus:border-transparent"
                 />
                 {supportForm.screenshot && (
                   <p className="text-sm text-slate-400 mt-2">
@@ -561,7 +561,7 @@ export default function HelpSupport() {
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={handleSubmitTicket}
-                  className="flex-1 px-6 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                  className="flex-1 px-6 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
                 >
                   Submit Ticket
                 </button>
@@ -589,25 +589,25 @@ export default function HelpSupport() {
         <div className="mt-8 bg-slate-900 border border-white/10 rounded-xl shadow-md p-8">
           <h3 className="text-xl font-bold text-white mb-4">Additional Resources</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <a href="#" className="p-4 border border-white/10 rounded-lg hover:border-purple-300 hover:bg-lime-50 transition-all flex items-center justify-between">
+            <a href="#" className="p-4 border border-white/10 rounded-lg hover:border-[#BFBD31]/40 hover:bg-[#BFBD31]/10 transition-all flex items-center justify-between">
               <span className="font-medium text-white">📄 Terms & Conditions</span>
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/>
               </svg>
             </a>
-            <a href="#" className="p-4 border border-white/10 rounded-lg hover:border-purple-300 hover:bg-lime-50 transition-all flex items-center justify-between">
+            <a href="#" className="p-4 border border-white/10 rounded-lg hover:border-[#BFBD31]/40 hover:bg-[#BFBD31]/10 transition-all flex items-center justify-between">
               <span className="font-medium text-white">🔒 Privacy Policy</span>
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/>
               </svg>
             </a>
-            <a href="#" className="p-4 border border-white/10 rounded-lg hover:border-purple-300 hover:bg-lime-50 transition-all flex items-center justify-between">
+            <a href="#" className="p-4 border border-white/10 rounded-lg hover:border-[#BFBD31]/40 hover:bg-[#BFBD31]/10 transition-all flex items-center justify-between">
               <span className="font-medium text-white">🔄 Cancellation Policy</span>
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/>
               </svg>
             </a>
-            <a href="#" className="p-4 border border-white/10 rounded-lg hover:border-purple-300 hover:bg-lime-50 transition-all flex items-center justify-between">
+            <a href="#" className="p-4 border border-white/10 rounded-lg hover:border-[#BFBD31]/40 hover:bg-[#BFBD31]/10 transition-all flex items-center justify-between">
               <span className="font-medium text-white">📖 How to Use SmartTRIP</span>
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/>

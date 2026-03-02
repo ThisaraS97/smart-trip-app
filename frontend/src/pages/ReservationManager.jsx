@@ -243,7 +243,7 @@ export default function ReservationManager() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-6 py-4 font-semibold border-b-2 transition-all whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'border-lime-500 text-lime-400'
+                    ? 'border-[#BFBD31] text-[#BFBD31]'
                     : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
@@ -267,7 +267,7 @@ export default function ReservationManager() {
               <button
                 onClick={() => setViewMode('card')}
                 className={`px-4 py-2 rounded-lg font-medium ${
-                  viewMode === 'card' ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300'
+                  viewMode === 'card' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300'
                 }`}
               >
                 Card View
@@ -275,7 +275,7 @@ export default function ReservationManager() {
               <button
                 onClick={() => setViewMode('list')}
                 className={`px-4 py-2 rounded-lg font-medium ${
-                  viewMode === 'list' ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300'
+                  viewMode === 'list' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300'
                 }`}
               >
                 List View
@@ -283,7 +283,7 @@ export default function ReservationManager() {
               <button
                 onClick={() => setViewMode('calendar')}
                 className={`px-4 py-2 rounded-lg font-medium ${
-                  viewMode === 'calendar' ? 'bg-lime-500 text-slate-950' : 'bg-slate-800/50 text-slate-300'
+                  viewMode === 'calendar' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300'
                 }`}
               >
                 Calendar View
@@ -362,7 +362,7 @@ export default function ReservationManager() {
                         setSelectedBookings(bookings.pending.map(b => b.id));
                       }
                     }}
-                    className="w-5 h-5 text-lime-400 rounded"
+                    className="w-5 h-5 text-[#BFBD31] rounded"
                   />
                   <span className="text-sm font-medium text-slate-300">
                     Select All ({bookings.pending.length})
@@ -381,7 +381,7 @@ export default function ReservationManager() {
                         type="checkbox"
                         checked={selectedBookings.includes(booking.id)}
                         onChange={() => handleSelectBooking(booking.id)}
-                        className="w-5 h-5 text-lime-400 rounded mt-1"
+                        className="w-5 h-5 text-[#BFBD31] rounded mt-1"
                       />
                       <div>
                         <div className="flex items-center gap-3 mb-2">
@@ -411,7 +411,7 @@ export default function ReservationManager() {
                         <p className="text-slate-300"><span className="font-medium">Name:</span> {booking.customerName}</p>
                         <p className="text-slate-300"><span className="font-medium">Phone:</span> {booking.customerPhone}</p>
                         <p className="text-slate-300"><span className="font-medium">Email:</span> {booking.customerEmail}</p>
-                        <button className="mt-2 text-lime-400 hover:text-purple-700 font-medium flex items-center gap-1">
+                        <button className="mt-2 text-[#BFBD31] hover:text-purple-700 font-medium flex items-center gap-1">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                           </svg>
@@ -444,9 +444,9 @@ export default function ReservationManager() {
                           <p className="text-slate-300">Meal: {booking.mealPlan}</p>
                         )}
                         {booking.specialRequests && (
-                          <div className="mt-2 p-2 bg-lime-500/10 rounded">
+                          <div className="mt-2 p-2 bg-[#BFBD31]/10 rounded">
                             <p className="text-xs text-blue-900 font-medium">Special Requests:</p>
-                            <p className="text-xs text-lime-300">{booking.specialRequests}</p>
+                            <p className="text-xs text-[#BFBD31]">{booking.specialRequests}</p>
                           </div>
                         )}
                       </div>
@@ -502,10 +502,10 @@ export default function ReservationManager() {
                     >
                       View Full Details
                     </button>
-                    <button className="px-4 py-3 border border-purple-300 text-lime-400 rounded-lg font-semibold hover:bg-lime-50">
+                    <button className="px-4 py-3 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg font-semibold hover:bg-[#BFBD31]/10">
                       Check Availability
                     </button>
-                    <button className="px-4 py-3 border border-blue-300 text-lime-300 rounded-lg font-semibold hover:bg-lime-500/10">
+                    <button className="px-4 py-3 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg font-semibold hover:bg-[#d4d235]/10">
                       Request More Info
                     </button>
                   </div>
@@ -530,7 +530,7 @@ export default function ReservationManager() {
                       </span>
                     </div>
                     <p className="text-slate-400">Confirmed: {booking.confirmDate}</p>
-                    <p className="text-lime-400 font-medium mt-1">
+                    <p className="text-[#BFBD31] font-medium mt-1">
                       Service in {booking.daysUntil} days ({booking.checkIn})
                     </p>
                   </div>
@@ -557,7 +557,7 @@ export default function ReservationManager() {
                   </button>
                   <button
                     onClick={() => setShowModifyModal(booking)}
-                    className="px-4 py-2 border border-purple-300 text-lime-400 rounded-lg hover:bg-lime-50"
+                    className="px-4 py-2 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg hover:bg-[#BFBD31]/10"
                   >
                     Modify Booking
                   </button>
@@ -648,12 +648,12 @@ export default function ReservationManager() {
                     Download Invoice
                   </button>
                   {!booking.hasReview && (
-                    <button className="px-4 py-2 border border-purple-300 text-lime-400 rounded-lg hover:bg-lime-50">
+                    <button className="px-4 py-2 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg hover:bg-[#BFBD31]/10">
                       Request Review
                     </button>
                   )}
                   {booking.hasReview && (
-                    <button className="px-4 py-2 border border-blue-300 text-lime-300 rounded-lg hover:bg-lime-500/10">
+                    <button className="px-4 py-2 border border-[#BFBD31]/40 text-[#BFBD31] rounded-lg hover:bg-[#d4d235]/10">
                       View Customer Review
                     </button>
                   )}
@@ -733,15 +733,15 @@ export default function ReservationManager() {
           <div className="space-y-3">
             <label className="flex items-center justify-between cursor-pointer">
               <span className="text-sm text-slate-300">Email me for new booking requests</span>
-              <input type="checkbox" defaultChecked className="w-12 h-6 rounded-full appearance-none bg-gray-300 checked:bg-lime-500 text-slate-950 relative cursor-pointer transition-colors" />
+              <input type="checkbox" defaultChecked className="w-12 h-6 rounded-full appearance-none bg-gray-300 checked:bg-[#BFBD31] text-slate-950 relative cursor-pointer transition-colors" />
             </label>
             <label className="flex items-center justify-between cursor-pointer">
               <span className="text-sm text-slate-300">SMS me for new booking requests</span>
-              <input type="checkbox" className="w-12 h-6 rounded-full appearance-none bg-gray-300 checked:bg-lime-500 text-slate-950 relative cursor-pointer transition-colors" />
+              <input type="checkbox" className="w-12 h-6 rounded-full appearance-none bg-gray-300 checked:bg-[#BFBD31] text-slate-950 relative cursor-pointer transition-colors" />
             </label>
             <label className="flex items-center justify-between cursor-pointer">
               <span className="text-sm text-slate-300">Sound notification for new requests (in-app)</span>
-              <input type="checkbox" defaultChecked className="w-12 h-6 rounded-full appearance-none bg-gray-300 checked:bg-lime-500 text-slate-950 relative cursor-pointer transition-colors" />
+              <input type="checkbox" defaultChecked className="w-12 h-6 rounded-full appearance-none bg-gray-300 checked:bg-[#BFBD31] text-slate-950 relative cursor-pointer transition-colors" />
             </label>
           </div>
         </div>
@@ -851,7 +851,7 @@ export default function ReservationManager() {
                   type="checkbox"
                   checked={acceptForm.sendEmail}
                   onChange={(e) => setAcceptForm({ ...acceptForm, sendEmail: e.target.checked })}
-                  className="w-5 h-5 text-lime-400 rounded"
+                  className="w-5 h-5 text-[#BFBD31] rounded"
                 />
                 <span className="text-sm text-slate-300">Send confirmation email to customer</span>
               </label>
@@ -919,7 +919,7 @@ export default function ReservationManager() {
                   type="checkbox"
                   checked={rejectForm.alternativeDates}
                   onChange={(e) => setRejectForm({ ...rejectForm, alternativeDates: e.target.checked })}
-                  className="w-5 h-5 text-lime-400 rounded"
+                  className="w-5 h-5 text-[#BFBD31] rounded"
                 />
                 <span className="text-sm text-slate-300">Suggest alternative dates</span>
               </label>
@@ -961,7 +961,7 @@ export default function ReservationManager() {
                   type="checkbox"
                   checked={rejectForm.sendEmail}
                   onChange={(e) => setRejectForm({ ...rejectForm, sendEmail: e.target.checked })}
-                  className="w-5 h-5 text-lime-400 rounded"
+                  className="w-5 h-5 text-[#BFBD31] rounded"
                 />
                 <span className="text-sm text-slate-300">Send rejection email to customer</span>
               </label>
@@ -1041,7 +1041,7 @@ export default function ReservationManager() {
                 <input
                   type="checkbox"
                   defaultChecked
-                  className="w-5 h-5 text-lime-400 rounded"
+                  className="w-5 h-5 text-[#BFBD31] rounded"
                 />
                 <span className="text-sm text-slate-300">Send notification to customer</span>
               </label>
@@ -1059,7 +1059,7 @@ export default function ReservationManager() {
                   alert('Booking modified successfully!');
                   setShowModifyModal(null);
                 }}
-                className="flex-1 px-4 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                className="flex-1 px-4 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
               >
                 Save Changes
               </button>

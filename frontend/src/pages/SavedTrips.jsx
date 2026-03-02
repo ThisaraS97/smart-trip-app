@@ -121,7 +121,7 @@ export default function SavedTrips() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-lime-100 text-lime-400' : 'text-slate-400 hover:bg-slate-800/50'}`}
+                className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-[#BFBD31]/15 text-[#BFBD31]' : 'text-slate-400 hover:bg-slate-800/50'}`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
@@ -129,7 +129,7 @@ export default function SavedTrips() {
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-lime-100 text-lime-400' : 'text-slate-400 hover:bg-slate-800/50'}`}
+                className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-[#BFBD31]/15 text-[#BFBD31]' : 'text-slate-400 hover:bg-slate-800/50'}`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -145,7 +145,7 @@ export default function SavedTrips() {
         {loading && (
           <div className="flex items-center justify-center py-24">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lime-500 mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#BFBD31] mx-auto mb-4"></div>
               <p className="text-slate-400">Loading saved trips...</p>
             </div>
           </div>
@@ -156,7 +156,7 @@ export default function SavedTrips() {
           <div className="flex items-center justify-center py-24">
             <div className="text-center">
               <p className="text-red-400 mb-4">{error}</p>
-              <button onClick={() => window.location.reload()} className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg">
+              <button onClick={() => window.location.reload()} className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg">
                 Retry
               </button>
             </div>
@@ -175,14 +175,14 @@ export default function SavedTrips() {
                     type="checkbox"
                     checked={selectedTrips.length === savedTrips.length && savedTrips.length > 0}
                     onChange={selectAllTrips}
-                    className="w-5 h-5 text-lime-400 rounded"
+                    className="w-5 h-5 text-[#BFBD31] rounded"
                   />
                   <span className="text-sm font-medium text-slate-300">
                     Select All ({savedTrips.length})
                   </span>
                 </label>
                 {selectedTrips.length > 0 && (
-                  <span className="text-sm text-lime-400 font-medium">
+                  <span className="text-sm text-[#BFBD31] font-medium">
                     {selectedTrips.length} selected
                   </span>
                 )}
@@ -192,7 +192,7 @@ export default function SavedTrips() {
                   <button
                     onClick={() => setShowCompareModal(true)}
                     disabled={selectedTrips.length < 2 || selectedTrips.length > 3}
-                    className="px-4 py-2 text-sm font-medium text-lime-400 border border-purple-300 rounded-lg hover:bg-lime-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 text-sm font-medium text-[#BFBD31] border border-[#BFBD31]/40 rounded-lg hover:bg-[#BFBD31]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Compare Selected ({selectedTrips.length}/3)
                   </button>
@@ -216,7 +216,7 @@ export default function SavedTrips() {
             </svg>
             <h3 className="text-xl font-bold text-slate-200 mb-2">No saved trips yet</h3>
             <p className="text-slate-400 mb-6">Start exploring destinations and save trips for later!</p>
-            <button className="px-6 py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400">
+            <button className="px-6 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]">
               Explore Destinations
             </button>
           </div>
@@ -242,7 +242,7 @@ export default function SavedTrips() {
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => toggleTripSelection(trip.id)}
-                        className="w-5 h-5 text-lime-400 rounded bg-slate-900 border border-white/10"
+                        className="w-5 h-5 text-[#BFBD31] rounded bg-slate-900 border border-white/10"
                       />
                     </div>
                     <div className="absolute bottom-4 left-4 right-4">
@@ -258,7 +258,7 @@ export default function SavedTrips() {
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <p className="text-xs text-slate-400 mb-1">Estimated Cost</p>
-                        <p className="text-2xl font-bold text-lime-400">
+                        <p className="text-2xl font-bold text-[#BFBD31]">
                           LKR {trip.estimatedCost.toLocaleString()}
                         </p>
                       </div>
@@ -274,7 +274,7 @@ export default function SavedTrips() {
                       <ul className="space-y-1">
                         {trip.highlights.slice(0, 3).map((highlight, idx) => (
                           <li key={idx} className="text-sm text-slate-300 flex items-start gap-2">
-                            <span className="text-lime-400">•</span>
+                            <span className="text-[#BFBD31]">•</span>
                             <span>{highlight}</span>
                           </li>
                         ))}
@@ -297,7 +297,7 @@ export default function SavedTrips() {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={() => handleBookNow(trip)}
-                        className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg font-medium hover:bg-lime-400 text-sm"
+                        className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-medium hover:bg-[#BFBD31] text-sm"
                       >
                         Book Now
                       </button>
@@ -367,7 +367,7 @@ export default function SavedTrips() {
                   <tr className="border-b border-gray-100">
                     <td className="px-4 py-3 text-sm font-medium text-slate-300">Cost</td>
                     {savedTrips.filter(t => selectedTrips.includes(t.id)).map(trip => (
-                      <td key={trip.id} className="px-4 py-3 text-sm text-lime-400 font-semibold">
+                      <td key={trip.id} className="px-4 py-3 text-sm text-[#BFBD31] font-semibold">
                         LKR {trip.estimatedCost.toLocaleString()}
                       </td>
                     ))}

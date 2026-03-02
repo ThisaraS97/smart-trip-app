@@ -1,188 +1,107 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function VendorDashboard() {
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // ── state wired to API ─────────────────────────────────────────────────────
+  const [vendorName, setVendorName] = useState('');
+  const [metrics, setMetrics] = useState({
+    totalBookings: 0, pendingRequests: 0, revenueThisMonth: 0,
+    totalRevenue: 0, activeListings: 0, averageRating: 0,
+    responseRate: 0, lastUploadDate: 'N/A',
+  });
+  const [recentActivity,   setRecentActivity]   = useState([]);
+  const [notifications,    setNotifications]    = useState([]);
+  const [topServices,      setTopServices]      = useState([]);
+  const [revenueData,      setRevenueData]      = useState([]);
+  const [bookingsData,     setBookingsData]     = useState([]);
+  const [serviceBreakdown, setServiceBreakdown] = useState([]);
+
+  useEffect(() => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+    if (!userInfo?.token) { navigate('/vendor/login'); return; }
+
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+        const { data } = await axios.get('/api/dashboard/vendor', {
+          headers: { Authorization: `Bearer ${userInfo.token}` },
+        });
+        setVendorName(data.vendor?.businessName || 'Vendor');
+        setMetrics(data.metrics);
+        setRecentActivity(data.recentActivity || []);
+        setNotifications(data.notifications || []);
+        setTopServices(data.topServices || []);
+        setRevenueData(data.revenueData || []);
+        setBookingsData(data.bookingsData || []);
+        setServiceBreakdown(data.serviceBreakdown || []);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load dashboard');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem('userInfo');
     navigate('/');
   };
 
-  // TODO: replace with real API call
-  const metrics = {
-    totalBookings: 47,
-    pendingRequests: 8,
-    revenueThisMonth: 485600,
-    totalRevenue: 2847500,
-    activeListings: 12,
-    averageRating: 4.7,
-    responseRate: 94,
-    lastUploadDate: 'Feb 08, 2025'
-  };
+  const maxRevenue  = revenueData.length  ? Math.max(...revenueData.map(d => d.revenue))   : 1;
+  const maxBookings = bookingsData.length ? Math.max(...bookingsData.map(d => d.bookings)) : 1;
 
-  const recentActivity = [
-    {
-      id: 1,
-      type: 'booking_request',
-      title: 'New booking request from John Doe',
-      description: 'Kandy Cultural Tour - 3 Days, 2 Nights',
-      time: '5 minutes ago',
-      icon: '📋',
-      color: 'blue'
-    },
-    {
-      id: 2,
-      type: 'confirmation',
-      title: 'Booking confirmed',
-      description: 'Booking #ST2025-KND-1847 confirmed successfully',
-      time: '1 hour ago',
-      icon: '✅',
-      color: 'green'
-    },
-    {
-      id: 3,
-      type: 'review',
-      title: 'New review received',
-      description: '5-star review from Sarah Williams',
-      time: '2 hours ago',
-      icon: '⭐',
-      color: 'yellow'
-    },
-    {
-      id: 4,
-      type: 'booking_request',
-      title: 'New booking request from Mike Chen',
-      description: 'Ella Hill Country - 2 Days, 1 Night',
-      time: '3 hours ago',
-      icon: '📋',
-      color: 'blue'
-    },
-    {
-      id: 5,
-      type: 'inventory',
-      title: 'Inventory updated',
-      description: 'Room availability updated for March 2025',
-      time: '5 hours ago',
-      icon: '📦',
-      color: 'purple'
-    },
-    {
-      id: 6,
-      type: 'rejection',
-      title: 'Booking declined',
-      description: 'Booking #ST2025-GAL-9932 - No availability',
-      time: '1 day ago',
-      icon: '❌',
-      color: 'red'
-    },
-    {
-      id: 7,
-      type: 'booking_request',
-      title: 'New booking request from Emma Davis',
-      description: 'Nuwara Eliya Tea Tour - 3 Days, 2 Nights',
-      time: '1 day ago',
-      icon: '📋',
-      color: 'blue'
-    },
-    {
-      id: 8,
-      type: 'review',
-      title: 'New review received',
-      description: '4-star review from David Kumar',
-      time: '2 days ago',
-      icon: '⭐',
-      color: 'yellow'
-    },
-    {
-      id: 9,
-      type: 'confirmation',
-      title: 'Booking confirmed',
-      description: 'Booking #ST2025-NUW-7654 confirmed',
-      time: '2 days ago',
-      icon: '✅',
-      color: 'green'
-    },
-    {
-      id: 10,
-      type: 'booking_request',
-      title: 'New booking request from Alex Johnson',
-      description: 'Sigiriya Adventure - 2 Days, 1 Night',
-      time: '3 days ago',
-      icon: '📋',
-      color: 'blue'
-    }
-  ];
-
-  const notifications = [
-    {
-      id: 1,
-      title: 'New booking request',
-      message: 'You have 8 pending booking requests',
-      time: '5 min ago',
-      unread: true
-    },
-    {
-      id: 2,
-      title: 'Inventory alert',
-      message: 'Update your March availability',
-      time: '2 hours ago',
-      unread: true
-    },
-    {
-      id: 3,
-      title: 'Review reminder',
-      message: 'Respond to recent customer review',
-      time: '1 day ago',
-      unread: false
-    }
-  ];
-
-  const topServices = [
-    { name: 'Deluxe Room with Garden View', bookings: 23, revenue: 165000 },
-    { name: 'Cultural Tour Package', bookings: 18, revenue: 135000 },
-    { name: 'Tea Plantation Experience', bookings: 15, revenue: 90000 },
-    { name: 'Standard Room', bookings: 12, revenue: 72000 },
-    { name: 'City Tour Guide Service', bookings: 9, revenue: 45000 }
-  ];
-
-  const revenueData = [
-    { month: 'Sep', revenue: 380000 },
-    { month: 'Oct', revenue: 425000 },
-    { month: 'Nov', revenue: 395000 },
-    { month: 'Dec', revenue: 510000 },
-    { month: 'Jan', revenue: 452000 },
-    { month: 'Feb', revenue: 485600 }
-  ];
-
-  const bookingsData = [
-    { month: 'Sep', bookings: 38 },
-    { month: 'Oct', bookings: 42 },
-    { month: 'Nov', bookings: 39 },
-    { month: 'Dec', bookings: 51 },
-    { month: 'Jan', bookings: 45 },
-    { month: 'Feb', bookings: 47 }
-  ];
-
-  const serviceBreakdown = [
-    { type: 'Accommodation', percentage: 45, color: '#667eea' },
-    { type: 'Tours & Activities', percentage: 30, color: '#34C759' },
-    { type: 'Transport', percentage: 15, color: '#FF9500' },
-    { type: 'Other Services', percentage: 10, color: '#764ba2' }
-  ];
-
-  const maxRevenue = Math.max(...revenueData.map(d => d.revenue));
-  const maxBookings = Math.max(...bookingsData.map(d => d.bookings));
+  const vendorInitials = vendorName
+    .split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || 'V';
 
   const handleRefresh = () => {
-    // just shows alert for now
-    alert('Dashboard refreshed!');
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+    if (!userInfo?.token) return;
+    setLoading(true);
+    axios.get('/api/dashboard/vendor', { headers: { Authorization: `Bearer ${userInfo.token}` } })
+      .then(({ data }) => {
+        setVendorName(data.vendor?.businessName || 'Vendor');
+        setMetrics(data.metrics);
+        setRecentActivity(data.recentActivity || []);
+        setNotifications(data.notifications || []);
+        setTopServices(data.topServices || []);
+        setRevenueData(data.revenueData || []);
+        setBookingsData(data.bookingsData || []);
+        setServiceBreakdown(data.serviceBreakdown || []);
+      })
+      .catch(() => setError('Failed to refresh dashboard'))
+      .finally(() => setLoading(false));
   };
 
   const handleDownloadReport = () => {
-    alert('Downloading monthly report...');
+    alert('Report download coming soon.');
   };
+
+  if (loading) return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-[#BFBD31] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-slate-400">Loading dashboard...</p>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-red-400 text-lg mb-4">{error}</p>
+        <button onClick={handleRefresh} className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold">
+          Retry
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -204,7 +123,7 @@ export default function VendorDashboard() {
               </div>
               <div>
                 <h1 className="text-lg font-bold text-slate-200">Vendor Dashboard</h1>
-                <p className="text-xs text-slate-400">Welcome back, Earl's Regency Hotel</p>
+                <p className="text-xs text-slate-400">Welcome back, {vendorName}</p>
               </div>
             </div>
 
@@ -233,8 +152,8 @@ export default function VendorDashboard() {
 
               <div className="relative">
                 <button className="flex items-center gap-2 p-2 hover:bg-slate-800/50 rounded-lg">
-                  <div className="w-8 h-8 bg-lime-500 text-slate-950 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-semibold">ER</span>
+                  <div className="w-8 h-8 bg-[#BFBD31] text-slate-950 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-semibold">{vendorInitials}</span>
                   </div>
                   <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
@@ -253,10 +172,10 @@ export default function VendorDashboard() {
             </div>
             <div className="max-h-96 overflow-y-auto">
               {notifications.map(notif => (
-                <div key={notif.id} className={`p-4 border-b border-gray-100 hover:bg-slate-950 cursor-pointer ${notif.unread ? 'bg-lime-50' : ''}`}>
+                <div key={notif.id} className={`p-4 border-b border-gray-100 hover:bg-slate-950 cursor-pointer ${notif.unread ? 'bg-[#BFBD31]/10' : ''}`}>
                   <div className="flex items-start justify-between mb-1">
                     <h4 className="font-semibold text-sm text-white">{notif.title}</h4>
-                    {notif.unread && <span className="w-2 h-2 bg-lime-500 text-slate-950 rounded-full"></span>}
+                    {notif.unread && <span className="w-2 h-2 bg-[#BFBD31] text-slate-950 rounded-full"></span>}
                   </div>
                   <p className="text-sm text-slate-400 mb-1">{notif.message}</p>
                   <p className="text-xs text-slate-500">{notif.time}</p>
@@ -264,7 +183,7 @@ export default function VendorDashboard() {
               ))}
             </div>
             <div className="p-3 border-t border-white/10">
-              <a href="/vendor/reservations" className="w-full block text-center text-sm text-lime-400 hover:text-purple-700 font-medium">
+              <a href="/vendor/reservations" className="w-full block text-center text-sm text-[#BFBD31] hover:text-purple-700 font-medium">
                 View All Notifications
               </a>
             </div>
@@ -276,7 +195,7 @@ export default function VendorDashboard() {
         {/* Sidebar */}
         <aside className="w-64 bg-slate-900 border border-white/10 border-r border-white/10 min-h-screen sticky top-16 self-start">
           <nav className="p-4 space-y-1">
-            <a href="/vendor/dashboard" className="flex items-center gap-3 px-4 py-3 bg-lime-50 text-lime-400 rounded-lg font-medium">
+            <a href="/vendor/dashboard" className="flex items-center gap-3 px-4 py-3 bg-[#BFBD31]/10 text-[#BFBD31] rounded-lg font-medium">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
               </svg>
@@ -357,7 +276,7 @@ export default function VendorDashboard() {
             <div className="metric-card bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-lime-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                   </svg>
                 </div>
@@ -393,13 +312,13 @@ export default function VendorDashboard() {
               </div>
               <h3 className="text-sm text-slate-400 mb-1">Revenue This Month</h3>
               <p className="text-2xl font-bold text-white">LKR {(metrics.revenueThisMonth / 1000).toFixed(0)}K</p>
-              <p className="text-xs text-slate-500 mt-1">Feb 2025</p>
+              <p className="text-xs text-slate-500 mt-1">{new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' })}</p>
             </div>
 
             <div className="metric-card bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-lime-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 bg-[#BFBD31]/15 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-[#BFBD31]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                   </svg>
                 </div>
@@ -435,7 +354,7 @@ export default function VendorDashboard() {
                 <p className="text-3xl font-bold text-white">{metrics.averageRating}</p>
                 <span className="text-yellow-500">★★★★★</span>
               </div>
-              <p className="text-xs text-slate-500 mt-1">Based on 156 reviews</p>
+              <p className="text-xs text-slate-500 mt-1">{metrics.averageRating > 0 ? 'From customer reviews' : 'No reviews yet'}</p>
             </div>
 
             <div className="metric-card bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
@@ -469,7 +388,7 @@ export default function VendorDashboard() {
           <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6 mb-8">
             <h2 className="text-xl font-bold text-white mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              <button className="p-4 border-2 border-lime-500 bg-lime-500 text-slate-950 rounded-lg hover:bg-lime-400 transition-all flex flex-col items-center gap-2">
+              <button className="p-4 border-2 border-[#BFBD31] bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31] transition-all flex flex-col items-center gap-2">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                 </svg>
@@ -629,7 +548,7 @@ export default function VendorDashboard() {
                 <div className="space-y-3">
                   {topServices.map((service, index) => (
                     <div key={index} className="flex items-start gap-3 p-3 bg-slate-950 rounded-lg">
-                      <span className="text-2xl font-bold text-lime-400">#{index + 1}</span>
+                      <span className="text-2xl font-bold text-[#BFBD31]">#{index + 1}</span>
                       <div className="flex-1">
                         <h4 className="font-semibold text-white text-sm mb-1">{service.name}</h4>
                         <div className="flex items-center gap-3 text-xs text-slate-400">

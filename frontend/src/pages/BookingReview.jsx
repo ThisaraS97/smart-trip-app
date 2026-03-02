@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import axios from 'axios';
 
 export default function BookingReview() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const passed = location.state || {};
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showPromoCode, setShowPromoCode] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null);
@@ -15,25 +20,22 @@ export default function BookingReview() {
 
   const bookingDetails = {
     bookingRef: 'ST2025-KND-1847',
-    destination: 'Kandy Cultural Tour',
+    destination: passed.destination || 'Kandy Cultural Tour',
+    location: passed.location || 'Kandy',
     dates: {
-      checkIn: 'March 15, 2025',
-      checkOut: 'March 18, 2025',
-      duration: '3 Days, 2 Nights'
+      checkIn: passed.dates?.from || 'March 15, 2025',
+      checkOut: passed.dates?.to || 'March 18, 2025',
+      duration: passed.duration || '3 Days, 2 Nights',
     },
-    travelers: {
-      adults: 2,
-      children: 1,
-      infants: 0
-    },
-    itinerary: [
+    travelers: passed.travelers || { adults: 2, children: 1, infants: 0 },
+    itinerary: passed.itinerary || [
       {
         day: 1,
         date: 'March 15, 2025',
         hotel: 'Earl\'s Regency Hotel',
         transport: 'Private Car from Colombo',
         activities: ['Temple of the Tooth Visit', 'Kandy Lake Walk'],
-        meals: ['Traditional Rice & Curry Lunch']
+        meals: ['Traditional Rice & Curry Lunch'],
       },
       {
         day: 2,
@@ -41,7 +43,7 @@ export default function BookingReview() {
         hotel: 'Earl\'s Regency Hotel',
         transport: null,
         activities: ['Royal Botanical Gardens', 'Cultural Dance Show'],
-        meals: ['Hotel Restaurant Dinner']
+        meals: ['Hotel Restaurant Dinner'],
       },
       {
         day: 3,
@@ -49,10 +51,10 @@ export default function BookingReview() {
         hotel: 'Thilanka Hotel',
         transport: 'Shared Van to Colombo',
         activities: ['Tea Plantation Tour'],
-        meals: ['Breakfast at Hotel']
-      }
+        meals: ['Breakfast at Hotel'],
+      },
     ],
-    costs: {
+    costs: passed.costs || {
       accommodation: 42000,
       transport: 13000,
       activities: 10500,
@@ -61,9 +63,8 @@ export default function BookingReview() {
       subtotal: 77500,
       taxes: 9300,
       serviceFee: 3875,
-      discount: 0,
-      total: 90675
-    }
+      total: 90675,
+    },
   };
 
   const promoCodes = {
@@ -77,8 +78,9 @@ export default function BookingReview() {
     if (promo) {
       setAppliedPromo({ code: promoCode.toUpperCase(), ...promo });
       setPromoCode('');
+      toast.success(`Promo code applied: ${promo.description}`);
     } else {
-      alert('Invalid promo code');
+      toast.error('Invalid promo code. Please try again.');
     }
   };
 
@@ -97,16 +99,62 @@ export default function BookingReview() {
   const discount = calculateDiscount();
   const finalTotal = bookingDetails.costs.total - discount;
 
-  const handleConfirmBooking = () => {
+  const handleConfirmBooking = async () => {
     if (!agreedToTerms) {
-      alert('Please agree to the terms and conditions');
+      toast.error('Please agree to the terms and conditions to proceed.');
       return;
     }
-    setShowConfirmation(true);
+    setLoading(true);
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      const tripItinerary = bookingDetails.itinerary.map(day => ({
+        day: day.day,
+        date: day.date,
+        sections: [
+          ...(day.hotel ? [{ time: 'Accommodation', items: [{ type: 'hotel', name: day.hotel }] }] : []),
+          ...(day.transport ? [{ time: 'Transport', items: [{ type: 'transport', name: day.transport }] }] : []),
+          ...(day.activities && day.activities.length > 0 ? [{ time: 'Activities', items: day.activities.map(a => ({ type: 'activity', name: a })) }] : []),
+          ...(day.meals && day.meals.length > 0 ? [{ time: 'Meals', items: day.meals.map(m => ({ type: 'meal', name: m })) }] : []),
+        ],
+      }));
+      await axios.post(
+        '/api/bookings',
+        {
+          destination: bookingDetails.destination,
+          location: bookingDetails.location,
+          duration: bookingDetails.dates.duration,
+          itinerarySummary: tripItinerary,
+          totalCost: finalTotal,
+          tripDates: {
+            startDate: bookingDetails.dates.checkIn,
+            endDate: bookingDetails.dates.checkOut,
+          },
+          pax: {
+            adults: bookingDetails.travelers.adults || 1,
+            children: bookingDetails.travelers.children || 0,
+            infants: bookingDetails.travelers.infants || 0,
+          },
+          specialRequests: [specialRequests, dietaryRestrictions, accessibilityNeeds, specialOccasion]
+            .filter(Boolean)
+            .join(' | '),
+        },
+        { headers: { Authorization: `Bearer ${userInfo.token}` } }
+      );
+      toast.success('Booking submitted successfully!');
+      setShowConfirmation(true);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Booking submission failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDownloadPDF = () => {
-    alert('PDF download started...');
+    toast.success('PDF download started...');
+  };
+
+  const handleSaveForLater = () => {
+    toast.success('Booking saved for later!');
   };
 
   return (
@@ -145,14 +193,14 @@ export default function BookingReview() {
             <div className="flex items-center gap-3">
               <button 
                 onClick={handleDownloadPDF}
-                className="px-4 py-2 text-sm font-medium text-lime-400 hover:bg-lime-50 rounded-lg flex items-center gap-2"
+                className="px-4 py-2 text-sm font-medium text-[#BFBD31] hover:bg-[#BFBD31]/10 rounded-lg flex items-center gap-2 border border-[#BFBD31]/30"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
                 Download PDF
               </button>
-              <button className="px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800/50 rounded-lg">
+              <button onClick={handleSaveForLater} className="px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800/50 rounded-lg border border-white/10">
                 Save for Later
               </button>
             </div>
@@ -184,7 +232,7 @@ export default function BookingReview() {
                     </div>
                   </div>
                 </div>
-                <button className="px-4 py-2 text-sm font-medium text-lime-400 hover:bg-lime-50 rounded-lg border border-purple-200">
+                <button className="px-4 py-2 text-sm font-medium text-[#BFBD31] hover:bg-[#BFBD31]/10 rounded-lg border border-[#BFBD31]/30">
                   Edit Itinerary
                 </button>
               </div>
@@ -211,7 +259,7 @@ export default function BookingReview() {
                       <div className="absolute left-4 top-12 bottom-0 w-0.5 bg-gray-200"></div>
                     )}
                     <div className="flex gap-4">
-                      <div className="w-8 h-8 rounded-full bg-lime-500 text-slate-950 flex items-center justify-center font-bold text-sm flex-shrink-0 relative z-10">
+                      <div className="w-8 h-8 rounded-full bg-[#BFBD31] text-slate-950 flex items-center justify-center font-bold text-sm flex-shrink-0 relative z-10">
                         {day.day}
                       </div>
                       <div className="flex-1 pb-6">
@@ -222,8 +270,8 @@ export default function BookingReview() {
 
                         <div className="space-y-3">
                           {/* Accommodation */}
-                          <div className="flex items-start gap-3 p-3 bg-lime-500/10 rounded-lg">
-                            <svg className="w-5 h-5 text-lime-300 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="flex items-start gap-3 p-3 bg-[#BFBD31]/10 rounded-lg">
+                            <svg className="w-5 h-5 text-[#BFBD31] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                             </svg>
                             <div>
@@ -247,8 +295,8 @@ export default function BookingReview() {
 
                           {/* Activities */}
                           {day.activities.length > 0 && (
-                            <div className="flex items-start gap-3 p-3 bg-lime-50 rounded-lg">
-                              <svg className="w-5 h-5 text-lime-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="flex items-start gap-3 p-3 bg-[#BFBD31]/10 rounded-lg">
+                              <svg className="w-5 h-5 text-[#BFBD31] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                               </svg>
                               <div className="flex-1">
@@ -264,7 +312,7 @@ export default function BookingReview() {
 
                           {/* Meals */}
                           {day.meals.length > 0 && (
-                            <div className="flex items-start gap-3 p-3 bg-orange-50 rounded-lg">
+                            <div className="flex items-start gap-3 p-3 bg-orange-500/10 rounded-lg">
                               <svg className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                               </svg>
@@ -302,7 +350,7 @@ export default function BookingReview() {
                     value={specialRequests}
                     onChange={(e) => setSpecialRequests(e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/40 outline-none transition"
                     placeholder="Any special requests or preferences..."
                   />
                 </div>
@@ -315,7 +363,7 @@ export default function BookingReview() {
                     type="text"
                     value={dietaryRestrictions}
                     onChange={(e) => setDietaryRestrictions(e.target.value)}
-                    className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/40 outline-none transition"
                     placeholder="e.g., Vegetarian, Halal, Allergies..."
                   />
                 </div>
@@ -328,7 +376,7 @@ export default function BookingReview() {
                     type="text"
                     value={accessibilityNeeds}
                     onChange={(e) => setAccessibilityNeeds(e.target.value)}
-                    className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/40 outline-none transition"
                     placeholder="e.g., Wheelchair access, Mobility assistance..."
                   />
                 </div>
@@ -341,7 +389,7 @@ export default function BookingReview() {
                     type="text"
                     value={specialOccasion}
                     onChange={(e) => setSpecialOccasion(e.target.value)}
-                    className="w-full px-4 py-2 border border-white/20 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/40 outline-none transition"
                     placeholder="e.g., Birthday, Anniversary, Honeymoon..."
                   />
                 </div>
@@ -406,13 +454,13 @@ export default function BookingReview() {
                 </div>
               </div>
 
-              <div className="mt-6 p-4 bg-lime-50 border border-purple-200 rounded-lg">
+              <div className="mt-6 p-4 bg-[#BFBD31]/10 border border-[#BFBD31]/30 rounded-lg">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={agreedToTerms}
                     onChange={(e) => setAgreedToTerms(e.target.checked)}
-                    className="w-5 h-5 text-lime-400 rounded mt-0.5 flex-shrink-0"
+                    className="w-5 h-5 text-[#BFBD31] rounded mt-0.5 flex-shrink-0"
                   />
                   <span className="text-sm text-slate-300">
                     I have read and agree to the terms and conditions, cancellation policy, and understand 
@@ -496,7 +544,7 @@ export default function BookingReview() {
                 <div className="border-t-2 border-white/20 pt-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-lg font-bold text-slate-200">Grand Total</span>
-                    <span className="text-2xl font-bold text-lime-400">
+                    <span className="text-2xl font-bold text-[#BFBD31]">
                       LKR {finalTotal.toLocaleString()}
                     </span>
                   </div>
@@ -510,7 +558,7 @@ export default function BookingReview() {
                   {!showPromoCode ? (
                     <button
                       onClick={() => setShowPromoCode(true)}
-                      className="w-full py-2 text-sm text-lime-400 hover:bg-lime-50 rounded-lg font-medium flex items-center justify-center gap-2"
+                      className="w-full py-2 text-sm text-[#BFBD31] hover:bg-[#BFBD31]/10 rounded-lg font-medium flex items-center justify-center gap-2"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
@@ -549,11 +597,11 @@ export default function BookingReview() {
                               value={promoCode}
                               onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                               placeholder="Enter promo code"
-                              className="flex-1 px-4 py-2 border border-white/20 rounded-lg text-sm focus:ring-2 focus:ring-lime-500 focus:border-transparent"
+                              className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/40 outline-none transition"
                             />
                             <button
                               onClick={handleApplyPromo}
-                              className="px-4 py-2 bg-lime-500 text-slate-950 rounded-lg text-sm font-medium hover:bg-lime-400"
+                              className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg text-sm font-medium hover:bg-[#BFBD31]"
                             >
                               Apply
                             </button>
@@ -575,33 +623,36 @@ export default function BookingReview() {
               <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6 space-y-3">
                 <button
                   onClick={handleConfirmBooking}
-                  disabled={!agreedToTerms}
-                  className={`w-full py-3 rounded-lg font-semibold text-white transition-all ${
-                    agreedToTerms
-                      ? 'bg-lime-500 text-slate-950 hover:bg-lime-400'
-                      : 'bg-gray-400 cursor-not-allowed'
+                  disabled={!agreedToTerms || loading}
+                  className={`w-full py-3 rounded-xl font-semibold transition-all ${
+                    agreedToTerms && !loading
+                      ? 'bg-[#BFBD31] text-slate-950 hover:bg-[#d4d235] shadow-[0_0_16px_rgba(191,189,49,0.3)]'
+                      : 'bg-white/10 text-slate-500 cursor-not-allowed'
                   }`}
                 >
-                  Confirm Booking Request
+                  {loading ? 'Submitting...' : 'Confirm Booking Request'}
                 </button>
 
-                <button className="w-full py-3 border-2 border-purple-200 text-lime-400 rounded-lg font-semibold hover:bg-lime-50 transition-all">
+                <button onClick={() => navigate(-1)} className="w-full py-3 border border-[#BFBD31]/40 text-[#BFBD31] rounded-xl font-semibold hover:bg-[#BFBD31]/10 transition-all">
                   Edit Itinerary
                 </button>
 
-                <button className="w-full py-2 text-sm text-slate-400 hover:text-slate-200 font-medium">
+                <button
+                  onClick={() => { toast('Booking cancelled.', { icon: '🚫' }); navigate('/dashboard'); }}
+                  className="w-full py-2 text-sm text-red-400 hover:text-red-300 font-medium transition"
+                >
                   Cancel Booking
                 </button>
               </div>
 
               {/* Help Info */}
-              <div className="bg-lime-500/10 border border-lime-500/20 rounded-xl p-4">
+              <div className="bg-[#BFBD31]/10 border border-[#BFBD31]/20 rounded-xl p-4">
                 <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-lime-300 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-[#BFBD31] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                   </svg>
                   <div>
-                    <h4 className="font-semibold text-lime-300 text-sm mb-1">Need Help?</h4>
+                    <h4 className="font-semibold text-[#BFBD31] text-sm mb-1">Need Help?</h4>
                     <p className="text-xs text-blue-300 leading-relaxed">
                       Our support team is available 24/7 to assist you with your booking. 
                       Contact us at support@smarttrip.lk or call +94 11 234 5678
@@ -632,9 +683,9 @@ export default function BookingReview() {
               </p>
 
               {/* Booking Reference */}
-              <div className="bg-lime-50 border border-purple-200 rounded-lg p-4 mb-6">
+              <div className="bg-[#BFBD31]/10 border border-[#BFBD31]/30 rounded-lg p-4 mb-6">
                 <p className="text-sm text-slate-400 mb-1">Your Booking Reference</p>
-                <p className="text-2xl font-bold text-lime-400">{bookingDetails.bookingRef}</p>
+                <p className="text-2xl font-bold text-[#BFBD31]">{bookingDetails.bookingRef}</p>
               </div>
 
               {/* What Happens Next */}
@@ -642,7 +693,7 @@ export default function BookingReview() {
                 <h3 className="font-semibold text-slate-200 mb-3">What Happens Next?</h3>
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-lime-500 text-slate-950 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-[#BFBD31] text-slate-950 flex items-center justify-center text-xs font-bold flex-shrink-0">
                       1
                     </div>
                     <div>
@@ -651,7 +702,7 @@ export default function BookingReview() {
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-lime-500 text-slate-950 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-[#BFBD31] text-slate-950 flex items-center justify-center text-xs font-bold flex-shrink-0">
                       2
                     </div>
                     <div>
@@ -660,7 +711,7 @@ export default function BookingReview() {
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-lime-500 text-slate-950 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-[#BFBD31] text-slate-950 flex items-center justify-center text-xs font-bold flex-shrink-0">
                       3
                     </div>
                     <div>
@@ -669,7 +720,7 @@ export default function BookingReview() {
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-lime-500 text-slate-950 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-[#BFBD31] text-slate-950 flex items-center justify-center text-xs font-bold flex-shrink-0">
                       4
                     </div>
                     <div>
@@ -684,19 +735,19 @@ export default function BookingReview() {
               <div className="space-y-3">
                 <button
                   onClick={() => navigate('/my-trips')}
-                  className="w-full py-3 bg-lime-500 text-slate-950 rounded-lg font-semibold hover:bg-lime-400"
+                  className="w-full py-3 bg-[#BFBD31] text-slate-950 rounded-xl font-semibold hover:bg-[#d4d235] transition"
                 >
                   View My Trips
                 </button>
                 <button
                   onClick={handleDownloadPDF}
-                  className="w-full py-3 border-2 border-purple-200 text-lime-400 rounded-lg font-semibold hover:bg-lime-50"
+                  className="w-full py-3 border border-[#BFBD31]/40 text-[#BFBD31] rounded-xl font-semibold hover:bg-[#BFBD31]/10 transition"
                 >
                   Download Receipt
                 </button>
                 <button
-                  onClick={() => navigate('/my-trips')}
-                  className="w-full py-2 text-sm text-slate-400 hover:text-slate-200 font-medium"
+                  onClick={() => navigate('/dashboard')}
+                  className="w-full py-2 text-sm text-slate-400 hover:text-slate-200 font-medium transition"
                 >
                   Return to Dashboard
                 </button>

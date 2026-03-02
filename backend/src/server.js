@@ -10,6 +10,7 @@ import dashboardRoutes from './routes/dashboardRoutes.js';
 import vendorRoutes from './routes/vendorRoutes.js';
 import tripRoutes from './routes/tripRoutes.js';
 import savedTripRoutes from './routes/savedTripRoutes.js';
+import bookingRoutes from './routes/bookingRoutes.js';
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/vendors', vendorRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/api/saved-trips', savedTripRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 
 // Serve frontend in production

@@ -15,5 +15,8 @@
     "travel"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "puppeteer": "^24.37.5"
+  }
 }

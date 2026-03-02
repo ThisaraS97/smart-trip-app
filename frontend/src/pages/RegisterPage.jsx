@@ -1,9 +1,36 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import ISO6391 from 'iso-639-1';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/plain.css';
 
-const LANGUAGES = ['English', 'Sinhala', 'Tamil', 'French', 'German', 'Chinese', 'Japanese', 'Arabic', 'Spanish'];
+// All 184 ISO 639-1 languages, sorted alphabetically
+const LANGUAGES = ISO6391.getAllNames().sort();
+
+// Country codes handled by react-phone-input-2 (195+ countries)
+
+const SL_CITIES = [
+  'Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya',
+  'Galle', 'Matara', 'Hambantota', 'Jaffna', 'Kilinochchi', 'Mannar',
+  'Vavuniya', 'Mullaitivu', 'Batticaloa', 'Ampara', 'Trincomalee',
+  'Kurunegala', 'Puttalam', 'Anuradhapura', 'Polonnaruwa', 'Badulla',
+  'Monaragala', 'Ratnapura', 'Kegalle', 'Ella', 'Sigiriya', 'Dambulla',
+];
+
+const TRAVEL_INTERESTS = [
+  { id: 'beach',     label: '🏖️ Beach & Coastal' },
+  { id: 'culture',   label: '🏛️ Culture & Heritage' },
+  { id: 'wildlife',  label: '🐘 Wildlife & Safari' },
+  { id: 'adventure', label: '🧗 Adventure & Trekking' },
+  { id: 'food',      label: '🍜 Food & Cuisine' },
+  { id: 'nature',    label: '🌿 Nature & Scenery' },
+  { id: 'history',   label: '📜 History & Temples' },
+  { id: 'wellness',  label: '🧘 Wellness & Yoga' },
+  { id: 'luxury',    label: '✨ Luxury & Resorts' },
+  { id: 'budget',    label: '💰 Budget Travel' },
+];
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -18,14 +45,35 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
+    agreedToTerms: false,
     role: 'user',
     // Step 2
+    countryCode: '+94',
     phone: '',
     dateOfBirth: '',
     location: '',
     preferredLanguage: 'English',
+    travelInterests: [],
     bio: '',
   });
+
+  const clearForm = () => {
+    setFormData({
+      name: '', email: '', password: '', confirmPassword: '', agreedToTerms: false, role: 'user',
+      countryCode: '+94', phone: '', dateOfBirth: '', location: '', preferredLanguage: 'English',
+      travelInterests: [], bio: '',
+    });
+    setStep(1);
+  };
+
+  const toggleInterest = (id) => {
+    setFormData((prev) => ({
+      ...prev,
+      travelInterests: prev.travelInterests.includes(id)
+        ? prev.travelInterests.filter((i) => i !== id)
+        : [...prev.travelInterests, id],
+    }));
+  };
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -43,6 +91,7 @@ export default function RegisterPage() {
     if (!formData.name || !formData.email || !formData.password) return toast.error('Please fill in all required fields');
     if (formData.password !== formData.confirmPassword) return toast.error('Passwords do not match');
     if (formData.password.length < 6) return toast.error('Password must be at least 6 characters');
+    if (!formData.agreedToTerms) return toast.error('Please agree to the Terms & Conditions');
     setStep(2);
   };
 
@@ -50,7 +99,8 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { confirmPassword, ...payload } = formData;
+      const { confirmPassword, agreedToTerms, countryCode, travelInterests, ...rest } = formData;
+      const payload = { ...rest, phone: formData.phone ? `${countryCode} ${formData.phone}` : '', travelInterests };
       await axios.post('/api/auth/register', payload);
       toast.success('Account created! Please log in.');
       navigate('/login');
@@ -72,15 +122,15 @@ export default function RegisterPage() {
       <main className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-6 py-10 lg:flex-row lg:px-10 lg:py-12">
         {/* Left hero / storyboard */}
         <section className="flex-1 space-y-6">
-          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-lime-200/80">
+          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#BFBD31]/80">
             <span className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6">
               Create your trail
             </span>
-            <span className="hidden h-px w-16 bg-lime-200/40 lg:block" />
+            <span className="hidden h-px w-16 bg-[#BFBD31]/40 lg:block" />
             <span className="hidden lg:block text-slate-400">Step {step} of 2 · SmartTrip account</span>
           </div>
 
-          <div className="relative overflow-hidden rounded-3xl border border-lime-100/15 bg-slate-900/70 shadow-2xl">
+          <div className="relative overflow-hidden rounded-3xl border border-[#BFBD31]/15 bg-slate-900/70 shadow-2xl">
             <div
               className="absolute inset-0"
               style={{
@@ -104,16 +154,16 @@ export default function RegisterPage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-lime-200/80">SmartTrip</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-[#BFBD31]/80">SmartTrip</p>
                     <p className="text-lg font-semibold leading-none">Adventure</p>
                   </div>
                 </Link>
-                <div className="hidden items-center gap-3 text-[11px] text-lime-100/90 sm:flex">
-                  <span className="h-px w-10 bg-lime-100/40" />
+                <div className="hidden items-center gap-3 text-[11px] text-[#BFBD31]/80 sm:flex">
+                  <span className="h-px w-10 bg-[#BFBD31]/40" />
                   <span>Account</span>
-                  <span className="h-px w-10 bg-lime-100/40" />
+                  <span className="h-px w-10 bg-[#BFBD31]/40" />
                   <span>Profile</span>
-                  <span className="h-px w-10 bg-lime-100/40" />
+                  <span className="h-px w-10 bg-[#BFBD31]/40" />
                   <span>Trips</span>
                 </div>
               </div>
@@ -147,7 +197,7 @@ export default function RegisterPage() {
                         step > s.n
                           ? 'bg-emerald-400 text-slate-900'
                           : step === s.n
-                            ? 'bg-lime-200 text-slate-900'
+                            ? 'bg-[#BFBD31] text-slate-900'
                             : 'bg-white/10 text-white'
                       }`}
                     >
@@ -168,10 +218,10 @@ export default function RegisterPage() {
 
         {/* Right form card */}
         <section className="flex w-full max-w-xl flex-1 items-center">
-          <div className="w-full rounded-3xl border border-lime-100/15 bg-slate-900/70 p-6 shadow-2xl backdrop-blur sm:p-8 lg:p-9">
+          <div className="w-full rounded-3xl border border-[#BFBD31]/15 bg-slate-900/70 p-6 shadow-2xl backdrop-blur sm:p-8 lg:p-9">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-lime-200/80">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#BFBD31]/80">
                   {step === 1 ? 'Step 1 · Account' : 'Step 2 · Profile'}
                 </p>
                 <h2 className="text-2xl font-semibold text-white sm:text-3xl">
@@ -183,7 +233,7 @@ export default function RegisterPage() {
                     : 'Optional details that help us fine-tune routes and recommendations.'}
                 </p>
               </div>
-              <Link to="/" className="hidden text-xs font-semibold text-lime-100 hover:text-lime-50 sm:inline-flex">
+              <Link to="/" className="hidden text-xs font-semibold text-[#BFBD31]/80 hover:text-[#BFBD31] sm:inline-flex">
                 Home
               </Link>
             </div>
@@ -274,7 +324,7 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 transition hover:text-lime-100"
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 transition hover:text-[#BFBD31]/80"
                     >
                       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         {showPassword ? (
@@ -340,7 +390,7 @@ export default function RegisterPage() {
                       value={formData.confirmPassword}
                       onChange={onChange}
                       placeholder="Repeat your password"
-                      className={`w-full rounded-2xl border px-10 py-3 pr-12 text-sm text-white placeholder:text-slate-500 transition bg-white/5 focus:border-lime-200/60 focus:ring-2 focus:ring-lime-200/40 ${
+                      className={`w-full rounded-2xl border px-10 py-3 pr-12 text-sm text-white placeholder:text-slate-500 transition bg-white/5 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 ${
                         formData.confirmPassword && formData.confirmPassword !== formData.password
                           ? 'border-red-400'
                           : 'border-white/10'
@@ -349,7 +399,7 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setShowConfirm(!showConfirm)}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 transition hover:text-lime-100"
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 transition hover:text-[#BFBD31]/80"
                     >
                       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         {showConfirm ? (
@@ -383,71 +433,76 @@ export default function RegisterPage() {
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-slate-200 mb-2">I am registering as</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      {
-                        value: 'user',
-                        label: 'Traveler',
-                        icon: 'M12 19l9 2-9-18-9 18 9-2zm0 0v-8',
-                        desc: 'Book & manage trips',
-                      },
-                      {
-                        value: 'vendor',
-                        label: 'Vendor',
-                        icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
-                        desc: 'Offer travel services',
-                      },
-                    ].map((opt) => (
-                      <label
-                        key={opt.value}
-                        className={`flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-3 text-sm transition-all ${
-                          formData.role === opt.value
-                            ? 'border-lime-200 bg-lime-200/10'
-                            : 'border-white/10 bg-white/5 hover:border-lime-200/40'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="role"
-                          value={opt.value}
-                          checked={formData.role === opt.value}
-                          onChange={onChange}
-                          className="sr-only"
-                        />
-                        <div
-                          className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg ${
-                            formData.role === opt.value ? 'bg-lime-300 text-slate-900' : 'bg-slate-800 text-slate-200'
-                          }`}
-                        >
-                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={opt.icon} />
-                          </svg>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-white">{opt.label}</p>
-                          <p className="text-xs text-slate-300/80">{opt.desc}</p>
-                        </div>
-                      </label>
-                    ))}
+                {/* Terms & Conditions */}
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <div className="relative mt-0.5 flex-shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={formData.agreedToTerms}
+                      onChange={(e) => setFormData({ ...formData, agreedToTerms: e.target.checked })}
+                      className="sr-only"
+                    />
+                    <div className={`h-5 w-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                      formData.agreedToTerms ? 'bg-[#BFBD31] border-[#BFBD31]' : 'border-white/20 bg-white/5 group-hover:border-[#BFBD31]/50'
+                    }`}>
+                      {formData.agreedToTerms && (
+                        <svg className="h-3 w-3 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
                   </div>
-                </div>
+                  <span className="text-xs text-slate-400 leading-relaxed">
+                    I agree to the{' '}
+                    <Link to="/terms" className="text-[#BFBD31] hover:text-[#BFBD31] underline underline-offset-2">Terms & Conditions</Link>
+                    {' '}and{' '}
+                    <Link to="/privacy" className="text-[#BFBD31] hover:text-[#BFBD31] underline underline-offset-2">Privacy Policy</Link>
+                  </span>
+                </label>
 
+                {/* Google Sign-Up */}
+                <div className="relative flex items-center gap-3">
+                  <div className="flex-1 h-px bg-white/10"></div>
+                  <span className="text-xs text-slate-500">or</span>
+                  <div className="flex-1 h-px bg-white/10"></div>
+                </div>
                 <button
-                  type="submit"
-                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-lime-300 to-emerald-400 px-4 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-emerald-500/20 transition focus:outline-none focus:ring-2 focus:ring-lime-200 focus:ring-offset-2 focus:ring-offset-slate-900"
+                  type="button"
+                  className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200 hover:bg-white/10 transition"
                 >
-                  Continue to profile
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  <svg className="h-4 w-4" viewBox="0 0 24 24">
+                    <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115z"/>
+                    <path fill="#34A853" d="M16.04 18.013c-1.09.703-2.474 1.078-4.04 1.078a7.077 7.077 0 0 1-6.723-4.823l-4.04 3.067A11.965 11.965 0 0 0 12 24c2.933 0 5.735-1.043 7.834-3l-3.793-2.987z"/>
+                    <path fill="#4A90D9" d="M19.834 21c2.195-2.048 3.62-5.096 3.62-9 0-.71-.109-1.473-.272-2.182H12v4.637h6.436c-.317 1.559-1.17 2.766-2.395 3.558L19.834 21z"/>
+                    <path fill="#FBBC05" d="M5.277 14.268A7.12 7.12 0 0 1 4.909 12c0-.782.125-1.533.357-2.235L1.24 6.65A11.934 11.934 0 0 0 0 12c0 1.92.445 3.73 1.237 5.335l4.04-3.067z"/>
                   </svg>
+                  Sign up with Google
                 </button>
 
-                <p className="pt-2 text-xs text-slate-400">
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={clearForm}
+                    className="flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-300 hover:bg-white/10 transition"
+                  >
+                    Clear Form
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-2 flex items-center justify-center gap-2 rounded-2xl bg-[#BFBD31] px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-[#BFBD31]/20 transition focus:outline-none focus:ring-2 focus:ring-[#BFBD31]/50 focus:ring-offset-2 focus:ring-offset-slate-900"
+                  >
+                    Continue
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </button>
+                </div>
+
+                <p className="pt-1 text-xs text-slate-400 text-center">
                   Already have an account?{' '}
-                  <Link to="/login" className="font-semibold text-lime-100 hover:text-lime-50">
-                    Sign in
+                  <Link to="/login" className="font-semibold text-[#BFBD31]/80 hover:text-[#BFBD31]">
+                    Login
                   </Link>
                 </p>
               </form>
@@ -456,8 +511,8 @@ export default function RegisterPage() {
             {/* STEP 2 */}
             {step === 2 && (
               <form onSubmit={onSubmit} className="space-y-4">
-                <div className="mb-2 flex items-start gap-3 rounded-2xl border border-lime-200/20 bg-lime-200/5 p-3 text-sm text-slate-200">
-                  <svg className="mt-0.5 h-5 w-5 text-lime-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="mb-2 flex items-start gap-3 rounded-2xl border border-[#BFBD31]/20 bg-[#BFBD31]/5 p-3 text-sm text-slate-200">
+                  <svg className="mt-0.5 h-5 w-5 text-[#BFBD31] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -473,26 +528,39 @@ export default function RegisterPage() {
 
                 <div>
                   <label className="block text-sm font-semibold text-slate-200 mb-1.5">Phone number</label>
-                  <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                        />
-                      </svg>
-                    </div>
-                    <input
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={onChange}
-                      placeholder="+94 77 123 4567"
-                      className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"
-                    />
-                  </div>
+                  <PhoneInput
+                    country="lk"
+                    value={formData.countryCode.replace('+', '') + formData.phone}
+                    onChange={(value, country) => {
+                      const dialCode = country.dialCode;
+                      const number = value.slice(dialCode.length);
+                      setFormData(prev => ({ ...prev, countryCode: '+' + dialCode, phone: number }));
+                    }}
+                    inputStyle={{
+                      width: '100%',
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '1rem',
+                      color: 'white',
+                      paddingTop: '0.75rem',
+                      paddingBottom: '0.75rem',
+                      paddingLeft: '3.5rem',
+                      fontSize: '0.875rem',
+                      height: 'auto',
+                    }}
+                    buttonStyle={{
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderLeft: 'none',
+                      borderRadius: '1rem 0 0 1rem',
+                      paddingLeft: '0.5rem',
+                      paddingRight: '0.5rem',
+                    }}
+                    dropdownStyle={{ background: '#0f172a', color: 'white' }}
+                    enableSearch
+                    searchPlaceholder="Search country..."
+                    placeholder="77 123 4567"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -523,28 +591,22 @@ export default function RegisterPage() {
                     <div className="relative">
                       <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                       </div>
-                      <input
+                      <select
                         name="location"
-                        type="text"
                         value={formData.location}
                         onChange={onChange}
-                        placeholder="Colombo, Sri Lanka"
-                        className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"
-                      />
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-10 pr-4 py-3 text-sm text-white focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none appearance-none cursor-pointer"
+                      >
+                        <option value="" className="bg-slate-900 text-slate-400">Select your city</option>
+                        {SL_CITIES.map((city) => (
+                          <option key={city} value={city} className="bg-slate-900 text-slate-100">{city}</option>
+                        ))}
+                        <option value="Other" className="bg-slate-900 text-slate-100">Other</option>
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -577,6 +639,38 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
+                {/* Travel Interests */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-200 mb-2">
+                    Travel Interests
+                    <span className="ml-2 text-xs font-normal text-slate-400">Select all that apply</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {TRAVEL_INTERESTS.map((interest) => {
+                      const selected = formData.travelInterests.includes(interest.id);
+                      return (
+                        <button
+                          key={interest.id}
+                          type="button"
+                          onClick={() => toggleInterest(interest.id)}
+                          className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium text-left transition-all ${
+                            selected
+                              ? 'border-[#BFBD31]/50 bg-[#BFBD31]/10 text-[#BFBD31]'
+                              : 'border-white/10 bg-white/5 text-slate-300 hover:border-[#BFBD31]/30'
+                          }`}
+                        >
+                          <div className={`h-4 w-4 rounded flex-shrink-0 border flex items-center justify-center transition-all ${
+                            selected ? 'bg-[#BFBD31] border-[#BFBD31]' : 'border-white/20'
+                          }`}>
+                            {selected && <svg className="h-2.5 w-2.5 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg>}
+                          </div>
+                          {interest.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-semibold text-slate-200 mb-1.5">
                     About you <span className="text-xs font-normal text-slate-400">(short bio)</span>
@@ -605,7 +699,7 @@ export default function RegisterPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-2 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-lime-300 to-emerald-400 px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-emerald-500/20 transition focus:outline-none focus:ring-2 focus:ring-lime-200 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex-2 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#BFBD31] px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-[#BFBD31]/20 transition focus:outline-none focus:ring-2 focus:ring-[#BFBD31]/50 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {loading ? (
                       <>
@@ -633,7 +727,7 @@ export default function RegisterPage() {
             )}
 
             <p className="mt-6 text-center text-xs text-slate-500">
-              <Link to="/" className="hover:text-lime-100">
+              <Link to="/" className="hover:text-[#BFBD31]/80">
                 ← Return to home
               </Link>
             </p>
