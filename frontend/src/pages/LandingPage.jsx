@@ -1,5 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-hot-toast';
 import sigiriyaImg from '../images/sigiriya.jpg';
 import galleImg from '../images/galle.jpg';
 import yalaImg from '../images/yala.jpg';
@@ -33,25 +35,77 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
   const [expandedFaq, setExpandedFaq] = useState(null);
-  const [searchForm, setSearchForm] = useState({ destination: '', budget: '', travelers: '', dates: '' });
+  const [destinations, setDestinations] = useState([]);
+  const [showDestDropdown, setShowDestDropdown] = useState(false);
+  const [searchForm, setSearchForm] = useState({ 
+    destination: '', 
+    budget: '', 
+    adults: 2,
+    children: 0,
+    startDate: '',
+    endDate: ''
+  });
+  const [searching, setSearching] = useState(false);
 
   const handleSearch = () => {
+    if (!searchForm.destination.trim()) {
+      toast.error('Please select a destination');
+      return;
+    }
+    if (!searchForm.budget) {
+      toast.error('Please enter a budget');
+      return;
+    }
+    if (!searchForm.startDate) {
+      toast.error('Please select a start date');
+      return;
+    }
+
     const budgetNum = parseInt(searchForm.budget.replace(/,/g, '')) || 150000;
-    navigate('/itinerary', {
-      state: {
-        destination: (searchForm.destination || 'Sri Lanka') + ' Tour',
-        location: searchForm.destination || 'Sri Lanka',
-        budget: budgetNum,
-        travelers: searchForm.travelers || '2 Adults',
-        duration: '3 Days',
-        dates: { from: searchForm.dates || '', to: '' },
-      }
-    });
+    const selectedDest = destinations.find(d => d.name.toLowerCase() === searchForm.destination.toLowerCase());
+    
+    let duration = selectedDest?.defaultDays || 3;
+    if (searchForm.startDate && searchForm.endDate) {
+      const start = new Date(searchForm.startDate);
+      const end = new Date(searchForm.endDate);
+      const diffTime = Math.abs(end - start);
+      duration = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    const travelers = `${searchForm.adults} Adult${searchForm.adults !== 1 ? 's' : ''}${searchForm.children > 0 ? `, ${searchForm.children} Child${searchForm.children !== 1 ? 'ren' : ''}` : ''}`;
+
+    setSearching(true);
+    setTimeout(() => {
+      navigate('/itinerary', {
+        state: {
+          destination: searchForm.destination + ' Tour',
+          location: searchForm.destination,
+          budget: budgetNum,
+          travelers: travelers,
+          duration: `${duration} Day${duration !== 1 ? 's' : ''}`,
+          dates: { 
+            from: searchForm.startDate, 
+            to: searchForm.endDate || searchForm.startDate 
+          },
+          selectedDestination: selectedDest,
+        }
+      });
+      setSearching(false);
+    }, 300);
   };
 
   useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        const res = await axios.get('/api/config/destinations');
+        setDestinations(res.data || []);
+      } catch (err) {
+        console.error('Failed to fetch destinations:', err);
+      }
+    };
     const stored = localStorage.getItem('userInfo');
     if (stored) setUserInfo(JSON.parse(stored));
+    fetchDestinations();
   }, []);
 
   const getDashboardLink = () => {
@@ -153,46 +207,109 @@ export default function LandingPage() {
             </div>
 
             {/* Quick Search Card */}
-            <div className="w-full max-w-2xl rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md p-5 shadow-2xl">
+            <div className="w-full max-w-4xl rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md p-6 shadow-2xl">
               <p className="text-sm font-semibold text-white mb-4">Quick Search Preview</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                <div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-4">
+                {/* Destination Dropdown */}
+                <div className="lg:col-span-1">
                   <p className="text-xs text-slate-300 mb-1.5">Where to?</p>
-                  <input type="text" placeholder="Destination"
-                    value={searchForm.destination}
-                    onChange={e => setSearchForm(p => ({ ...p, destination: e.target.value }))}
-                    className="w-full rounded-lg bg-slate-800/80 border border-white/10 text-slate-300 placeholder:text-slate-500 text-sm px-3 py-2.5 outline-none focus:border-[#BFBD31]/50 transition"
-                  />
+                  <div className="relative">
+                    <button 
+                      onClick={() => setShowDestDropdown(!showDestDropdown)}
+                      className="w-full text-left rounded-lg bg-slate-800/80 border border-white/10 text-slate-300 hover:border-[#BFBD31]/50 text-sm px-3 py-2.5 outline-none focus:border-[#BFBD31]/50 transition"
+                    >
+                      {searchForm.destination ? `${destinations.find(d => d.name === searchForm.destination)?.emoji || '🏖️'} ${searchForm.destination}` : 'Select'}
+                    </button>
+                    {showDestDropdown && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-white/10 rounded-lg shadow-lg z-20 max-h-40 overflow-y-auto">
+                        {destinations.map(dest => (
+                          <button
+                            key={dest._id}
+                            onClick={() => {
+                              setSearchForm({ ...searchForm, destination: dest.name });
+                              setShowDestDropdown(false);
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-[#BFBD31]/20 transition text-slate-300 text-sm"
+                          >
+                            {dest.emoji} {dest.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div>
+
+                {/* Budget */}
+                <div className="lg:col-span-1">
                   <p className="text-xs text-slate-300 mb-1.5">Budget (LKR)</p>
-                  <input type="text" placeholder="e.g., 100,000"
-                    value={searchForm.budget}
-                    onChange={e => setSearchForm(p => ({ ...p, budget: e.target.value }))}
-                    className="w-full rounded-lg bg-slate-800/80 border border-white/10 text-slate-300 placeholder:text-slate-500 text-sm px-3 py-2.5 outline-none focus:border-[#BFBD31]/50 transition"
+                  <input 
+                    type="number" 
+                    placeholder="100,000" 
+                    className="w-full rounded-lg bg-slate-800/80 border border-white/10 text-slate-300 placeholder:text-slate-500 text-sm px-3 py-2.5 outline-none focus:border-[#BFBD31]/50 transition" 
+                    value={searchForm.budget} 
+                    onChange={(e) => setSearchForm({ ...searchForm, budget: e.target.value })}
                   />
                 </div>
-                <div>
+
+                {/* Travelers */}
+                <div className="lg:col-span-1">
                   <p className="text-xs text-slate-300 mb-1.5">Travelers</p>
-                  <input type="text" placeholder="2 Adults"
-                    value={searchForm.travelers}
-                    onChange={e => setSearchForm(p => ({ ...p, travelers: e.target.value }))}
-                    className="w-full rounded-lg bg-slate-800/80 border border-white/10 text-slate-300 placeholder:text-slate-500 text-sm px-3 py-2.5 outline-none focus:border-[#BFBD31]/50 transition"
+                  <div className="rounded-lg bg-slate-800/80 border border-white/10 px-3 py-2.5 flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setSearchForm({...searchForm, adults: Math.max(1, searchForm.adults - 1)})} className="bg-slate-700 px-1.5 py-0.5 rounded hover:bg-[#BFBD31]/30 text-slate-300">−</button>
+                      <span className="font-semibold text-slate-300 text-xs w-4 text-center">{searchForm.adults}</span>
+                      <button onClick={() => setSearchForm({...searchForm, adults: searchForm.adults + 1})} className="bg-slate-700 px-1.5 py-0.5 rounded hover:bg-[#BFBD31]/30 text-slate-300">+</button>
+                      <span className="text-slate-400 text-xs ml-0.5">A</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setSearchForm({...searchForm, children: Math.max(0, searchForm.children - 1)})} className="bg-slate-700 px-1.5 py-0.5 rounded hover:bg-[#BFBD31]/30 text-slate-300">−</button>
+                      <span className="font-semibold text-slate-300 text-xs w-4 text-center">{searchForm.children}</span>
+                      <button onClick={() => setSearchForm({...searchForm, children: searchForm.children + 1})} className="bg-slate-700 px-1.5 py-0.5 rounded hover:bg-[#BFBD31]/30 text-slate-300">+</button>
+                      <span className="text-slate-400 text-xs ml-0.5">C</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Start Date */}
+                <div className="lg:col-span-1">
+                  <p className="text-xs text-slate-300 mb-1.5">Start Date</p>
+                  <input 
+                    type="date" 
+                    className="w-full rounded-lg bg-slate-800/80 border border-white/10 text-slate-300 placeholder:text-slate-500 text-sm px-3 py-2.5 outline-none focus:border-[#BFBD31]/50 transition" 
+                    value={searchForm.startDate}
+                    min={new Date().toISOString().split('T')[0]}
+                    onChange={(e) => setSearchForm({ ...searchForm, startDate: e.target.value })}
                   />
                 </div>
-                <div>
-                  <p className="text-xs text-slate-300 mb-1.5">Start Date</p>
-                  <input type="date"
-                    value={searchForm.dates}
-                    onChange={e => setSearchForm(p => ({ ...p, dates: e.target.value }))}
-                    className="w-full rounded-lg bg-slate-800/80 border border-white/10 text-slate-300 placeholder:text-slate-500 text-sm px-3 py-2.5 outline-none focus:border-[#BFBD31]/50 transition"
+
+                {/* End Date */}
+                <div className="lg:col-span-1">
+                  <p className="text-xs text-slate-300 mb-1.5">End Date (Optional)</p>
+                  <input 
+                    type="date" 
+                    className="w-full rounded-lg bg-slate-800/80 border border-white/10 text-slate-300 placeholder:text-slate-500 text-sm px-3 py-2.5 outline-none focus:border-[#BFBD31]/50 transition" 
+                    value={searchForm.endDate}
+                    min={searchForm.startDate || new Date().toISOString().split('T')[0]}
+                    onChange={(e) => setSearchForm({ ...searchForm, endDate: e.target.value })}
                   />
+                </div>
+
+                {/* Search Button */}
+                <div className="lg:col-span-1 flex items-flex-end">
+                  <button 
+                    onClick={handleSearch} 
+                    disabled={searching}
+                    className={`w-full h-10 flex items-center justify-center gap-2 rounded-lg text-sm font-semibold text-slate-950 transition-all ${
+                      searching 
+                        ? 'bg-gray-500 cursor-not-allowed' 
+                        : 'bg-[#BFBD31] hover:bg-[#d4d235] shadow-[0_0_20px_rgba(191,189,49,0.35)] hover:shadow-[0_0_30px_rgba(191,189,49,0.5)]'
+                    }`}
+                  >
+                    {searching ? '🔄' : '🔍'}
+                    {searching ? 'Planning' : 'Search'}
+                  </button>
                 </div>
               </div>
-              <button onClick={handleSearch} className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#BFBD31] hover:bg-[#d4d235] text-slate-950 text-sm font-semibold py-3 transition-all shadow-[0_0_20px_rgba(191,189,49,0.35)] hover:shadow-[0_0_30px_rgba(191,189,49,0.5)]">
-                <span className="inline-block h-2 w-2 rounded-full bg-[#BFBD31] animate-pulse"></span>
-                Search Destinations
-              </button>
               <p className="text-xs text-slate-400 mt-3 text-center">
                 <Link to="/register" className="text-[#BFBD31] hover:text-[#d4d235] underline underline-offset-2">Sign up</Link> to unlock full search and AI planning features
               </p>
