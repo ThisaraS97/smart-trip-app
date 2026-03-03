@@ -42,7 +42,7 @@ export const createBooking = async (req, res) => {
     } = req.body;
 
     // ── Itinerary-based booking (no items) ────────────────────────────────
-    if (!items || items.length === 0) {
+    if (!Array.isArray(items) || items.length === 0) {
       if (!bodyTotal)
         return res.status(400).json({ message: 'totalCost is required for itinerary bookings' });
 

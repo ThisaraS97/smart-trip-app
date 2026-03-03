@@ -38,7 +38,11 @@ const vendorSchema = mongoose.Schema(
       ref: 'User',
     },
     businessName: { type: String, required: true },
-    businessType: { type: String, required: true },
+    businessType: { 
+        type: String, 
+        required: true,
+        enum: ['Hotel/Guest House', 'Transport Provider', 'Tour Guide', 'Activity Provider', 'Restaurant/Cafe', 'Tour Operator', 'Travel Agency', 'Other']
+    },
     registrationNumber: { type: String },
     taxId: { type: String },
     yearEstablished: { type: Number },

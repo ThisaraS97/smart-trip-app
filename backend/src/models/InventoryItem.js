@@ -11,11 +11,12 @@ const inventoryItemSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: ['accommodation', 'transport', 'activity', 'meal', 'package', 'other'],
+      required: true,
       default: 'other',
     },
     description: { type: String, default: '' },
     price: { type: Number, required: true, default: 0 },
-    currency: { type: String, default: 'LKR' },
+    currency: { type: String, enum: ['LKR', 'USD', 'EUR'], default: 'LKR' },
     capacity: { type: Number, default: 1 },       // max units/seats/rooms available
     availableCount: { type: Number, default: 1 }, // currently available
     images: [{ type: String }],

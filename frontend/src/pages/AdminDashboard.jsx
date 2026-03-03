@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
 
 const STATUS_COLORS = {
   confirmed:     'bg-green-500/20 text-green-400',
@@ -45,6 +46,10 @@ export default function AdminDashboard() {
   const [recentBookings, setRecentBookings] = useState([]);
   const [allBookings, setAllBookings]     = useState([]);
   const [revenueData, setRevenueData]     = useState([]);
+  const [destinations, setDestinations]   = useState([]);
+  const [showDestModal, setShowDestModal] = useState(false);
+  const [editingDest, setEditingDest]     = useState(null);
+  const [formData, setFormData]           = useState({ name: '', tag: '', description: '', defaultDays: 3, defaultPrice: 50000, region: '', image: '', attractions: '' });
 
   const authHeader = () => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
@@ -54,15 +59,17 @@ export default function AdminDashboard() {
   const fetchDashboard = useCallback(async () => {
     try {
       const headers = authHeader();
-      const [dashRes, bookingsRes] = await Promise.all([
+      const [dashRes, bookingsRes, destRes] = await Promise.all([
         axios.get('/api/dashboard/admin', { headers }),
         axios.get('/api/bookings/all', { headers }),
+        axios.get('/api/config/destinations'),
       ]);
       setStats(dashRes.data.stats);
       setRecentBookings(dashRes.data.recentBookings || []);
       setAllVendors(dashRes.data.allVendors || []);
       setAllUsers(dashRes.data.allUsers || []);
       setRevenueData(dashRes.data.monthlyRevenue || []);
+      setDestinations(destRes.data || []);
       const mapped = (bookingsRes.data || []).map(b => ({
         id: b._id,
         customer: b.user?.name || 'Unknown',
@@ -194,6 +201,7 @@ export default function AdminDashboard() {
               { id: 'vendors',  label: 'Vendor Management' },
               { id: 'users',    label: 'User Management' },
               { id: 'bookings', label: 'Bookings' },
+              { id: 'destinations', label: 'Destinations' },
               { id: 'revenue',  label: 'Revenue & Payouts' },
               { id: 'settings', label: 'System Settings' },
             ].map(tab => (
@@ -563,7 +571,254 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+        {/* ─── DESTINATIONS ────────────────────────────────────────────────────────────── */}
+        {activeTab === 'destinations' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-white">Destination Management</h2>
+              <button
+                onClick={() => { setEditingDest(null); setFormData({ name: '', tag: '', description: '', defaultDays: 3, defaultPrice: 50000, region: '', image: '', attractions: '' }); setShowDestModal(true); }}
+                className="px-6 py-3 bg-[#BFBD31] text-slate-950 font-bold rounded-lg hover:bg-[#BFBD31]/90"
+              >
+                + Add Destination
+              </button>
+            </div>
 
+            {/* Destinations Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {destinations.map(dest => (
+                <div key={dest._id} className="bg-slate-900 border border-white/10 rounded-xl overflow-hidden hover:border-[#BFBD31]/50 transition-all">
+                  {dest.image ? (
+                    <img 
+                      src={dest.image.startsWith('http') ? dest.image : `http://localhost:5001${dest.image}`} 
+                      alt={dest.name} 
+                      className="w-full h-40 object-cover" 
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <div className="w-full h-40 bg-slate-800 flex items-center justify-center text-3xl">{dest.emoji}</div>
+                  )}
+                  <div className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="text-lg font-bold text-white">{dest.name}</h3>
+                      <span className="px-2 py-1 bg-slate-800 text-xs rounded text-slate-300">{dest.tag}</span>
+                    </div>
+                    <p className="text-sm text-slate-400 mb-3">{dest.description}</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs mb-4">
+                      <div className="bg-slate-800/50 rounded p-2">
+                        <p className="text-slate-400">Duration</p>
+                        <p className="text-white font-semibold">{dest.defaultDays} days</p>
+                      </div>
+                      <div className="bg-slate-800/50 rounded p-2">
+                        <p className="text-slate-400">Price</p>
+                        <p className="text-[#BFBD31] font-semibold">Rs {dest.defaultPrice.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setEditingDest(dest); setFormData(dest); setShowDestModal(true); }}
+                        className="flex-1 px-4 py-2 bg-slate-800 text-white rounded hover:bg-slate-700 text-sm font-medium"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (window.confirm(`Delete ${dest.name}?`)) {
+                            try {
+                              await axios.delete(`/api/config/destinations/${dest._id}`, { headers: authHeader() });
+                              setDestinations(prev => prev.filter(d => d._id !== dest._id));
+                            } catch (err) {
+                              console.error('Delete error:', err);
+                            }
+                          }
+                        }}
+                        className="flex-1 px-4 py-2 bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 text-sm font-medium"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add/Edit Modal */}
+            {showDestModal && (
+              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                <div className="bg-slate-900 border border-white/10 rounded-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+                  <h3 className="text-xl font-bold text-white mb-4">{editingDest ? 'Edit Destination' : 'Add Destination'}</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-slate-300 mb-1">Destination Name</label>
+                      <input
+                        type="text"
+                        placeholder="e.g., Kandy"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full px-4 py-2 bg-slate-800 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-[#BFBD31] outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-slate-300 mb-1">Tag</label>
+                      <select
+                        value={formData.tag}
+                        onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+                        className="w-full px-4 py-2 bg-slate-800 border border-white/10 rounded-lg text-white focus:border-[#BFBD31] outline-none"
+                      >
+                        <option value="">Select Tag</option>
+                        {['Cultural', 'Coastal', 'Hill Country', 'Heritage', 'Wildlife', 'Nature', 'Beach', 'City', 'Other'].map(t => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-slate-300 mb-1">Description</label>
+                      <textarea
+                        placeholder="Short description"
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        className="w-full px-4 py-2 bg-slate-800 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-[#BFBD31] outline-none h-20 resize-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Default Days</label>
+                        <input
+                          type="number"
+                          value={formData.defaultDays}
+                          onChange={(e) => setFormData({ ...formData, defaultDays: parseInt(e.target.value) })}
+                          className="w-full px-4 py-2 bg-slate-800 border border-white/10 rounded-lg text-white focus:border-[#BFBD31] outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-slate-300 mb-1">Default Price (LKR)</label>
+                        <input
+                          type="number"
+                          value={formData.defaultPrice}
+                          onChange={(e) => setFormData({ ...formData, defaultPrice: parseInt(e.target.value) })}
+                          className="w-full px-4 py-2 bg-slate-800 border border-white/10 rounded-lg text-white focus:border-[#BFBD31] outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-slate-300 mb-1">Region</label>
+                      <input
+                        type="text"
+                        placeholder="e.g., Kandy District"
+                        value={formData.region}
+                        onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+                        className="w-full px-4 py-2 bg-slate-800 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-[#BFBD31] outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-slate-300 mb-1">Destination Image</label>
+                      <div className="space-y-2">
+                        {formData.image && (
+                          <div className="relative w-full h-32 bg-slate-800 rounded-lg overflow-hidden border border-white/10">
+                            <img 
+                              src={formData.image.startsWith('http') ? formData.image : `http://localhost:5001${formData.image}`} 
+                              alt="Preview" 
+                              className="w-full h-full object-cover" 
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setFormData({ ...formData, image: '' })}
+                              className="absolute top-1 right-1 bg-red-500/80 hover:bg-red-600 text-white p-1 rounded text-xs"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                const formDataUpload = new FormData();
+                                formDataUpload.append('image', file);
+                                const uploadRes = await axios.post('/api/config/destinations/upload-image', formDataUpload, {
+                                  headers: authHeader()
+                                });
+                                console.log('Upload response:', uploadRes.data);
+                                setFormData({ ...formData, image: uploadRes.data.imagePath });
+                                toast.success('Image uploaded successfully!');
+                              } catch (err) {
+                                console.error('Upload error:', err);
+                                console.error('Error response:', err.response?.data);
+                                toast.error(err.response?.data?.message || 'Failed to upload image');
+                              }
+                            }
+                          }}
+                          className="w-full px-4 py-2 bg-slate-800 border border-white/10 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#BFBD31] file:text-slate-950 hover:file:bg-[#BFBD31]/90 focus:border-[#BFBD31] outline-none"
+                        />
+                        <p className="text-xs text-slate-400">Or paste URL below:</p>
+                        <input
+                          type="text"
+                          placeholder="/images/destinations/kandy.jpg"
+                          value={formData.image}
+                          onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                          className="w-full px-4 py-2 bg-slate-800 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-[#BFBD31] outline-none text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-slate-300 mb-1">Attractions (comma-separated)</label>
+                      <textarea
+                        placeholder="e.g., Temple, Lake, Gardens"
+                        value={typeof formData.attractions === 'string' ? formData.attractions : (formData.attractions || []).join(', ')}
+                        onChange={(e) => setFormData({ ...formData, attractions: e.target.value })}
+                        className="w-full px-4 py-2 bg-slate-800 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-[#BFBD31] outline-none h-16 resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 mt-6">
+                    <button
+                      onClick={async () => {
+                        try {
+                          const payload = {
+                            ...formData,
+                            attractions: typeof formData.attractions === 'string' ? formData.attractions.split(',').map(a => a.trim()).filter(Boolean) : formData.attractions
+                          };
+                          if (editingDest) {
+                            await axios.put(`/api/config/destinations/${editingDest._id}`, payload, { headers: authHeader() });
+                            setDestinations(prev => prev.map(d => d._id === editingDest._id ? { ...d, ...payload } : d));
+                          } else {
+                            const res = await axios.post('/api/config/destinations', payload, { headers: authHeader() });
+                            setDestinations(prev => [...prev, res.data]);
+                          }
+                          setShowDestModal(false);
+                        } catch (err) {
+                          console.error('Save error:', err);
+                          alert('Error: ' + err.response?.data?.message || err.message);
+                        }
+                      }}
+                      className="flex-1 px-4 py-2 bg-[#BFBD31] text-slate-950 font-bold rounded-lg hover:bg-[#BFBD31]/90"
+                    >
+                      {editingDest ? 'Update' : 'Create'}
+                    </button>
+                    <button
+                      onClick={() => setShowDestModal(false)}
+                      className="flex-1 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {/* â”€â”€ SYSTEM SETTINGS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {activeTab === 'settings' && (
           <div className="bg-slate-900 border border-white/10 rounded-xl p-6 space-y-4">

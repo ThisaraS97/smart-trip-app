@@ -17,6 +17,14 @@ import Vendor from './models/Vendor.js';
 import Trip from './models/Trip.js';
 import SavedTrip from './models/SavedTrip.js';
 import InventoryItem from './models/InventoryItem.js';
+import ConfigCity from './models/ConfigCity.js';
+import ConfigProvince from './models/ConfigProvince.js';
+import ConfigService from './models/ConfigService.js';
+import ConfigDestination from './models/ConfigDestination.js';
+import ConfigPreference from './models/ConfigPreference.js';
+import ConfigBank from './models/ConfigBank.js';
+import ConfigWorkflow from './models/ConfigWorkflow.js';
+import ConfigItineraryItem from './models/ConfigItineraryItem.js';
 
 const FRESH = process.argv.includes('--fresh');
 
@@ -31,9 +39,159 @@ async function seed() {
       Trip.deleteMany({}),
       SavedTrip.deleteMany({}),
       InventoryItem.deleteMany({}),
+      ConfigCity.deleteMany({}),
+      ConfigProvince.deleteMany({}),
+      ConfigService.deleteMany({}),
+      ConfigDestination.deleteMany({}),
+      ConfigPreference.deleteMany({}),
+      ConfigBank.deleteMany({}),
+      ConfigWorkflow.deleteMany({}),
+      ConfigItineraryItem.deleteMany({}),
     ]);
     console.log('🗑  Cleared all collections');
   }
+
+  // ─── CONFIG: PROVINCES ────────────────────────────────────────────────────
+  const provinces = await ConfigProvince.insertMany([
+    { name: 'Western', code: 'WR' },
+    { name: 'Central', code: 'CP' },
+    { name: 'Southern', code: 'SR' },
+    { name: 'Northern', code: 'NR' },
+    { name: 'Eastern', code: 'ER' },
+    { name: 'North Western', code: 'NWR' },
+    { name: 'North Central', code: 'NCR' },
+    { name: 'Uva', code: 'UV' },
+    { name: 'Sabaragamuwa', code: 'SB' },
+  ]);
+  console.log('📍 Created 9 provinces');
+
+  // ─── CONFIG: CITIES ────────────────────────────────────────────────────────
+  const cities = await ConfigCity.insertMany([
+    { name: 'Colombo', province: 'Western', region: 'City' },
+    { name: 'Kandy', province: 'Central', region: 'Hill Country' },
+    { name: 'Galle', province: 'Southern', region: 'Coastal' },
+    { name: 'Jaffna', province: 'Northern', region: 'Beach' },
+    { name: 'Negombo', province: 'Western', region: 'Coastal' },
+    { name: 'Anuradhapura', province: 'North Central', region: 'Heritage' },
+    { name: 'Trincomalee', province: 'Eastern', region: 'Beach' },
+    { name: 'Batticaloa', province: 'Eastern', region: 'Beach' },
+    { name: 'Nuwara Eliya', province: 'Central', region: 'Hill Country' },
+    { name: 'Ella', province: 'Uva', region: 'Hill Country' },
+    { name: 'Sigiriya', province: 'Central', region: 'Heritage' },
+    { name: 'Yala', province: 'Southern', region: 'Wildlife' },
+    { name: 'Mirissa', province: 'Southern', region: 'Beach' },
+    { name: 'Dambulla', province: 'Central', region: 'Heritage' },
+    { name: 'Hikkaduwa', province: 'Southern', region: 'Beach' },
+    { name: 'Bentota', province: 'Southern', region: 'Beach' },
+  ]);
+  console.log('🏙️  Created 16 cities');
+
+  // ─── CONFIG: SERVICES ─────────────────────────────────────────────────────
+  const services = await ConfigService.insertMany([
+    { name: 'Accommodation (Hotels/Guest Houses)', category: 'accommodation' },
+    { name: 'Accommodation with Breakfast', category: 'accommodation' },
+    { name: 'Accommodation with Full Board', category: 'accommodation' },
+    { name: 'Vehicle Rental', category: 'transport' },
+    { name: 'Tour Guide Services', category: 'activity' },
+    { name: 'Activity/Experience Packages', category: 'activity' },
+    { name: 'Restaurant Services', category: 'meal' },
+    { name: 'Transport Services', category: 'transport' },
+    { name: 'Travel Packages', category: 'package' },
+  ]);
+  console.log('🛎️  Created 9 services');
+
+  // ─── CONFIG: DESTINATIONS ─────────────────────────────────────────────────
+  const destinations = await ConfigDestination.insertMany([
+    { name: 'Kandy', tag: 'Cultural', emoji: '🛕', defaultDays: 3, defaultPrice: 45000, region: 'Kandy', description: 'Ancient temples & scenic hills', image: '/images/destinations/kandy.jpg', attractions: ['Temple of the Tooth', 'Kandy Lake', 'Royal Palace', 'Botanical Gardens'] },
+    { name: 'Galle', tag: 'Coastal', emoji: '🏰', defaultDays: 4, defaultPrice: 55000, region: 'Galle', description: 'Dutch fort & pristine beaches', image: '/images/destinations/galle.jpg', attractions: ['Galle Fort', 'Unawatuna Beach', 'Japanese Peace Pagoda', 'Lighthouse Point'] },
+    { name: 'Ella', tag: 'Hill Country', emoji: '🌿', defaultDays: 3, defaultPrice: 40000, region: 'Ella', description: 'Tea country & breathtaking views', image: '/images/destinations/ella.jpg', attractions: ['Ella Rock', 'Nine Arch Bridge', 'Tea Plantations', 'Ravana Falls'] },
+    { name: 'Sigiriya', tag: 'Heritage', emoji: '🏯', defaultDays: 2, defaultPrice: 50000, region: 'Sigiriya', description: 'Ancient rock fortress wonder', image: '/images/destinations/sigiriya.jpg', attractions: ['Lion Rock', 'Ancient Paintings', 'Mirror Wall', 'Royal Gardens'] },
+    { name: 'Yala', tag: 'Wildlife', emoji: '🐘', defaultDays: 2, defaultPrice: 60000, region: 'Yala', description: 'Premier safari experience', image: '/images/destinations/yala.png', attractions: ['Safari Tours', 'Leopard Spotting', 'Crocodile Ponds', 'Bird Watching'] },
+    { name: 'Nuwara Eliya', tag: 'Nature', emoji: '🍃', defaultDays: 3, defaultPrice: 48000, region: 'Nuwara Eliya', description: 'Cool climate & tea estates', image: '/images/destinations/nuwaraeliya.jpg', attractions: ['Gregory Lake', 'Horton Plains', 'Tea Factory Visit', 'Post Office Hill'] },
+    { name: 'Mirissa', tag: 'Beach', emoji: '🐋', defaultDays: 3, defaultPrice: 42000, region: 'Mirissa', description: 'Whale watching & golden sands', image: '', attractions: ['Whale Watching Tours', 'Mirissa Beach', 'Parrot Rock', 'Sunset Boat Rides'] },
+    { name: 'Trincomalee', tag: 'Beach', emoji: '🌊', defaultDays: 4, defaultPrice: 52000, region: 'Trincomalee', description: 'Crystal waters & diving spots', image: '', attractions: ['Pigeon Island', 'Fort Frederick', 'Arugambe Beach', 'Scuba Diving'] },
+    { name: 'Anuradhapura', tag: 'Heritage', emoji: '🕌', defaultDays: 2, defaultPrice: 38000, region: 'Anuradhapura', description: 'Sacred city & ancient ruins', image: '', attractions: ['Sacred Bodhi Tree', 'Jetavana Stupa', 'Abhayagiri Stupa', 'Ancient Monasteries'] },
+    { name: 'Colombo', tag: 'City', emoji: '🌆', defaultDays: 2, defaultPrice: 35000, region: 'Colombo', description: 'Vibrant capital & street food', image: '', attractions: ['Old Parliament', 'Galle Face Hotel', 'National Museum', 'Beach Boulevard'] },
+    { name: 'Dambulla', tag: 'Heritage', emoji: '🏛️', defaultDays: 2, defaultPrice: 36000, region: 'Dambulla', description: 'Cave temples & rock paintings', image: '', attractions: ['Golden Temple', 'Dambulla Cave Temples', 'Rock Carvings', 'Spice Gardens'] },
+    { name: 'Hikkaduwa', tag: 'Beach', emoji: '🤿', defaultDays: 3, defaultPrice: 44000, region: 'Hikkaduwa', description: 'Coral reefs & surf breaks', image: '', attractions: ['Coral Sanctuary', 'Turtle Hatchery', 'Hikkaduwa Beach', 'Surfing Spots'] },
+  ]);
+  console.log('🌍 Created 12 destinations');
+
+  // ─── CONFIG: PREFERENCES ──────────────────────────────────────────────────
+  const preferences = await ConfigPreference.insertMany([
+    // Travel Styles
+    { category: 'travelStyle', value: 'adventure', label: 'Adventure' },
+    { category: 'travelStyle', value: 'family', label: 'Family' },
+    { category: 'travelStyle', value: 'luxury', label: 'Luxury' },
+    { category: 'travelStyle', value: 'budget', label: 'Budget' },
+    { category: 'travelStyle', value: 'relaxation', label: 'Relaxation' },
+    // Accommodation Types
+    { category: 'accommodationType', value: 'hotel', label: 'Hotel' },
+    { category: 'accommodationType', value: 'villa', label: 'Villa' },
+    { category: 'accommodationType', value: 'resort', label: 'Resort' },
+    { category: 'accommodationType', value: 'boutique', label: 'Boutique Hotel' },
+    { category: 'accommodationType', value: 'guesthouse', label: 'Guest House' },
+    { category: 'accommodationType', value: 'airbnb', label: 'AirBnB' },
+    // Meal Plans
+    { category: 'mealPlan', value: 'breakfast', label: 'Breakfast' },
+    { category: 'mealPlan', value: 'half-board', label: 'Half Board' },
+    { category: 'mealPlan', value: 'full-board', label: 'Full Board' },
+    { category: 'mealPlan', value: 'all-inclusive', label: 'All Inclusive' },
+    // Activity Interests
+    { category: 'activityInterest', value: 'hiking', label: 'Hiking' },
+    { category: 'activityInterest', value: 'wildlife', label: 'Wildlife' },
+    { category: 'activityInterest', value: 'photography', label: 'Photography' },
+    { category: 'activityInterest', value: 'snorkeling', label: 'Snorkeling' },
+    { category: 'activityInterest', value: 'spa', label: 'Spa' },
+    { category: 'activityInterest', value: 'sunset-cruise', label: 'Sunset Cruises' },
+    // Travel Interests
+    { category: 'travelInterest', value: 'nature', label: 'Nature' },
+    { category: 'travelInterest', value: 'adventure', label: 'Adventure' },
+    { category: 'travelInterest', value: 'cultural', label: 'Cultural' },
+    { category: 'travelInterest', value: 'beach', label: 'Beach' },
+    { category: 'travelInterest', value: 'food', label: 'Food' },
+    { category: 'travelInterest', value: 'relaxation', label: 'Relaxation' },
+    // Languages
+    { category: 'language', value: 'english', label: 'English' },
+    { category: 'language', value: 'sinhala', label: 'Sinhala' },
+    { category: 'language', value: 'tamil', label: 'Tamil' },
+    // Dietary Restrictions
+    { category: 'dietaryRestriction', value: 'vegetarian', label: 'Vegetarian' },
+    { category: 'dietaryRestriction', value: 'vegan', label: 'Vegan' },
+    { category: 'dietaryRestriction', value: 'halal', label: 'Halal' },
+    { category: 'dietaryRestriction', value: 'kosher', label: 'Kosher' },
+    { category: 'dietaryRestriction', value: 'gluten-free', label: 'Gluten Free' },
+    // Accessibility
+    { category: 'accessibility', value: 'wheelchair', label: 'Wheelchair Accessible' },
+    { category: 'accessibility', value: 'mobility', label: 'Mobility Assistance' },
+    { category: 'accessibility', value: 'hearing', label: 'Hearing Accessibility' },
+    { category: 'accessibility', value: 'visual', label: 'Visual Accessibility' },
+  ]);
+  console.log('⚙️  Created 38 preferences');
+
+  // ─── CONFIG: BANKS ────────────────────────────────────────────────────────
+  const banks = await ConfigBank.insertMany([
+    { name: 'Bank of Ceylon', code: 'BOC' },
+    { name: 'Commercial Bank', code: 'COMB' },
+    { name: "People's Bank", code: 'PB' },
+    { name: 'Sampath Bank', code: 'SMTH' },
+    { name: 'Hatton National Bank', code: 'HNB' },
+    { name: 'NDB Bank', code: 'NDB' },
+    { name: 'DFCC Bank', code: 'DFCC' },
+    { name: 'Nations Trust Bank', code: 'NTB' },
+    { name: 'BOC Digital', code: 'BOCD' },
+    { name: 'Seylan Bank', code: 'SEYLAN' },
+  ]);
+  console.log('🏦 Created 10 banks');
+
+  // ─── CONFIG: WORKFLOW ─────────────────────────────────────────────────────
+  const workflows = await ConfigWorkflow.insertMany([
+    { step: 1, name: 'Booking Submitted', description: 'User submits booking request', status: 'completed', order: 1 },
+    { step: 2, name: 'Vendor Approval', description: 'Vendor reviews and approves booking', status: 'pending', order: 2 },
+    { step: 3, name: 'Confirmed', description: 'Trip is confirmed by vendor', status: 'pending', order: 3 },
+    { step: 4, name: 'Trip Completed', description: 'Trip is completed and payment cleared', status: 'pending', order: 4 },
+  ]);
+  console.log('📋 Created 4 workflow steps');
 
   // ─── USERS ────────────────────────────────────────────────────────────────
   const hash = (pw) => bcrypt.hash(pw, 10);
@@ -401,6 +559,56 @@ async function seed() {
     await new Trip(def).save();
   }
   console.log(`✈️  Created ${tripDefs.length} trips`);
+
+  // ─── ITINERARY ITEMS ──────────────────────────────────────────────────────
+  await ConfigItineraryItem.insertMany([
+    // HOTELS
+    { type: 'hotel', name: "Earl's Regency Hotel", location: 'Kandy', price: 15000, rating: 4.5, amenities: ['WiFi', 'Pool', 'Breakfast'], category: 'Accommodation' },
+    { type: 'hotel', name: 'Thilanka Hotel', location: 'Kandy', price: 12000, rating: 4.2, amenities: ['WiFi', 'Restaurant'], category: 'Accommodation' },
+    { type: 'hotel', name: 'Cinnamon Citadel', location: 'Kandy', price: 18000, rating: 4.7, amenities: ['WiFi', 'Pool', 'Spa', 'Breakfast', 'Gym'], category: 'Accommodation' },
+    { type: 'hotel', name: 'OZO Kandy', location: 'Kandy', price: 13000, rating: 4.3, amenities: ['WiFi', 'Breakfast', 'Restaurant'], category: 'Accommodation' },
+    { type: 'hotel', name: 'Swiss Residence', location: 'Kandy', price: 10000, rating: 4.0, amenities: ['WiFi', 'Restaurant'], category: 'Accommodation' },
+    
+    // TRANSPORT
+    { type: 'transport', name: 'Private Car', price: 8000, duration: '3.5 hours', comfort: 'High', category: 'Transport' },
+    { type: 'transport', name: 'Shared Van', price: 5000, duration: '4 hours', comfort: 'Medium', category: 'Transport' },
+    { type: 'transport', name: 'Public Bus', price: 1500, duration: '5 hours', comfort: 'Basic', category: 'Transport' },
+    { type: 'transport', name: 'Train', price: 2000, duration: '4.5 hours', comfort: 'Medium', category: 'Transport' },
+    
+    // ACTIVITIES
+    { type: 'activity', name: 'Temple of the Tooth Visit', category: 'Cultural', price: 2000, duration: '2 hours', available: true },
+    { type: 'activity', name: 'Kandy Lake Walk', category: 'Nature', price: 0, duration: '1 hour', available: true },
+    { type: 'activity', name: 'Royal Botanical Gardens', category: 'Nature', price: 1500, duration: '3 hours', available: true },
+    { type: 'activity', name: 'Cultural Dance Show', category: 'Cultural', price: 3000, duration: '1.5 hours', available: true },
+    { type: 'activity', name: 'Tea Plantation Tour', category: 'Nature', price: 4000, duration: '4 hours', available: true },
+    { type: 'activity', name: 'Spice Garden Tour', category: 'Cultural', price: 2500, duration: '2 hours', available: true },
+    { type: 'activity', name: 'Gem Museum Visit', category: 'Cultural', price: 1000, duration: '1 hour', available: true },
+    { type: 'activity', name: 'Elephant Orphanage', category: 'Nature', price: 5000, duration: '3 hours', available: true },
+    { type: 'activity', name: 'Cooking Class', category: 'Food', price: 4500, duration: '3 hours', available: true },
+    { type: 'activity', name: 'Batik Workshop', category: 'Cultural', price: 3000, duration: '2 hours', available: false },
+    { type: 'activity', name: 'White Water Rafting', category: 'Adventure', price: 6000, duration: '4 hours', available: true },
+    
+    // MEALS
+    { type: 'meal', name: 'Breakfast Package (per day)', category: 'Food', price: 1500, frequency: 'per_day', icon: 'fork' },
+    { type: 'meal', name: 'Lunch Package (per day)', category: 'Food', price: 2000, frequency: 'per_day', icon: 'fork' },
+    { type: 'meal', name: 'Dinner Package (per day)', category: 'Food', price: 2500, frequency: 'per_day', icon: 'fork' },
+    { type: 'meal', name: 'Vegetarian Meal Option', category: 'Food', price: 500, frequency: 'per_day', icon: 'leaf' },
+    
+    // SERVICES
+    { type: 'service', name: 'Professional Tour Guide (full day)', category: 'Guide', price: 5000, icon: 'user', frequency: 'per_day' },
+    { type: 'service', name: 'Photography Package', price: 8000, icon: 'camera', frequency: 'one_time' },
+    { type: 'service', name: 'Airport Pickup', category: 'Transport', price: 4000, icon: 'plane', frequency: 'one_time' },
+    { type: 'service', name: 'Airport Drop-off', category: 'Transport', price: 4000, icon: 'plane', frequency: 'one_time' },
+    { type: 'service', name: 'Travel Insurance', category: 'Insurance', price: 3000, icon: 'shield', frequency: 'one_time' },
+    
+    // ROOM UPGRADES
+    { type: 'room_upgrade', name: 'Deluxe Room Upgrade', category: 'Room', price: 3000, icon: 'star', frequency: 'per_day' },
+    { type: 'room_upgrade', name: 'Sea View Room', category: 'Room', price: 4000, icon: 'eye', frequency: 'per_day' },
+    { type: 'room_upgrade', name: 'Extra Bed', category: 'Room', price: 2000, icon: 'bed', frequency: 'one_time' },
+    { type: 'room_upgrade', name: 'Early Check-in', category: 'Room', price: 1500, icon: 'clock', frequency: 'one_time' },
+    { type: 'room_upgrade', name: 'Late Checkout', category: 'Room', price: 1500, icon: 'clock', frequency: 'one_time' },
+  ]);
+  console.log('🏨 Created 38 itinerary items (hotels, transport, activities, meals, services, upgrades)');
 
   // ─── SAVED TRIPS ──────────────────────────────────────────────────────────
   await SavedTrip.insertMany([

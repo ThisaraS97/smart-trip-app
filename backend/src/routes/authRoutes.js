@@ -8,6 +8,7 @@ import {
     updateUserProfile,
 } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
+import { validateUserPreferences } from '../middleware/validationMiddleware.js';
 
 const router = express.Router();
 
@@ -17,6 +18,6 @@ router.post('/forgot-password', forgotPassword);
 router.put('/reset-password/:resettoken', resetPassword);
 router.route('/profile')
     .get(protect, getUserProfile)
-    .put(protect, updateUserProfile);
+    .put(protect, validateUserPreferences, updateUserProfile);
 
 export default router;

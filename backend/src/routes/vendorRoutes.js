@@ -7,14 +7,15 @@ import {
   updateVendorStatus,
 } from '../controllers/vendorController.js';
 import { protect, adminOnly } from '../middleware/authMiddleware.js';
+import { validateVendorInput } from '../middleware/validationMiddleware.js';
 
 const router = express.Router();
 
 // Vendor self-service
-router.post('/register', protect, registerVendor);
+router.post('/register', protect, validateVendorInput, registerVendor);
 router.route('/profile')
   .get(protect, getVendorProfile)
-  .put(protect, updateVendorProfile);
+  .put(protect, validateVendorInput, updateVendorProfile);
 
 // Admin routes
 router.get('/', protect, getAllVendors);

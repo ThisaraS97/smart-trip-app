@@ -9,16 +9,17 @@ import {
   deleteTrip,
 } from '../controllers/tripController.js';
 import { protect } from '../middleware/authMiddleware.js';
+import { validateTripInput } from '../middleware/validationMiddleware.js';
 
 const router = express.Router();
 
 router.route('/')
   .get(protect, getUserTrips)
-  .post(protect, createTrip);
+  .post(protect, validateTripInput, createTrip);
 
 router.route('/:id')
   .get(protect, getTripById)
-  .put(protect, updateTrip)
+  .put(protect, validateTripInput, updateTrip)
   .delete(protect, deleteTrip);
 
 router.patch('/:id/cancel', protect, cancelTrip);

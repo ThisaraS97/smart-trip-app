@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAllItineraryItems } from '../hooks/useItineraryItems.jsx';
 
 export default function ItineraryCustomization() {
   const navigate = useNavigate();
@@ -32,12 +33,17 @@ export default function ItineraryCustomization() {
   const [compareMode, setCompareMode] = useState(false);
   const [selectedForCompare, setSelectedForCompare] = useState([]);
 
-  const [itinerary, setItinerary] = useState({
+  // Fetch itinerary items from API instead of using hardcoded data
+  const { grouped: itineraryItems, loading: itItemsLoading } = useAllItineraryItems();
+  const { hotels = [], transport = [], activities = [], meals = [], services = [], room_upgrades = [] } = itineraryItems;
+
+  // Fallback data for when API is loading
+  const fallbackItinerary = {
     day1: {
       date: 'Mar 15, 2025',
       hotel: {
         id: 'h1',
-        name: 'Earl\'s Regency Hotel',
+        name: "Earl's Regency Hotel",
         location: 'Kandy',
         price: 15000,
         rating: 4.5,
@@ -63,7 +69,7 @@ export default function ItineraryCustomization() {
       date: 'Mar 16, 2025',
       hotel: {
         id: 'h1',
-        name: 'Earl\'s Regency Hotel',
+        name: "Earl's Regency Hotel",
         location: 'Kandy',
         price: 15000,
         rating: 4.5,
@@ -102,9 +108,17 @@ export default function ItineraryCustomization() {
       ],
       meals: []
     }
-  });
+  };
 
-  const alternativeHotels = [
+  // Initialize itinerary with fallback, will update when API data loads
+  const [itinerary, setItinerary] = useState(fallbackItinerary);
+
+  const alternativeHotels = hotels.length > 0 ? hotels.map((h, idx) => ({
+    ...h,
+    id: h?._id || `h${idx}`,
+    priceDiff: (h?.price || 0) - 15000  // Compare to default price
+  })) : [
+    // Fallback if API not loaded
     {
       id: 'h3',
       name: 'Cinnamon Citadel',
@@ -137,14 +151,28 @@ export default function ItineraryCustomization() {
     }
   ];
 
-  const transportOptions = [
+  const transportOptions = transport.length > 0 ? transport.map((t, idx) => ({
+    id: t?._id || `t${idx}`,
+    type: t?.name,
+    price: t?.price,
+    duration: t?.duration,
+    comfort: t?.comfort
+  })) : [
     { id: 't1', type: 'Private Car', price: 8000, duration: '3.5 hours', comfort: 'High' },
     { id: 't2', type: 'Shared Van', price: 5000, duration: '4 hours', comfort: 'Medium' },
     { id: 't3', type: 'Public Bus', price: 1500, duration: '5 hours', comfort: 'Basic' },
     { id: 't4', type: 'Train', price: 2000, duration: '4.5 hours', comfort: 'Medium' }
   ];
 
-  const availableActivities = [
+  const availableActivities = activities.length > 0 ? activities.filter(a => a?.available !== false).map((a, idx) => ({
+    id: a?._id || `a${idx}`,
+    name: a?.name,
+    price: a?.price,
+    duration: a?.duration,
+    category: a?.category,
+    available: a?.available !== false,
+    image: a?.image || '#667eea'
+  })) : [
     { id: 'a6', name: 'Spice Garden Tour', price: 2500, duration: '2 hours', category: 'Cultural', available: true, image: '#34C759' },
     { id: 'a7', name: 'Gem Museum Visit', price: 1000, duration: '1 hour', category: 'Cultural', available: true, image: '#667eea' },
     { id: 'a8', name: 'Elephant Orphanage', price: 5000, duration: '3 hours', category: 'Nature', available: true, image: '#1E90FF' },
@@ -154,20 +182,35 @@ export default function ItineraryCustomization() {
   ];
 
   const addOns = {
-    meals: [
+    meals: meals.length > 0 ? meals.map((m, idx) => ({
+      id: m?._id || `meal${idx}`,
+      name: m?.name,
+      price: m?.price,
+      type: m?.category
+    })) : [
       { id: 'meal1', name: 'Breakfast Package (per day)', price: 1500, type: 'Breakfast' },
       { id: 'meal2', name: 'Lunch Package (per day)', price: 2000, type: 'Lunch' },
       { id: 'meal3', name: 'Dinner Package (per day)', price: 2500, type: 'Dinner' },
       { id: 'meal4', name: 'Vegetarian Meal Option', price: 500, type: 'Special' }
     ],
-    services: [
+    services: services.length > 0 ? services.map((s, idx) => ({
+      id: s?._id || `srv${idx}`,
+      name: s?.name,
+      price: s?.price,
+      icon: s?.icon || 'box'
+    })) : [
       { id: 'srv1', name: 'Professional Tour Guide (full day)', price: 5000, icon: 'user' },
       { id: 'srv2', name: 'Photography Package', price: 8000, icon: 'camera' },
       { id: 'srv3', name: 'Airport Pickup', price: 4000, icon: 'plane' },
       { id: 'srv4', name: 'Airport Drop-off', price: 4000, icon: 'plane' },
       { id: 'srv5', name: 'Travel Insurance', price: 3000, icon: 'shield' }
     ],
-    roomUpgrades: [
+    roomUpgrades: room_upgrades.length > 0 ? room_upgrades.map((r, idx) => ({
+      id: r?._id || `room${idx}`,
+      name: r?.name,
+      price: r?.price,
+      icon: r?.icon || 'star'
+    })) : [
       { id: 'room1', name: 'Deluxe Room Upgrade', price: 3000, icon: 'star' },
       { id: 'room2', name: 'Sea View Room', price: 4000, icon: 'eye' },
       { id: 'room3', name: 'Extra Bed', price: 2000, icon: 'bed' },
@@ -183,6 +226,105 @@ export default function ItineraryCustomization() {
 
   const budgetPercentage = (currentTotal / budget) * 100;
   const budgetStatus = budgetPercentage < 90 ? 'green' : budgetPercentage <= 100 ? 'yellow' : 'red';
+
+  // Update itinerary when API data loads
+  useEffect(() => {
+    if (!itItemsLoading && hotels.length > 0 && transport.length > 0 && activities.length > 0 && meals.length > 0) {
+      setItinerary({
+        day1: {
+          date: 'Mar 15, 2025',
+          hotel: {
+            id: hotels[0]?._id || 'h1',
+            name: hotels[0]?.name || "Earl's Regency Hotel",
+            location: hotels[0]?.location || 'Kandy',
+            price: hotels[0]?.price || 15000,
+            rating: hotels[0]?.rating || 4.5,
+            amenities: hotels[0]?.amenities || ['WiFi', 'Pool', 'Breakfast'],
+            image: hotels[0]?.image || '#667eea'
+          },
+          transport: {
+            id: transport[0]?._id || 't1',
+            type: transport[0]?.name || 'Private Car',
+            price: transport[0]?.price || 8000,
+            duration: transport[0]?.duration || '3.5 hours',
+            comfort: transport[0]?.comfort || 'High'
+          },
+          activities: activities.slice(0, 2).map((a, idx) => ({
+            id: a?._id || `a${idx}`,
+            name: a?.name || 'Activity',
+            price: a?.price || 0,
+            duration: a?.duration || '1 hour',
+            category: a?.category || 'Nature'
+          })),
+          meals: meals.length > 0 ? [{
+            id: meals[0]?._id || 'm1',
+            type: meals[0]?.category || 'Lunch',
+            name: meals[0]?.name || 'Meal',
+            price: meals[0]?.price || 1500
+          }] : [{ id: 'm1', type: 'Lunch', name: 'Traditional Rice & Curry', price: 1500 }]
+        },
+        day2: {
+          date: 'Mar 16, 2025',
+          hotel: {
+            id: hotels[0]?._id || 'h1',
+            name: hotels[0]?.name || "Earl's Regency Hotel",
+            location: hotels[0]?.location || 'Kandy',
+            price: hotels[0]?.price || 15000,
+            rating: hotels[0]?.rating || 4.5,
+            amenities: hotels[0]?.amenities || ['WiFi', 'Pool', 'Breakfast'],
+            image: hotels[0]?.image || '#667eea'
+          },
+          transport: null,
+          activities: activities.slice(2, 4).map((a, idx) => ({
+            id: a?._id || `a${idx + 2}`,
+            name: a?.name || 'Activity',
+            price: a?.price || 0,
+            duration: a?.duration || '1 hour',
+            category: a?.category || 'Nature'
+          })),
+          meals: meals.length > 1 ? [{
+            id: meals[1]?._id || 'm2',
+            type: meals[1]?.category || 'Dinner',
+            name: meals[1]?.name || 'Meal',
+            price: meals[1]?.price || 2500
+          }] : [{ id: 'm2', type: 'Dinner', name: 'Hotel Restaurant', price: 2500 }]
+        },
+        day3: {
+          date: 'Mar 17, 2025',
+          hotel: {
+            id: hotels[1]?._id || 'h2',
+            name: hotels[1]?.name || 'Thilanka Hotel',
+            location: hotels[1]?.location || 'Kandy',
+            price: hotels[1]?.price || 12000,
+            rating: hotels[1]?.rating || 4.2,
+            amenities: hotels[1]?.amenities || ['WiFi', 'Restaurant'],
+            image: hotels[1]?.image || '#764ba2'
+          },
+          transport: transport.length > 1 ? {
+            id: transport[1]?._id || 't2',
+            type: transport[1]?.name || 'Shared Van',
+            price: transport[1]?.price || 5000,
+            duration: transport[1]?.duration || '4 hours',
+            comfort: transport[1]?.comfort || 'Medium'
+          } : {
+            id: 't2',
+            type: 'Shared Van',
+            price: 5000,
+            duration: '4 hours',
+            comfort: 'Medium'
+          },
+          activities: activities.length > 4 ? [{
+            id: activities[4]?._id || 'a5',
+            name: activities[4]?.name || 'Tea Plantation Tour',
+            price: activities[4]?.price || 4000,
+            duration: activities[4]?.duration || '4 hours',
+            category: activities[4]?.category || 'Nature'
+          }] : [{ id: 'a5', name: 'Tea Plantation Tour', price: 4000, duration: '4 hours', category: 'Nature' }],
+          meals: []
+        }
+      });
+    }
+  }, [itItemsLoading, hotels, transport, activities, meals]);
 
   useEffect(() => {
     calculateTotal();
