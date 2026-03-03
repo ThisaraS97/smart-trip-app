@@ -623,12 +623,14 @@ export default function AdminDashboard() {
                       </button>
                       <button
                         onClick={async () => {
-                          if (window.confirm(`Delete ${dest.name}?`)) {
+                          if (window.confirm(`Delete ${dest.name}? This action cannot be undone.`)) {
                             try {
                               await axios.delete(`/api/config/destinations/${dest._id}`, { headers: authHeader() });
                               setDestinations(prev => prev.filter(d => d._id !== dest._id));
+                              toast.success(`${dest.name} deleted successfully`);
                             } catch (err) {
                               console.error('Delete error:', err);
+                              toast.error(err.response?.data?.message || 'Failed to delete destination');
                             }
                           }
                         }}
