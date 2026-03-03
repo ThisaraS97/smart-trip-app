@@ -52,6 +52,10 @@ const bookingSchema = new mongoose.Schema(
       enum: ['unpaid', 'paid', 'refunded'],
       default: 'unpaid',
     },
+    vendorNotes: {
+      type: String,
+      default: '',
+    },
   },
   { timestamps: true }
 );

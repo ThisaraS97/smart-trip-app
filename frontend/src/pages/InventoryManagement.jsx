@@ -63,7 +63,7 @@ export default function InventoryManagement() {
   // ── auth helper ────────────────────────────────────────────────────────────
   const getToken = useCallback(() => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
-    if (!userInfo?.token) { navigate('/vendor/login'); return null; }
+    if (!userInfo?.token) { navigate('/vendor-login'); return null; }
     return userInfo.token;
   }, [navigate]);
 

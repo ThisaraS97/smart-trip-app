@@ -119,18 +119,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const updateBookingStatus = async (bookingId, status) => {
-    setActionLoading(bookingId + status);
-    try {
-      await axios.patch(`/api/bookings/${bookingId}/status`, { status }, { headers: authHeader() });
-      setAllBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
-      setRecentBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
-    } catch (err) {
-      console.error('Booking status update failed:', err);
-    } finally {
-      setActionLoading(null);
-    }
-  };
+
 
   const maxRevenue = revenueData.length > 0 ? Math.max(...revenueData.map(d => d.revenue), 1) : 1;
 
@@ -368,11 +357,11 @@ export default function AdminDashboard() {
                             <span className="px-2 py-0.5 bg-slate-700 text-slate-300 text-xs rounded">{vendor.type}</span>
                           </div>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1 text-sm text-slate-400">
-                            <span>ðŸ“ {vendor.location}</span>
-                            <span>âœ‰ï¸ {vendor.email}</span>
-                            <span>ðŸ“ž {vendor.phone}</span>
-                            <span>ðŸ‘¤ {vendor.ownerName}</span>
-                            <span>ðŸ—“ Applied: {vendor.appliedDate}</span>
+                            <span>📍 {vendor.location}</span>
+                            <span>✉️ {vendor.email}</span>
+                            <span>📞 {vendor.phone}</span>
+                            <span>👤 {vendor.ownerName}</span>
+                            <span>🗓 Applied: {vendor.appliedDate}</span>
                           </div>
                         </div>
                         <div className="flex gap-2 flex-shrink-0 flex-wrap">
@@ -474,7 +463,7 @@ export default function AdminDashboard() {
 
             <div className="bg-slate-900 border border-white/10 rounded-xl p-6">
               <h3 className="text-lg font-bold text-white mb-4">
-                Bookings <span className="text-slate-400 text-sm font-normal capitalize">({bookingFilter === 'all' ? 'all' : bookingFilter}) â€” {filteredBookings.length} records</span>
+                Bookings <span className="text-slate-400 text-sm font-normal capitalize">({bookingFilter === 'all' ? 'all' : bookingFilter}) — {filteredBookings.length} records</span>
               </h3>
               {filteredBookings.length === 0 ? (
                 <p className="text-slate-500 text-sm text-center py-10">No bookings match this filter.</p>
@@ -489,7 +478,6 @@ export default function AdminDashboard() {
                         <th className="pb-3 font-medium text-right">Amount</th>
                         <th className="pb-3 font-medium">Status</th>
                         <th className="pb-3 font-medium">Payment</th>
-                        <th className="pb-3 font-medium">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -504,20 +492,6 @@ export default function AdminDashboard() {
                           <td className="py-3 text-right font-semibold text-white whitespace-nowrap">LKR {b.amount.toLocaleString()}</td>
                           <td className="py-3"><Badge status={b.status}/></td>
                           <td className="py-3"><Badge status={b.paymentStatus}/></td>
-                          <td className="py-3">
-                            {b.status === 'pending' && (
-                              <div className="flex gap-1">
-                                <button disabled={!!actionLoading} onClick={() => updateBookingStatus(b.id, 'confirmed')}
-                                  className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded disabled:opacity-50">
-                                  {actionLoading === b.id + 'confirmed' ? '...' : 'Confirm'}
-                                </button>
-                                <button disabled={!!actionLoading} onClick={() => updateBookingStatus(b.id, 'rejected')}
-                                  className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded disabled:opacity-50">
-                                  {actionLoading === b.id + 'rejected' ? '...' : 'Reject'}
-                                </button>
-                              </div>
-                            )}
-                          </td>
                         </tr>
                       ))}
                     </tbody>

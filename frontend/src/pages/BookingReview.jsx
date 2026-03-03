@@ -150,7 +150,117 @@ export default function BookingReview() {
   };
 
   const handleDownloadPDF = () => {
-    toast.success('PDF download started...');
+    const receiptWindow = window.open('', '_blank');
+    if (!receiptWindow) {
+      toast.error('Popup blocked. Please allow popups and try again.');
+      return;
+    }
+
+    const costs = bookingDetails.costs;
+    const itineraryRows = bookingDetails.itinerary.map(day => `
+      <tr>
+        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;font-weight:600;color:#111827;">Day ${day.day} — ${day.date}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#374151;">
+          <div><strong>Hotel:</strong> ${day.hotel}</div>
+          ${day.transport ? `<div><strong>Transport:</strong> ${day.transport}</div>` : ''}
+          ${day.activities.length ? `<div><strong>Activities:</strong> ${day.activities.join(', ')}</div>` : ''}
+          ${day.meals.length ? `<div><strong>Meals:</strong> ${day.meals.join(', ')}</div>` : ''}
+        </td>
+      </tr>
+    `).join('');
+
+    receiptWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8"/>
+        <title>Receipt — ${bookingDetails.bookingRef}</title>
+        <style>
+          * { margin:0; padding:0; box-sizing:border-box; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; color:#111827; background:#fff; padding:40px; }
+          .header { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #BFBD31; padding-bottom:20px; margin-bottom:24px; }
+          .brand { font-size:28px; font-weight:800; color:#111827; letter-spacing:-0.5px; }
+          .brand span { color:#BFBD31; }
+          .ref-box { background:#f9f5e0; border:1px solid #BFBD31; border-radius:8px; padding:10px 20px; text-align:center; }
+          .ref-label { font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:1px; }
+          .ref-num { font-size:20px; font-weight:800; color:#BFBD31; }
+          h2 { font-size:16px; font-weight:700; color:#111827; margin:20px 0 10px; border-left:3px solid #BFBD31; padding-left:10px; }
+          table { width:100%; border-collapse:collapse; font-size:13px; }
+          th { background:#f3f4f6; padding:8px 12px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#6b7280; }
+          .cost-row { display:flex; justify-content:space-between; padding:6px 0; font-size:13px; border-bottom:1px solid #f3f4f6; }
+          .cost-label { color:#6b7280; }
+          .cost-val { font-weight:600; color:#111827; }
+          .total-row { display:flex; justify-content:space-between; padding:10px 0; font-size:16px; font-weight:800; border-top:2px solid #111827; margin-top:6px; }
+          .discount-val { color:#16a34a; font-weight:600; }
+          .footer { margin-top:32px; padding-top:16px; border-top:1px solid #e5e7eb; font-size:11px; color:#9ca3af; text-align:center; }
+          .badge { display:inline-block; background:#dcfce7; color:#16a34a; border-radius:99px; padding:3px 12px; font-size:11px; font-weight:700; margin-bottom:8px; }
+          @media print { body { padding:20px; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <div class="brand">Smart<span>TRIP</span></div>
+            <div style="font-size:12px;color:#6b7280;margin-top:4px;">Booking Receipt</div>
+            <div style="font-size:12px;color:#6b7280;">Issued: ${new Date().toLocaleDateString('en-LK', { year:'numeric', month:'long', day:'numeric' })}</div>
+          </div>
+          <div class="ref-box">
+            <div class="ref-label">Booking Reference</div>
+            <div class="ref-num">${bookingDetails.bookingRef}</div>
+          </div>
+        </div>
+
+        <div class="badge">✓ Booking Request Submitted</div>
+
+        <h2>Trip Details</h2>
+        <div class="cost-row"><span class="cost-label">Destination</span><span class="cost-val">${bookingDetails.destination}</span></div>
+        <div class="cost-row"><span class="cost-label">Location</span><span class="cost-val">${bookingDetails.location}</span></div>
+        <div class="cost-row"><span class="cost-label">Check-in</span><span class="cost-val">${bookingDetails.dates.checkIn}</span></div>
+        <div class="cost-row"><span class="cost-label">Check-out</span><span class="cost-val">${bookingDetails.dates.checkOut}</span></div>
+        <div class="cost-row"><span class="cost-label">Duration</span><span class="cost-val">${bookingDetails.dates.duration}</span></div>
+        <div class="cost-row"><span class="cost-label">Travelers</span><span class="cost-val">${bookingDetails.travelers.adults} Adults${bookingDetails.travelers.children ? ', ' + bookingDetails.travelers.children + ' Children' : ''}${bookingDetails.travelers.infants ? ', ' + bookingDetails.travelers.infants + ' Infants' : ''}</span></div>
+
+        <h2>Itinerary</h2>
+        <table>
+          <thead><tr><th>Day</th><th>Details</th></tr></thead>
+          <tbody>${itineraryRows}</tbody>
+        </table>
+
+        <h2>Cost Breakdown</h2>
+        <div class="cost-row"><span class="cost-label">Accommodation</span><span class="cost-val">LKR ${costs.accommodation.toLocaleString()}</span></div>
+        <div class="cost-row"><span class="cost-label">Transportation</span><span class="cost-val">LKR ${costs.transport.toLocaleString()}</span></div>
+        <div class="cost-row"><span class="cost-label">Activities</span><span class="cost-val">LKR ${costs.activities.toLocaleString()}</span></div>
+        <div class="cost-row"><span class="cost-label">Meals</span><span class="cost-val">LKR ${costs.meals.toLocaleString()}</span></div>
+        <div class="cost-row"><span class="cost-label">Add-ons</span><span class="cost-val">LKR ${costs.addOns.toLocaleString()}</span></div>
+        <div class="cost-row"><span class="cost-label">Subtotal</span><span class="cost-val">LKR ${costs.subtotal.toLocaleString()}</span></div>
+        <div class="cost-row"><span class="cost-label">Taxes (12%)</span><span class="cost-val">LKR ${costs.taxes.toLocaleString()}</span></div>
+        <div class="cost-row"><span class="cost-label">Service Fee (5%)</span><span class="cost-val">LKR ${costs.serviceFee.toLocaleString()}</span></div>
+        ${discount > 0 ? `<div class="cost-row"><span class="cost-label">Discount (${appliedPromo?.code})</span><span class="discount-val">- LKR ${discount.toLocaleString()}</span></div>` : ''}
+        <div class="total-row"><span>Grand Total</span><span style="color:#BFBD31;">LKR ${finalTotal.toLocaleString()}</span></div>
+
+        <div style="margin-top:16px;padding:10px 14px;background:#fefce8;border:1px solid #BFBD31;border-radius:6px;font-size:12px;color:#92400e;">
+          <strong>Note:</strong> Payment is due after vendor confirmation. You will receive a payment link within 24–48 hours.
+        </div>
+
+        ${specialRequests || dietaryRestrictions || accessibilityNeeds || specialOccasion ? `
+        <h2>Special Requests</h2>
+        ${specialRequests ? `<div class="cost-row"><span class="cost-label">Notes</span><span class="cost-val">${specialRequests}</span></div>` : ''}
+        ${dietaryRestrictions ? `<div class="cost-row"><span class="cost-label">Dietary</span><span class="cost-val">${dietaryRestrictions}</span></div>` : ''}
+        ${accessibilityNeeds ? `<div class="cost-row"><span class="cost-label">Accessibility</span><span class="cost-val">${accessibilityNeeds}</span></div>` : ''}
+        ${specialOccasion ? `<div class="cost-row"><span class="cost-label">Occasion</span><span class="cost-val">${specialOccasion}</span></div>` : ''}
+        ` : ''}
+
+        <div class="footer">
+          SmartTRIP — support@smarttrip.lk · +94 11 234 5678<br/>
+          This is an automated receipt. Payment is pending vendor confirmation.
+        </div>
+
+        <script>window.onload = function(){ window.print(); }</script>
+      </body>
+      </html>
+    `);
+    receiptWindow.document.close();
+    toast.success('Receipt ready — save as PDF from the print dialog.');
   };
 
   const handleSaveForLater = () => {

@@ -22,9 +22,11 @@ export default function ItineraryCustomization() {
   };
   const tripTravelers = parseTravelers(tripState?.travelers);
 
-  const [budget] = useState(tripBudgetInit); // total trip budget in LKR
+  const [budget, setBudget] = useState(tripBudgetInit); // total trip budget in LKR
   const [currentTotal, setCurrentTotal] = useState(125000);
   const [showBudgetAlert, setShowBudgetAlert] = useState(false);
+  const [showIncreaseBudgetInput, setShowIncreaseBudgetInput] = useState(false);
+  const [newBudgetValue, setNewBudgetValue] = useState('');
   const [mapCollapsed, setMapCollapsed] = useState(false);
   const [selectedDay, setSelectedDay] = useState(1);
   const [undoStack, setUndoStack] = useState([]);
@@ -1325,15 +1327,60 @@ export default function ItineraryCustomization() {
                 Remove Last Item
               </button>
               <button 
-                onClick={() => setShowBudgetAlert(false)}
+                onClick={() => { setShowBudgetAlert(false); setShowIncreaseBudgetInput(false); setNewBudgetValue(''); }}
                 className="flex-1 px-4 py-2 border border-white/20 text-slate-300 rounded-lg font-medium hover:bg-slate-950"
               >
                 Keep Editing
               </button>
             </div>
-            <button className="w-full mt-3 py-2 text-sm text-[#BFBD31] hover:text-purple-700 font-medium">
-              Increase Budget
-            </button>
+            {showIncreaseBudgetInput ? (
+              <div className="w-full mt-3 flex flex-col gap-2">
+                <label className="text-xs text-slate-400 text-center">Enter new budget (must be ≥ LKR {currentTotal.toLocaleString()})</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min={currentTotal}
+                    value={newBudgetValue}
+                    onChange={e => setNewBudgetValue(e.target.value)}
+                    placeholder={`Min: ${currentTotal.toLocaleString()}`}
+                    className="flex-1 px-3 py-2 bg-slate-800 border border-white/20 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-[#BFBD31]"
+                  />
+                  <button
+                    onClick={() => {
+                      const val = parseInt(newBudgetValue);
+                      if (!isNaN(val) && val >= currentTotal) {
+                        setBudget(val);
+                        setShowBudgetAlert(false);
+                        setShowIncreaseBudgetInput(false);
+                        setNewBudgetValue('');
+                      }
+                    }}
+                    className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg text-sm font-semibold hover:bg-yellow-400 transition-all"
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    onClick={() => { setShowIncreaseBudgetInput(false); setNewBudgetValue(''); }}
+                    className="px-3 py-2 border border-white/20 text-slate-400 rounded-lg text-sm hover:bg-slate-800 transition-all"
+                  >
+                    ✕
+                  </button>
+                </div>
+                {newBudgetValue && parseInt(newBudgetValue) < currentTotal && (
+                  <p className="text-xs text-red-400 text-center">Amount must be at least LKR {currentTotal.toLocaleString()}</p>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setNewBudgetValue(String(currentTotal));
+                  setShowIncreaseBudgetInput(true);
+                }}
+                className="w-full mt-3 py-2 text-sm text-[#BFBD31] hover:text-yellow-400 font-medium border border-[#BFBD31]/30 rounded-lg hover:bg-[#BFBD31]/10 transition-all"
+              >
+                Increase Budget
+              </button>
+            )}
           </div>
         </div>
       )}

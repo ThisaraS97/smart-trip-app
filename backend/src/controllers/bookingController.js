@@ -1,5 +1,6 @@
 import Booking from '../models/Booking.js';
 import InventoryItem from '../models/InventoryItem.js';
+import Vendor from '../models/Vendor.js';
 
 // GET /api/bookings  — current user's bookings
 export const getMyBookings = async (req, res) => {
@@ -130,6 +131,63 @@ export const getAllBookings = async (req, res) => {
       .populate('items.inventory', 'name type price')
       .sort({ createdAt: -1 });
     res.json(bookings);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// GET /api/bookings/vendor  — vendor: only their bookings
+export const getVendorBookings = async (req, res) => {
+  try {
+    const vendor = await Vendor.findOne({ user: req.user._id });
+    if (!vendor) return res.status(404).json({ message: 'Vendor profile not found' });
+
+    const inventoryItems = await InventoryItem.find({ vendor: vendor._id }).select('_id');
+    const inventoryIds = inventoryItems.map(i => i._id);
+
+    const bookings = await Booking.find({ 'items.inventory': { $in: inventoryIds } })
+      .populate('user', 'name email phone')
+      .populate('items.inventory', 'name type price')
+      .sort({ createdAt: -1 });
+
+    res.json(bookings);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// PATCH /api/bookings/:id/vendor-action  — vendor approves or rejects their booking
+export const vendorBookingAction = async (req, res) => {
+  try {
+    const { action, notes } = req.body; // action: 'confirmed' | 'rejected'
+    if (!['confirmed', 'rejected'].includes(action))
+      return res.status(400).json({ message: 'action must be confirmed or rejected' });
+
+    const vendor = await Vendor.findOne({ user: req.user._id });
+    if (!vendor) return res.status(404).json({ message: 'Vendor profile not found' });
+
+    const inventoryItems = await InventoryItem.find({ vendor: vendor._id }).select('_id');
+    const inventoryIds = inventoryItems.map(i => i._id.toString());
+
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+    // Verify this booking actually belongs to this vendor
+    const belongs = booking.items.some(item => inventoryIds.includes(item.inventory?.toString()));
+    if (!belongs) return res.status(403).json({ message: 'Not authorised to update this booking' });
+
+    if (booking.status !== 'pending')
+      return res.status(400).json({ message: `Booking is already ${booking.status}` });
+
+    booking.status = action;
+    if (notes) booking.vendorNotes = notes;
+    await booking.save();
+
+    const updated = await Booking.findById(booking._id)
+      .populate('user', 'name email')
+      .populate('items.inventory', 'name type price');
+
+    res.json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

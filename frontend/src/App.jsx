@@ -29,6 +29,7 @@ import PricingManagement from './pages/PricingManagement.jsx';
 import ReservationManager from './pages/ReservationManager.jsx';
 import RevenueAnalytics from './pages/RevenueAnalytics.jsx';
 import ReviewsRatings from './pages/ReviewsRatings.jsx';
+import VendorReviews from './pages/VendorReviews.jsx';
 import SavedTrips from './pages/SavedTrips.jsx';
 import TripDetails from './pages/TripDetails.jsx';
 import UserProfile from './pages/UserProfile.jsx';
@@ -75,7 +76,7 @@ function App() {
         <Route path="/vendor/pricing" element={<PricingManagement />} />
         <Route path="/vendor/revenue" element={<RevenueAnalytics />} />
         <Route path="/vendor/expenses" element={<ExpenseTracking />} />
-        <Route path="/vendor/reviews" element={<ReviewsRatings />} />
+        <Route path="/vendor/reviews" element={<VendorReviews />} />
         <Route path="/vendor/profile" element={<VendorProfile />} />
 
         {/* Admin */}

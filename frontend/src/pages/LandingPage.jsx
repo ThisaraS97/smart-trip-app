@@ -36,6 +36,7 @@ export default function LandingPage() {
   const [userInfo, setUserInfo] = useState(null);
   const [expandedFaq, setExpandedFaq] = useState(null);
   const [destinations, setDestinations] = useState([]);
+  const [destinationsLoading, setDestinationsLoading] = useState(true);
   const [showDestDropdown, setShowDestDropdown] = useState(false);
   const [searchForm, setSearchForm] = useState({ 
     destination: '', 
@@ -94,13 +95,34 @@ export default function LandingPage() {
     }, 300);
   };
 
+  // Local fallback images keyed by destination name
+  const localDestImages = {
+    'Kandy': kandyDestImg,
+    'Galle': galleDestImg,
+    'Ella': ellaDestImg,
+    'Sigiriya': sigiriyaDestImg,
+    'Yala': yalaDestImg,
+    'Nuwara Eliya': nuwaraEliyaDestImg,
+  };
+
+  const getDestImage = (dest) => {
+    // Prefer local bundled images for known destinations (always available)
+    if (localDestImages[dest.name]) return localDestImages[dest.name];
+    // Use DB image path for admin-uploaded images
+    if (dest.image) return dest.image.startsWith('http') ? dest.image : dest.image;
+    return kandyDestImg;
+  };
+
   useEffect(() => {
     const fetchDestinations = async () => {
       try {
+        setDestinationsLoading(true);
         const res = await axios.get('/api/config/destinations');
         setDestinations(res.data || []);
       } catch (err) {
         console.error('Failed to fetch destinations:', err);
+      } finally {
+        setDestinationsLoading(false);
       }
     };
     const stored = localStorage.getItem('userInfo');
@@ -450,55 +472,95 @@ export default function LandingPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
-          {[
-            { name: 'Kandy', desc: 'Cultural capital with ancient temples', rating: '4.8', days: '3 Days', price: '45,000', img: kandyDestImg },
-            { name: 'Galle', desc: 'Colonial fort and pristine beaches', rating: '4.9', days: '4 Days', price: '55,000', img: galleDestImg },
-            { name: 'Ella', desc: 'Scenic hill country paradise', rating: '4.7', days: '3 Days', price: '40,000', img: ellaDestImg },
-            { name: 'Sigiriya', desc: 'Ancient rock fortress wonder', rating: '4.9', days: '2 Days', price: '50,000', img: sigiriyaDestImg },
-            { name: 'Yala', desc: 'Premier wildlife safari experience', rating: '4.8', days: '2 Days', price: '60,000', img: yalaDestImg },
-            { name: 'Nuwara Eliya', desc: 'Tea country and cool climate', rating: '4.6', days: '3 Days', price: '48,000', img: nuwaraEliyaDestImg },
-          ].map((dest, i) => (
-            <div key={i} className="flex flex-col bg-slate-900 border border-white/5 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1">
-              {/* Card Header Image */}
-              <div className="h-44 relative overflow-hidden">
-                <img src={dest.img} alt={dest.name} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/20 to-transparent" />
-                <h3 className="absolute bottom-4 left-5 text-2xl font-bold text-white tracking-wide drop-shadow-lg">{dest.name}</h3>
-              </div>
-              
-              {/* Card Body */}
-              <div className="p-6 flex flex-col flex-1 gap-5">
-                <p className="text-slate-400 text-sm flex-1">{dest.desc}</p>
-                
-                <div className="flex justify-between items-center text-sm border-b border-white/10 pb-4">
-                  <div className="flex items-center gap-1.5 font-medium text-slate-300">
-                    <svg className="w-4 h-4 text-yellow-500 fill-yellow-500" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    {dest.rating}
+          {destinationsLoading ? (
+            // Loading skeletons
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex flex-col bg-slate-900 border border-white/5 rounded-2xl overflow-hidden animate-pulse">
+                <div className="h-44 bg-slate-800" />
+                <div className="p-6 flex flex-col gap-4">
+                  <div className="h-4 bg-slate-800 rounded w-3/4" />
+                  <div className="h-3 bg-slate-800 rounded w-1/2" />
+                  <div className="flex justify-between">
+                    <div className="h-5 bg-slate-800 rounded w-24" />
+                    <div className="h-9 bg-slate-800 rounded w-20" />
                   </div>
-                  <span className="text-slate-500">{dest.days}</span>
-                </div>
-                
-                <div className="flex justify-between items-center pt-1">
-                  <span className="text-sm font-semibold text-[#BFBD31]">From LKR {dest.price}</span>
-                  <button
-                    onClick={() => navigate('/itinerary', {
-                      state: {
-                        destination: `${dest.name} Tour`,
-                        location: dest.name,
-                        duration: dest.days,
-                        budget: parseInt(dest.price.replace(/,/g, '')) || 50000,
-                        dates: {},
-                      }
-                    })}
-                    className="bg-[#BFBD31] hover:bg-[#d4d235] text-slate-950 text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
-                    Explore
-                  </button>
                 </div>
               </div>
+            ))
+          ) : destinations.length === 0 ? (
+            <div className="col-span-3 text-center py-16 text-slate-500">
+              <svg className="w-12 h-12 mx-auto mb-4 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <p className="text-lg font-medium mb-1">No destinations available</p>
+              <p className="text-sm">Destinations will appear here once added by the admin.</p>
             </div>
-          ))}
+          ) : (
+            destinations.map((dest) => (
+              <div key={dest._id} className="flex flex-col bg-slate-900 border border-white/5 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1">
+                {/* Card Header Image */}
+                <div className="h-44 relative overflow-hidden">
+                  <img
+                    src={getDestImage(dest)}
+                    alt={dest.name}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    onError={e => { e.target.src = kandyDestImg; }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/20 to-transparent" />
+                  <div className="absolute bottom-4 left-5 flex items-center gap-2">
+                    {dest.emoji && <span className="text-xl">{dest.emoji}</span>}
+                    <h3 className="text-2xl font-bold text-white tracking-wide drop-shadow-lg">{dest.name}</h3>
+                  </div>
+                  {dest.tag && (
+                    <span className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full border border-white/20">
+                      {dest.tag}
+                    </span>
+                  )}
+                </div>
+
+                {/* Card Body */}
+                <div className="p-6 flex flex-col flex-1 gap-5">
+                  <p className="text-slate-400 text-sm flex-1">{dest.description || `Explore ${dest.name} with a personalized itinerary`}</p>
+
+                  <div className="flex justify-between items-center text-sm border-b border-white/10 pb-4">
+                    <div className="flex items-center gap-1.5 font-medium text-slate-300">
+                      {dest.region && (
+                        <span className="flex items-center gap-1 text-slate-400 text-xs">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                          </svg>
+                          {dest.region}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-slate-500">{dest.defaultDays} {dest.defaultDays === 1 ? 'Day' : 'Days'}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="text-sm font-semibold text-[#BFBD31]">
+                      From LKR {(dest.defaultPrice || 0).toLocaleString()}
+                    </span>
+                    <button
+                      onClick={() => navigate('/itinerary', {
+                        state: {
+                          destination: `${dest.name} Tour`,
+                          location: dest.name,
+                          duration: `${dest.defaultDays} Days`,
+                          budget: dest.defaultPrice || 50000,
+                          dates: {},
+                        }
+                      })}
+                      className="bg-[#BFBD31] hover:bg-[#d4d235] text-slate-950 text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+                    >
+                      Explore
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
         
         <div className="mt-14 flex justify-center">

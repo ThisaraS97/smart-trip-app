@@ -24,4 +24,9 @@ const adminOnly = (req, res, next) => {
   return res.status(403).json({ message: 'Admin access only' });
 };
 
-export { protect, adminOnly };
+const vendorOnly = (req, res, next) => {
+  if (req.user && req.user.role === 'vendor') return next();
+  return res.status(403).json({ message: 'Vendor access only' });
+};
+
+export { protect, adminOnly, vendorOnly };

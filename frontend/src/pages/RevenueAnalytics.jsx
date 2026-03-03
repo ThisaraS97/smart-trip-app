@@ -1,145 +1,282 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
+// ── helpers ─────────────────────────────────────────────────────────────────
+const COMMISSION_RATE = 0.10;
+const COLORS = ['#667eea', '#34C759', '#FF9500', '#764ba2', '#ef4444', '#06b6d4'];
+const TYPE_LABELS = { accommodation: 'Accommodation', transport: 'Transport', activity: 'Activity', meal: 'Meal', package: 'Package', other: 'Other' };
+
+function fmtMoney(n = 0) {
+  if (n >= 1_000_000) return `LKR ${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000)     return `LKR ${(n / 1_000).toFixed(1)}K`;
+  return `LKR ${n.toLocaleString()}`;
+}
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : '—'; }
+
+function Bar({ value, max, color = '#667eea', label }) {
+  const pct = max > 0 ? Math.max(2, (value / max) * 100) : 2;
+  return (
+    <div className="flex-1 flex flex-col items-center gap-1">
+      <div className="w-full flex items-end h-40 bg-slate-800/30 rounded-lg overflow-hidden relative group">
+        <div className="w-full transition-all duration-500 rounded-t-sm" style={{ height: `${pct}%`, background: color }} />
+        <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-slate-700 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 pointer-events-none">
+          {typeof value === 'number' ? (value >= 1000 ? `LKR ${(value/1000).toFixed(0)}K` : value) : value}
+        </div>
+      </div>
+      <span className="text-xs text-slate-400">{label}</span>
+    </div>
+  );
+}
+
+function Donut({ data }) {
+  const total = data.reduce((s, d) => s + d.percentage, 0) || 1;
+  let offset = 0;
+  const R = 45, C = 2 * Math.PI * R;
+  return (
+    <div className="flex items-center gap-8 flex-wrap">
+      <svg viewBox="0 0 100 100" className="w-40 h-40 -rotate-90 shrink-0">
+        {data.map((d, i) => {
+          const dash = (d.percentage / 100) * C;
+          const seg = <circle key={i} cx="50" cy="50" r={R} fill="none" stroke={d.color} strokeWidth="10"
+            strokeDasharray={`${dash} ${C}`} strokeDashoffset={-offset} className="transition-all" />;
+          offset += dash;
+          return seg;
+        })}
+      </svg>
+      <div className="space-y-2 flex-1 min-w-[140px]">
+        {data.map((d, i) => (
+          <div key={i} className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-sm shrink-0" style={{ background: d.color }} />
+              <span className="text-sm text-slate-300">{d.type || d.label}</span>
+            </div>
+            <div className="text-right shrink-0">
+              <span className="text-sm font-semibold text-white">{d.percentage}%</span>
+              {d.count != null && <span className="text-xs text-slate-500 ml-1">({d.count})</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── main component ──────────────────────────────────────────────────────────
 export default function RevenueAnalytics() {
-  const [dateRange, setDateRange] = useState('thisMonth');
-  const [customDateFrom, setCustomDateFrom] = useState('');
-  const [customDateTo, setCustomDateTo] = useState('');
-  const [revenueView, setRevenueView] = useState('monthly'); // monthly by default
-  const [topServicesBy, setTopServicesBy] = useState('revenue'); // revenue or bookings
+  const navigate = useNavigate();
+  const [dash, setDash]         = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [dateRange, setDateRange]     = useState('all');
+  const [customFrom, setCustomFrom]   = useState('');
+  const [customTo, setCustomTo]       = useState('');
+  const [topBy, setTopBy]             = useState('revenue');
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [compareIndustry, setCompareIndustry] = useState(false);
 
-  const metrics = {
-    totalRevenue: 2847500,
-    previousRevenue: 2456300,
-    totalBookings: 234,
-    previousBookings: 198,
-    avgBookingValue: 12170,
-    conversionRate: 18.5,
-    pendingPayout: 487600,
-    paidAmount: 2359900
+  const getAuth = () => {
+    const info = JSON.parse(localStorage.getItem('userInfo') || 'null');
+    if (!info?.token) { navigate('/vendor-login'); return null; }
+    return { Authorization: `Bearer ${info.token}` };
   };
 
-  // computes % change between periods
-  const calculateChange = (current, previous) => {
-    const change = ((current - previous) / previous) * 100;
-    return {
-      value: Math.abs(change).toFixed(1),
-      isPositive: change >= 0
-    };
+  const fetchAll = async () => {
+    const headers = getAuth(); if (!headers) return;
+    setLoading(true);
+    try {
+      const [{ data: d }, { data: bk }] = await Promise.all([
+        axios.get('/api/dashboard/vendor', { headers }),
+        axios.get('/api/bookings/vendor', { headers }),
+      ]);
+      setDash(d);
+      setBookings(bk);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to load analytics');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const revenueData = [
-    { period: 'Sep', revenue: 380000, previous: 345000 },
-    { period: 'Oct', revenue: 425000, previous: 390000 },
-    { period: 'Nov', revenue: 395000, previous: 410000 },
-    { period: 'Dec', revenue: 510000, previous: 468000 },
-    { period: 'Jan', revenue: 452000, previous: 425000 },
-    { period: 'Feb', revenue: 485600, previous: 418300 }
-  ];
+  useEffect(() => { fetchAll(); }, []); // eslint-disable-line
 
-  const categoryData = [
-    { category: 'Hotels/Accommodation', bookings: 145, revenue: 1850000, color: '#667eea', percentage: 62 },
-    { category: 'Activities', bookings: 67, revenue: 587000, color: '#34C759', percentage: 20 },
-    { category: 'Transport', bookings: 18, revenue: 324000, color: '#FF9500', percentage: 11 },
-    { category: 'Tour Guides', bookings: 4, revenue: 86500, color: '#764ba2', percentage: 7 }
-  ];
+  // ── date-filtered bookings ─────────────────────────────────────────────
+  const filteredBookings = useMemo(() => {
+    const now = Date.now();
+    return bookings.filter(b => {
+      const d = new Date(b.createdAt).getTime();
+      if (dateRange === '30')  return d >= now - 30 * 86400000;
+      if (dateRange === '90')  return d >= now - 90 * 86400000;
+      if (dateRange === '365') return d >= now - 365 * 86400000;
+      if (dateRange === 'custom') {
+        if (customFrom && d < new Date(customFrom).getTime()) return false;
+        if (customTo   && d > new Date(customTo).getTime() + 86399999) return false;
+      }
+      return true;
+    });
+  }, [bookings, dateRange, customFrom, customTo]);
 
-  const bookingsTimeline = [
-    { period: 'Week 1', confirmed: 38, completed: 42, cancelled: 5 },
-    { period: 'Week 2', confirmed: 45, completed: 38, cancelled: 3 },
-    { period: 'Week 3', confirmed: 52, completed: 45, cancelled: 7 },
-    { period: 'Week 4', confirmed: 48, completed: 51, cancelled: 4 }
-  ];
+  // ── computed metrics ───────────────────────────────────────────────────
+  const metrics = useMemo(() => {
+    const revenue   = filteredBookings.filter(b => ['confirmed','completed'].includes(b.status)).reduce((s,b) => s+b.totalCost,0);
+    const pending   = filteredBookings.filter(b => ['confirmed'].includes(b.status)).reduce((s,b) => s+b.totalCost,0);
+    const paid      = filteredBookings.filter(b => b.status==='completed').reduce((s,b) => s+b.totalCost,0);
+    const confirmed = filteredBookings.filter(b => ['confirmed','completed'].includes(b.status)).length;
+    const avg       = confirmed > 0 ? Math.round(revenue / confirmed) : 0;
+    const responded = filteredBookings.filter(b => ['confirmed','rejected','completed'].includes(b.status)).length;
+    const respRate  = filteredBookings.length > 0 ? Math.round((responded / filteredBookings.length) * 100) : 0;
+    const uniqueCustomers = new Set(filteredBookings.map(b => b.user?._id).filter(Boolean)).size;
+    return { revenue, pending, paid, totalBookings: filteredBookings.length, confirmed, avg, respRate, uniqueCustomers };
+  }, [filteredBookings]);
 
-  const topServices = [
-    { name: 'Deluxe Room with Garden View', revenue: 425000, bookings: 28 },
-    { name: 'Suite with Ocean View', revenue: 385000, bookings: 15 },
-    { name: 'Cultural Dance Show', revenue: 247000, bookings: 98 },
-    { name: 'Tea Plantation Tour', revenue: 198000, bookings: 56 },
-    { name: 'Private Car with Driver', revenue: 176000, bookings: 22 },
-    { name: 'Standard Room', revenue: 165000, bookings: 16 },
-    { name: 'City Tour Package', revenue: 142000, bookings: 47 },
-    { name: 'Wildlife Safari', revenue: 128000, bookings: 32 },
-    { name: 'Cooking Class Experience', revenue: 98000, bookings: 39 },
-    { name: 'Temple Tour', revenue: 85000, bookings: 34 }
-  ];
+  // ── 6-month revenue trend (from dashboard OR computed from bookings) ────
+  const revenueTrendData = useMemo(() => {
+    // When showing all, use the pre-aggregated server data (accurate counts)
+    if (dateRange === 'all' && dash?.revenueData?.length) return dash.revenueData;
+    // Otherwise compute from filtered bookings grouped by month
+    const map = {};
+    filteredBookings.filter(b => ['confirmed','completed'].includes(b.status)).forEach(b => {
+      const key = new Date(b.createdAt).toLocaleString('en-US', { month: 'short', year: '2-digit' });
+      map[key] = (map[key] || 0) + b.totalCost;
+    });
+    return Object.entries(map).map(([month, revenue]) => ({ month, revenue }));
+  }, [dash, filteredBookings, dateRange]);
 
-  const revenueReport = [
-    { id: 'BK-2025-0847', date: '2025-02-11', service: 'Deluxe Room', customer: 'John Smith', amount: 45000, commission: 4500, payout: 40500, status: 'Confirmed', payment: 'Pending' },
-    { id: 'BK-2025-0846', date: '2025-02-10', service: 'Cultural Show', customer: 'Sarah Williams', amount: 10000, commission: 1000, payout: 9000, status: 'Completed', payment: 'Paid' },
-    { id: 'BK-2025-0845', date: '2025-02-10', service: 'Suite', customer: 'Mike Chen', amount: 75000, commission: 7500, payout: 67500, status: 'Confirmed', payment: 'Paid' },
-    { id: 'BK-2025-0844', date: '2025-02-09', service: 'Private Car', customer: 'Emma Davis', amount: 8000, commission: 800, payout: 7200, status: 'Completed', payment: 'Paid' },
-    { id: 'BK-2025-0843', date: '2025-02-08', service: 'Tea Tour', customer: 'David Kumar', amount: 14000, commission: 1400, payout: 12600, status: 'Completed', payment: 'Paid' }
-  ];
+  // ── bookings by month (confirmed / cancelled / pending) ─────────────────
+  const bookingsTrendData = useMemo(() => {
+    const map = {};
+    filteredBookings.forEach(b => {
+      const key = new Date(b.createdAt).toLocaleString('en-US', { month: 'short', year: '2-digit' });
+      if (!map[key]) map[key] = { month: key, confirmed: 0, cancelled: 0, pending: 0 };
+      if (['confirmed','completed'].includes(b.status)) map[key].confirmed++;
+      else if (b.status === 'cancelled') map[key].cancelled++;
+      else if (b.status === 'pending')   map[key].pending++;
+    });
+    return Object.values(map);
+  }, [filteredBookings]);
 
-  const servicePerformance = [
-    { name: 'Deluxe Room', category: 'Hotel', bookings: 28, revenue: 425000, rating: 4.8, occupancy: 87, peakDates: 'Dec 20-30' },
-    { name: 'Suite with Ocean View', category: 'Hotel', bookings: 15, revenue: 385000, rating: 5.0, occupancy: 93, peakDates: 'Dec 24-Jan 5' },
-    { name: 'Cultural Dance Show', category: 'Activity', bookings: 98, revenue: 247000, rating: 4.9, occupancy: 76, peakDates: 'Jan 15-25' },
-    { name: 'Tea Plantation Tour', category: 'Activity', bookings: 56, revenue: 198000, rating: 4.6, occupancy: 68, peakDates: 'Dec 10-20' }
-  ];
+  // ── top services computed from filtered bookings ─────────────────────
+  const topServices = useMemo(() => {
+    const map = {};
+    filteredBookings.forEach(b => {
+      b.items?.forEach(item => {
+        if (!item.inventory) return;
+        const id   = item.inventory._id || item.inventory;
+        const name = item.inventory.name || 'Service';
+        const type = item.inventory.type || 'other';
+        if (!map[id]) map[id] = { name, type, bookings: 0, revenue: 0 };
+        map[id].bookings++;
+        map[id].revenue += item.priceAtBooking || 0;
+      });
+    });
+    return Object.values(map).sort((a, b) => topBy === 'revenue' ? b.revenue - a.revenue : b.bookings - a.bookings).slice(0, 8);
+  }, [filteredBookings, topBy]);
 
-  const customerInsights = {
-    newCustomers: 187,
-    returningCustomers: 47,
-    retentionRate: 20.1,
-    avgFrequency: 1.3
+  // ── service type breakdown ─────────────────────────────────────────────
+  const typeBreakdown = useMemo(() => {
+    const map = {};
+    filteredBookings.forEach(b => {
+      b.items?.forEach(item => {
+        const t = item.inventory?.type || 'other';
+        map[t] = (map[t] || 0) + 1;
+      });
+    });
+    const total = Object.values(map).reduce((s, n) => s + n, 0) || 1;
+    return Object.entries(map).map(([type, count], i) => ({
+      type: TYPE_LABELS[type] || type,
+      percentage: Math.round((count / total) * 100),
+      count,
+      color: COLORS[i % COLORS.length],
+    })).sort((a, b) => b.count - a.count);
+  }, [filteredBookings]);
+
+  // ── export ─────────────────────────────────────────────────────────────
+  const exportCSV = () => {
+    const rows = [['Booking ID','Date','Service','Customer','Amount (LKR)','Commission (LKR)','Net Payout (LKR)','Status','Payment']];
+    filteredBookings.forEach(b => {
+      const svc = b.items?.map(i => i.inventory?.name||'').filter(Boolean).join(', ') || b.destination || '—';
+      const commission = Math.round(b.totalCost * COMMISSION_RATE);
+      rows.push([b._id.slice(-10).toUpperCase(), fmtDate(b.createdAt), svc, b.user?.name||'—', b.totalCost, commission, b.totalCost - commission, b.status, b.paymentStatus]);
+    });
+    const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+    const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = `revenue-report-${new Date().toISOString().split('T')[0]}.csv`; a.click();
   };
 
-  const locationData = [
-    { location: 'Colombo', customers: 89, percentage: 38 },
-    { location: 'Kandy', customers: 56, percentage: 24 },
-    { location: 'Galle', customers: 43, percentage: 18 },
-    { location: 'Other', customers: 46, percentage: 20 }
-  ];
+  const printReport = () => {
+    const html = `<!DOCTYPE html><html><head><title>Revenue Report</title><style>
+      body{font-family:sans-serif;padding:24px} h1{font-size:20px;margin-bottom:8px}
+      table{width:100%;border-collapse:collapse;font-size:12px}
+      th,td{padding:6px 10px;text-align:left;border:1px solid #ddd}
+      th{background:#f0f0f0;font-weight:600} .green{color:#16a34a} .orange{color:#d97706}
+      .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+      .card{border:1px solid #e5e7eb;border-radius:8px;padding:12px}
+      .card-num{font-size:20px;font-weight:700;margin-top:4px}
+    </style></head><body>
+    <h1>Revenue & Analytics Report</h1>
+    <p style="color:#666;font-size:12px">Generated: ${new Date().toLocaleString()} | Period: ${dateRange === 'all' ? 'All Time' : dateRange === 'custom' ? `${customFrom} to ${customTo}` : `Last ${dateRange} days`}</p>
+    <div class="summary">
+      <div class="card"><div>Total Revenue</div><div class="card-num">LKR ${metrics.revenue.toLocaleString()}</div></div>
+      <div class="card"><div>Total Bookings</div><div class="card-num">${metrics.totalBookings}</div></div>
+      <div class="card"><div>Avg Booking Value</div><div class="card-num">LKR ${metrics.avg.toLocaleString()}</div></div>
+      <div class="card"><div>Response Rate</div><div class="card-num">${metrics.respRate}%</div></div>
+    </div>
+    <table><thead><tr><th>Booking ID</th><th>Date</th><th>Service</th><th>Customer</th><th>Amount</th><th>Commission</th><th>Net Payout</th><th>Status</th></tr></thead><tbody>
+    ${filteredBookings.map(b => {
+      const svc = b.items?.map(i => i.inventory?.name||'').filter(Boolean).join(', ') || b.destination || '—';
+      const comm = Math.round(b.totalCost * COMMISSION_RATE);
+      return `<tr><td>${b._id.slice(-10).toUpperCase()}</td><td>${fmtDate(b.createdAt)}</td><td>${svc}</td><td>${b.user?.name||'—'}</td><td>LKR ${b.totalCost.toLocaleString()}</td><td>LKR ${comm.toLocaleString()}</td><td class="green">LKR ${(b.totalCost-comm).toLocaleString()}</td><td>${b.status}</td></tr>`;
+    }).join('')}
+    </tbody></table></body></html>`;
+    const w = window.open('','_blank'); w.document.write(html); w.document.close(); w.print();
+  };
 
-  const maxRevenue = Math.max(...revenueData.map(d => d.revenue));
-  const maxBookings = Math.max(...bookingsTimeline.flatMap(w => [w.confirmed, w.completed, w.cancelled]));
-  const maxTopService = Math.max(...topServices.map(s => topServicesBy === 'revenue' ? s.revenue : s.bookings));
+  // ─────────────────────── render ─────────────────────────────────────────
+  if (loading) return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-10 h-10 border-4 border-[#BFBD31] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-slate-400">Loading analytics…</p>
+      </div>
+    </div>
+  );
+
+  const maxRev  = Math.max(...revenueTrendData.map(d => d.revenue), 1);
+  const maxBk   = Math.max(...bookingsTrendData.flatMap(d => [d.confirmed, d.cancelled, d.pending]), 1);
+  const maxTop  = Math.max(...topServices.map(s => topBy === 'revenue' ? s.revenue : s.bookings), 1);
 
   return (
     <div className="min-h-screen bg-slate-950">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         * { font-family: 'Inter', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        select, input { background: #0f172a; color: #cbd5e1; }
+        select option { background: #0f172a; }
       `}</style>
 
       {/* Header */}
-      <div className="bg-slate-900 border border-white/10 border-b border-white/10">
+      <div className="bg-slate-900 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-white">Revenue & Analytics</h1>
               <p className="text-slate-400 mt-1">Financial reporting and business intelligence</p>
             </div>
-            <div className="flex gap-2">
-              <button className="px-4 py-2 border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950 flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                Download PDF
+            <div className="flex gap-2 flex-wrap">
+              <button onClick={fetchAll} className="px-4 py-2 border border-white/20 text-slate-300 rounded-lg hover:bg-slate-800 flex items-center gap-2 text-sm">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Refresh
               </button>
-              <button className="px-4 py-2 border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950 flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                Export Excel
+              <button onClick={exportCSV} className="px-4 py-2 border border-white/20 text-slate-300 rounded-lg hover:bg-slate-800 flex items-center gap-2 text-sm">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Export CSV
               </button>
-              <button className="px-4 py-2 border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950 flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
-                Email Report
+              <button onClick={printReport} className="px-4 py-2 border border-white/20 text-slate-300 rounded-lg hover:bg-slate-800 flex items-center gap-2 text-sm">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Print Report
               </button>
-              <button
-                onClick={() => setShowScheduleModal(true)}
-                className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31] flex items-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+              <button onClick={() => setShowScheduleModal(true)} className="px-4 py-2 bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#a8a628] flex items-center gap-2 text-sm font-semibold">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Schedule Reports
               </button>
             </div>
@@ -147,597 +284,291 @@ export default function RevenueAnalytics() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Date Range Selector */}
-        <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6 mb-8">
-          <div className="flex items-center gap-4">
-            <div className="flex gap-2">
-              {['today', 'thisWeek', 'thisMonth', 'lastMonth', 'thisYear'].map(range => (
-                <button
-                  key={range}
-                  onClick={() => setDateRange(range)}
-                  className={`px-4 py-2 rounded-lg font-medium ${
-                    dateRange === range ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
-                  }`}
-                >
-                  {range === 'today' && 'Today'}
-                  {range === 'thisWeek' && 'This Week'}
-                  {range === 'thisMonth' && 'This Month'}
-                  {range === 'lastMonth' && 'Last Month'}
-                  {range === 'thisYear' && 'This Year'}
-                </button>
-              ))}
-              <button
-                onClick={() => setDateRange('custom')}
-                className={`px-4 py-2 rounded-lg font-medium ${
-                  dateRange === 'custom' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300 hover:bg-gray-200'
-                }`}
-              >
-                Custom Range
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        {/* Date Range Filter */}
+        <div className="bg-slate-900 border border-white/10 rounded-xl p-5">
+          <div className="flex flex-wrap items-center gap-3">
+            {[['all','All Time'],['30','Last 30 Days'],['90','Last 90 Days'],['365','This Year'],['custom','Custom']].map(([v, lbl]) => (
+              <button key={v} onClick={() => setDateRange(v)}
+                className={`px-4 py-2 rounded-lg font-medium text-sm ${dateRange === v ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}>
+                {lbl}
               </button>
-            </div>
-            
+            ))}
             {dateRange === 'custom' && (
-              <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  value={customDateFrom}
-                  onChange={(e) => setCustomDateFrom(e.target.value)}
-                  className="px-4 py-2 border border-white/20 rounded-lg"
-                />
-                <span className="text-slate-400">to</span>
-                <input
-                  type="date"
-                  value={customDateTo}
-                  onChange={(e) => setCustomDateTo(e.target.value)}
-                  className="px-4 py-2 border border-white/20 rounded-lg"
-                />
-                <button className="px-6 py-2 bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31]">
-                  Apply
-                </button>
+              <div className="flex items-center gap-2 ml-2">
+                <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} className="px-3 py-2 border border-white/20 rounded-lg text-sm" />
+                <span className="text-slate-400 text-sm">to</span>
+                <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} className="px-3 py-2 border border-white/20 rounded-lg text-sm" />
               </div>
             )}
           </div>
+          <p className="text-slate-500 text-xs mt-2">{filteredBookings.length} booking{filteredBookings.length !== 1 ? 's' : ''} in selected period</p>
         </div>
 
-        {/* Key Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6 lg:col-span-1">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-slate-400">Total Revenue</h3>
-              {(() => {
-                const change = calculateChange(metrics.totalRevenue, metrics.previousRevenue);
-                return (
-                  <span className={`text-xs font-semibold ${change.isPositive ? 'text-green-600' : 'text-red-400'}`}>
-                    {change.isPositive ? '↑' : '↓'} {change.value}%
-                  </span>
-                );
-              })()}
+        {/* Key Metrics */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {[
+            { label: 'Total Revenue',     value: fmtMoney(metrics.revenue),        sub: 'confirmed + completed', accent: 'text-white' },
+            { label: 'Total Bookings',    value: metrics.totalBookings,             sub: 'all statuses',          accent: 'text-white' },
+            { label: 'Confirmed',         value: metrics.confirmed,                 sub: 'bookings',              accent: 'text-green-400' },
+            { label: 'Avg Booking Value', value: fmtMoney(metrics.avg),             sub: 'per confirmed booking', accent: 'text-white' },
+            { label: 'Response Rate',     value: `${metrics.respRate}%`,            sub: 'response rate',         accent: 'text-[#BFBD31]' },
+            { label: 'Unique Customers',  value: metrics.uniqueCustomers,           sub: 'distinct customers',    accent: 'text-white' },
+          ].map((m, i) => (
+            <div key={i} className="bg-slate-900 border border-white/10 rounded-xl p-5">
+              <p className="text-xs font-medium text-slate-400 mb-2">{m.label}</p>
+              <p className={`text-2xl font-bold ${m.accent}`}>{m.value}</p>
+              <p className="text-xs text-slate-500 mt-1">{m.sub}</p>
             </div>
-            <p className="text-4xl font-bold text-white mb-1">
-              LKR {(metrics.totalRevenue / 1000000).toFixed(2)}M
-            </p>
-            <p className="text-sm text-slate-500">vs. previous period</p>
-          </div>
+          ))}
+        </div>
 
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-slate-400">Total Bookings</h3>
-              {(() => {
-                const change = calculateChange(metrics.totalBookings, metrics.previousBookings);
-                return (
-                  <span className={`text-xs font-semibold ${change.isPositive ? 'text-green-600' : 'text-red-400'}`}>
-                    {change.isPositive ? '↑' : '↓'} {change.value}%
-                  </span>
-                );
-              })()}
-            </div>
-            <p className="text-4xl font-bold text-white mb-1">{metrics.totalBookings}</p>
-            <p className="text-sm text-slate-500">confirmed bookings</p>
+        {/* Revenue payout summary */}
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="bg-slate-900 border border-white/10 rounded-xl p-5">
+            <p className="text-sm text-slate-400 mb-1">Gross Revenue</p>
+            <p className="text-3xl font-bold text-white">{fmtMoney(metrics.revenue)}</p>
+            <p className="text-xs text-slate-500 mt-1">confirmed + completed</p>
           </div>
-
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
-            <h3 className="text-sm font-semibold text-slate-400 mb-2">Average Booking Value</h3>
-            <p className="text-4xl font-bold text-white mb-1">
-              LKR {(metrics.avgBookingValue / 1000).toFixed(1)}K
-            </p>
-            <p className="text-sm text-slate-500">per booking</p>
+          <div className="bg-slate-900 border border-orange-500/30 rounded-xl p-5">
+            <p className="text-sm text-slate-400 mb-1">Platform Commission (10%)</p>
+            <p className="text-3xl font-bold text-orange-400">{fmtMoney(Math.round(metrics.revenue * COMMISSION_RATE))}</p>
+            <p className="text-xs text-slate-500 mt-1">deducted from gross</p>
           </div>
-
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
-            <h3 className="text-sm font-semibold text-slate-400 mb-2">Conversion Rate</h3>
-            <p className="text-4xl font-bold text-white mb-1">{metrics.conversionRate}%</p>
-            <p className="text-sm text-slate-500">views to bookings</p>
-          </div>
-
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
-            <h3 className="text-sm font-semibold text-slate-400 mb-2">Pending Payout</h3>
-            <p className="text-4xl font-bold text-orange-600 mb-1">
-              LKR {(metrics.pendingPayout / 1000).toFixed(0)}K
-            </p>
-            <p className="text-sm text-slate-500">awaiting payment</p>
-          </div>
-
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
-            <h3 className="text-sm font-semibold text-slate-400 mb-2">Paid Amount</h3>
-            <p className="text-4xl font-bold text-green-600 mb-1">
-              LKR {(metrics.paidAmount / 1000000).toFixed(2)}M
-            </p>
-            <p className="text-sm text-slate-500">received</p>
+          <div className="bg-slate-900 border border-green-500/30 rounded-xl p-5">
+            <p className="text-sm text-slate-400 mb-1">Your Net Payout</p>
+            <p className="text-3xl font-bold text-green-400">{fmtMoney(Math.round(metrics.revenue * (1 - COMMISSION_RATE)))}</p>
+            <p className="text-xs text-slate-500 mt-1">after commission</p>
           </div>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+        {/* Charts Row 1 */}
+        <div className="grid lg:grid-cols-2 gap-8">
           {/* Revenue Trend */}
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
+          <div className="bg-slate-900 border border-white/10 rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-white">Revenue Trend</h3>
-              <div className="flex gap-2">
-                {['daily', 'weekly', 'monthly'].map(view => (
-                  <button
-                    key={view}
-                    onClick={() => setRevenueView(view)}
-                    className={`px-3 py-1 text-sm rounded ${
-                      revenueView === view ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300'
-                    }`}
-                  >
-                    {view.charAt(0).toUpperCase() + view.slice(1)}
+              <span className="text-xs text-slate-500">{revenueTrendData.length} period{revenueTrendData.length !== 1 ? 's' : ''}</span>
+            </div>
+            {revenueTrendData.length === 0
+              ? <p className="text-slate-500 text-center py-16 text-sm">No revenue data for selected period</p>
+              : <div className="flex items-end gap-2 h-48">
+                  {revenueTrendData.map((d, i) => <Bar key={i} value={d.revenue} max={maxRev} label={d.month} color="#667eea" />)}
+                </div>
+            }
+          </div>
+
+          {/* Bookings by Status Over Time */}
+          <div className="bg-slate-900 border border-white/10 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white">Bookings Timeline</h3>
+            </div>
+            {bookingsTrendData.length === 0
+              ? <p className="text-slate-500 text-center py-16 text-sm">No bookings in selected period</p>
+              : <>
+                <div className="flex items-end gap-3 h-40">
+                  {bookingsTrendData.map((d, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                      <div className="w-full flex gap-0.5 items-end h-36">
+                        <div className="flex-1 rounded-t-sm bg-green-500 transition-all" style={{ height: `${maxBk>0?(d.confirmed/maxBk)*100:0}%` }} title={`${d.confirmed} confirmed`} />
+                        <div className="flex-1 rounded-t-sm bg-red-500 transition-all"  style={{ height: `${maxBk>0?(d.cancelled/maxBk)*100:0}%` }} title={`${d.cancelled} cancelled`} />
+                        <div className="flex-1 rounded-t-sm bg-yellow-500 transition-all" style={{ height: `${maxBk>0?(d.pending/maxBk)*100:0}%` }} title={`${d.pending} pending`} />
+                      </div>
+                      <span className="text-[10px] text-slate-400 text-center">{d.month}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-4 mt-3 text-xs text-slate-400">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-green-500 inline-block"/>Confirmed</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500 inline-block"/>Cancelled</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-yellow-500 inline-block"/>Pending</span>
+                </div>
+              </>
+            }
+          </div>
+        </div>
+
+        {/* Charts Row 2 */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Top Services */}
+          <div className="bg-slate-900 border border-white/10 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-white">Top Services</h3>
+              <div className="flex gap-1">
+                {['revenue','bookings'].map(v => (
+                  <button key={v} onClick={() => setTopBy(v)}
+                    className={`px-3 py-1 text-xs rounded font-medium ${topBy===v?'bg-[#BFBD31] text-slate-950':'bg-slate-800 text-slate-300'}`}>
+                    {v.charAt(0).toUpperCase()+v.slice(1)}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="h-64">
-              <div className="flex items-end justify-around h-full gap-2 pb-4">
-                {revenueData.map((data, index) => {
-                  const height = (data.revenue / maxRevenue) * 100;
-                  const prevHeight = (data.previous / maxRevenue) * 100;
-                  
-                  return (
-                    <div key={index} className="flex-1 flex flex-col items-center relative">
-                      <div className="w-full flex gap-1 items-end">
-                        <div className="flex-1 relative group">
-                          <div
-                            className="w-full bg-gradient-to-t from-purple-600 to-purple-400 rounded-t-lg hover:opacity-80 cursor-pointer"
-                            style={{ height: `${height}%` }}
-                          >
-                            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                              LKR {(data.revenue / 1000).toFixed(0)}K
-                            </div>
-                          </div>
-                        </div>
-                        <div
-                          className="w-2 bg-gray-300 rounded-t-lg"
-                          style={{ height: `${prevHeight}%` }}
-                          title="Previous period"
-                        ></div>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-2">{data.period}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <button className="mt-4 text-sm text-[#BFBD31] hover:text-purple-700 font-medium">
-              Download Chart (PNG)
-            </button>
-          </div>
-
-          {/* Bookings by Category */}
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
-            <h3 className="text-lg font-bold text-white mb-6">Bookings by Category</h3>
-            <div className="flex items-center justify-center gap-8">
-              <div className="relative w-48 h-48">
-                <svg viewBox="0 0 100 100" className="transform -rotate-90">
-                  {categoryData.map((cat, index) => {
-                    const prevPercentages = categoryData.slice(0, index).reduce((sum, c) => sum + c.percentage, 0);
-                    const offset = (prevPercentages / 100) * 283;
-                    const dashArray = (cat.percentage / 100) * 283;
-                    
+            {topServices.length === 0
+              ? <p className="text-slate-500 text-center py-12 text-sm">No service data for this period</p>
+              : <div className="space-y-3">
+                  {topServices.map((s, i) => {
+                    const val = topBy === 'revenue' ? s.revenue : s.bookings;
                     return (
-                      <circle
-                        key={cat.category}
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="none"
-                        stroke={cat.color}
-                        strokeWidth="10"
-                        strokeDasharray={`${dashArray} 283`}
-                        strokeDashoffset={-offset}
-                        className="cursor-pointer hover:opacity-80 transition-opacity"
-                      />
+                      <div key={i}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm text-slate-300 truncate mr-2">{s.name}</span>
+                          <span className="text-sm font-semibold text-white shrink-0">
+                            {topBy === 'revenue' ? fmtMoney(val) : `${val} bkg${val!==1?'s':''}`}
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-800 rounded-full h-2">
+                          <div className="bg-[#BFBD31] h-2 rounded-full transition-all" style={{ width: `${(val/maxTop)*100}%` }} />
+                        </div>
+                      </div>
                     );
                   })}
-                </svg>
-              </div>
-              <div className="space-y-3">
-                {categoryData.map(cat => (
-                  <div key={cat.category} className="flex items-center justify-between gap-8">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded" style={{ backgroundColor: cat.color }}></div>
-                      <span className="text-sm text-slate-300">{cat.category}</span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-white">{cat.percentage}%</p>
-                      <p className="text-xs text-slate-500">{cat.bookings} bookings</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bookings Timeline & Top Services */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          {/* Bookings Timeline */}
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-white">Bookings Timeline</h3>
-              <button className="text-sm text-[#BFBD31] hover:text-purple-700 font-medium">
-                Download Chart (PNG)
-              </button>
-            </div>
-            <div className="h-64">
-              <div className="flex items-end justify-around h-full gap-4 pb-4">
-                {bookingsTimeline.map((week, index) => (
-                  <div key={index} className="flex-1 flex flex-col items-center">
-                    <div className="w-full flex gap-1">
-                      <div
-                        className="flex-1 bg-green-500 rounded-t-lg relative group"
-                        style={{ height: `${(week.confirmed / maxBookings) * 100}%` }}
-                      >
-                        <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap">
-                          {week.confirmed} confirmed
-                        </div>
-                      </div>
-                      <div
-                        className="flex-1 bg-blue-500 rounded-t-lg relative group"
-                        style={{ height: `${(week.completed / maxBookings) * 100}%` }}
-                      >
-                        <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap">
-                          {week.completed} completed
-                        </div>
-                      </div>
-                      <div
-                        className="flex-1 bg-red-500 rounded-t-lg relative group"
-                        style={{ height: `${(week.cancelled / maxBookings) * 100}%` }}
-                      >
-                        <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap">
-                          {week.cancelled} cancelled
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-2">{week.period}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-4 mt-4 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-green-500 rounded"></div>
-                <span>Confirmed</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                <span>Completed</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-red-500 rounded"></div>
-                <span>Cancelled</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Top Performing Services */}
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-white">Top Services</h3>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setTopServicesBy('revenue')}
-                  className={`px-3 py-1 text-sm rounded ${
-                    topServicesBy === 'revenue' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300'
-                  }`}
-                >
-                  Revenue
-                </button>
-                <button
-                  onClick={() => setTopServicesBy('bookings')}
-                  className={`px-3 py-1 text-sm rounded ${
-                    topServicesBy === 'bookings' ? 'bg-[#BFBD31] text-slate-950' : 'bg-slate-800/50 text-slate-300'
-                  }`}
-                >
-                  Bookings
-                </button>
-              </div>
-            </div>
-            <div className="space-y-3">
-              {topServices.slice(0, 5).map((service, index) => {
-                const value = topServicesBy === 'revenue' ? service.revenue : service.bookings;
-                const width = (value / maxTopService) * 100;
-                
-                return (
-                  <div key={index}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-slate-300 truncate">{service.name}</span>
-                      <span className="text-sm font-semibold text-white">
-                        {topServicesBy === 'revenue' 
-                          ? `LKR ${(value / 1000).toFixed(0)}K` 
-                          : `${value} bookings`}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-[#BFBD31] text-slate-950 h-2 rounded-full transition-all"
-                        style={{ width: `${width}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <button className="mt-4 text-sm text-[#BFBD31] hover:text-purple-700 font-medium">
-              View Full Ranking →
-            </button>
-          </div>
-        </div>
-
-        {/* Customer Insights & Compare Industry */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-8">
-          {/* Customer Insights */}
-          <div className="lg:col-span-2 bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
-            <h3 className="text-lg font-bold text-white mb-6">Customer Insights</h3>
-            <div className="grid grid-cols-4 gap-4 mb-6">
-              <div className="text-center p-4 bg-[#BFBD31]/10 rounded-lg">
-                <p className="text-3xl font-bold text-[#BFBD31]">{customerInsights.newCustomers}</p>
-                <p className="text-sm text-slate-400 mt-1">New Customers</p>
-              </div>
-              <div className="text-center p-4 bg-green-500/10 rounded-lg">
-                <p className="text-3xl font-bold text-green-600">{customerInsights.returningCustomers}</p>
-                <p className="text-sm text-slate-400 mt-1">Returning</p>
-              </div>
-              <div className="text-center p-4 bg-[#BFBD31]/10 rounded-lg">
-                <p className="text-3xl font-bold text-[#BFBD31]">{customerInsights.retentionRate}%</p>
-                <p className="text-sm text-slate-400 mt-1">Retention Rate</p>
-              </div>
-              <div className="text-center p-4 bg-orange-50 rounded-lg">
-                <p className="text-3xl font-bold text-orange-600">{customerInsights.avgFrequency}x</p>
-                <p className="text-sm text-slate-400 mt-1">Avg. Frequency</p>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-3">Customer Segmentation by Location</h4>
-              <div className="space-y-3">
-                {locationData.map((loc, idx) => (
-                  <div key={idx}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-slate-300">{loc.location}</span>
-                      <span className="text-sm font-semibold text-white">
-                        {loc.customers} ({loc.percentage}%)
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-500 h-2 rounded-full"
-                        style={{ width: `${loc.percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Industry Comparison */}
-          <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-white">Industry Comparison</h3>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={compareIndustry}
-                  onChange={(e) => setCompareIndustry(e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-[#BFBD31] text-slate-950 peer-focus:ring-4 peer-focus:ring-[#BFBD31]/30"></div>
-                <div className="absolute left-[2px] top-[2px] bg-slate-900 border border-white/10 w-5 h-5 rounded-full transition-all peer-checked:translate-x-5"></div>
-              </label>
-            </div>
-            {compareIndustry && (
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-slate-400 mb-1">Your Revenue</p>
-                  <p className="text-2xl font-bold text-[#BFBD31]">LKR 2.8M</p>
                 </div>
-                <div>
-                  <p className="text-sm text-slate-400 mb-1">Industry Avg</p>
-                  <p className="text-2xl font-bold text-slate-400">LKR 2.1M</p>
-                </div>
-                <div className="pt-4 border-t">
-                  <p className="text-sm font-semibold text-green-600">+33% above average</p>
-                  <p className="text-xs text-slate-500 mt-1">You're performing better than 78% of vendors</p>
-                </div>
-              </div>
-            )}
+            }
+          </div>
+
+          {/* Service Type Breakdown */}
+          <div className="bg-slate-900 border border-white/10 rounded-xl p-6">
+            <h3 className="text-lg font-bold text-white mb-6">Service Type Breakdown</h3>
+            {typeBreakdown.length === 0
+              ? <p className="text-slate-500 text-center py-12 text-sm">No booking data for this period</p>
+              : <Donut data={typeBreakdown} />
+            }
           </div>
         </div>
 
         {/* Detailed Revenue Report Table */}
-        <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-slate-900 border border-white/10 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <h3 className="text-lg font-bold text-white">Detailed Revenue Report</h3>
             <div className="flex gap-2">
-              <button className="px-4 py-2 text-sm border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950">
-                Export CSV
-              </button>
-              <button className="px-4 py-2 text-sm border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950">
-                Export PDF
-              </button>
-              <button className="px-4 py-2 text-sm border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950">
-                Print Report
-              </button>
+              <button onClick={exportCSV} className="px-4 py-2 text-sm border border-white/20 text-slate-300 rounded-lg hover:bg-slate-800">Export CSV</button>
+              <button onClick={printReport} className="px-4 py-2 text-sm border border-white/20 text-slate-300 rounded-lg hover:bg-slate-800">Print PDF</button>
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-950">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Booking ID</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Date</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Service</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Customer</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Amount</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Commission</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Net Payout</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Status</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Payment</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {revenueReport.map(booking => (
-                  <tr key={booking.id} className="hover:bg-slate-950">
-                    <td className="px-4 py-3 text-sm font-medium text-white">{booking.id}</td>
-                    <td className="px-4 py-3 text-sm text-slate-400">{booking.date}</td>
-                    <td className="px-4 py-3 text-sm text-slate-300">{booking.service}</td>
-                    <td className="px-4 py-3 text-sm text-slate-300">{booking.customer}</td>
-                    <td className="px-4 py-3 text-sm font-semibold text-white">
-                      LKR {booking.amount.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-400">
-                      LKR {booking.commission.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-semibold text-green-600">
-                      LKR {booking.payout.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        booking.status === 'Completed' ? 'bg-blue-100 text-blue-300' : 'bg-green-100 text-green-300'
-                      }`}>
-                        {booking.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        booking.payment === 'Paid' ? 'bg-green-100 text-green-300' : 'bg-orange-100 text-orange-700'
-                      }`}>
-                        {booking.payment}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {filteredBookings.length === 0
+            ? <p className="text-slate-500 text-center py-12 text-sm">No bookings in selected period</p>
+            : <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-slate-800 text-slate-400 text-left">
+                      <th className="px-4 py-3">Booking ID</th>
+                      <th className="px-4 py-3">Date</th>
+                      <th className="px-4 py-3">Service</th>
+                      <th className="px-4 py-3">Customer</th>
+                      <th className="px-4 py-3">Amount</th>
+                      <th className="px-4 py-3">Commission</th>
+                      <th className="px-4 py-3">Net Payout</th>
+                      <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3">Payment</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...filteredBookings].sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt)).map(b => {
+                      const svc = b.items?.map(i => i.inventory?.name||'').filter(Boolean).join(', ') || b.destination || '—';
+                      const commission = Math.round(b.totalCost * COMMISSION_RATE);
+                      const payout     = b.totalCost - commission;
+                      const statusColors = { confirmed:'bg-green-100 text-green-700', completed:'bg-blue-100 text-blue-700', pending:'bg-yellow-100 text-yellow-700', rejected:'bg-red-100 text-red-700', cancelled:'bg-slate-700 text-slate-300' };
+                      return (
+                        <tr key={b._id} className="border-t border-white/10 hover:bg-slate-800/40">
+                          <td className="px-4 py-3 font-mono text-xs text-slate-400">{b._id.slice(-10).toUpperCase()}</td>
+                          <td className="px-4 py-3 text-slate-400 whitespace-nowrap">{fmtDate(b.createdAt)}</td>
+                          <td className="px-4 py-3 text-slate-300 max-w-[180px] truncate">{svc}</td>
+                          <td className="px-4 py-3 text-slate-200">{b.user?.name || '—'}</td>
+                          <td className="px-4 py-3 text-white font-semibold">LKR {b.totalCost.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-orange-400">LKR {commission.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-green-400 font-semibold">LKR {payout.toLocaleString()}</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${statusColors[b.status] || 'bg-slate-700 text-slate-300'}`}>{b.status}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${b.paymentStatus==='paid'?'bg-green-100 text-green-700':'bg-orange-100 text-orange-700'}`}>{b.paymentStatus || 'pending'}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-slate-800 font-semibold text-sm">
+                      <td colSpan={4} className="px-4 py-3 text-slate-300">Totals ({filteredBookings.length} bookings)</td>
+                      <td className="px-4 py-3 text-white">LKR {filteredBookings.reduce((s,b)=>s+b.totalCost,0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-orange-400">LKR {Math.round(filteredBookings.reduce((s,b)=>s+b.totalCost,0)*COMMISSION_RATE).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-green-400">LKR {Math.round(filteredBookings.reduce((s,b)=>s+b.totalCost,0)*(1-COMMISSION_RATE)).toLocaleString()}</td>
+                      <td colSpan={2} />
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+          }
         </div>
 
-        {/* Service Performance Table */}
-        <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-white">Service Performance</h3>
-            <button className="px-4 py-2 text-sm border border-white/20 text-slate-300 rounded-lg hover:bg-slate-950">
-              Export
-            </button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-950">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Service Name</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Category</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Bookings</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Revenue</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Rating</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Occupancy</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Peak Dates</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {servicePerformance.map((service, idx) => (
-                  <tr key={idx} className="hover:bg-slate-950">
-                    <td className="px-4 py-3 text-sm font-medium text-white">{service.name}</td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-1 bg-[#BFBD31]/15 text-purple-700 text-xs font-semibold rounded">
-                        {service.category}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-300">{service.bookings}</td>
-                    <td className="px-4 py-3 text-sm font-semibold text-white">
-                      LKR {(service.revenue / 1000).toFixed(0)}K
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-300">
-                      ★ {service.rating}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm font-semibold text-white">{service.occupancy}%</span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-400">{service.peakDates}</td>
-                    <td className="px-4 py-3">
-                      <button className="text-[#BFBD31] hover:text-purple-700 text-sm font-medium">
-                        View Details
-                      </button>
-                    </td>
+        {/* Service Performance */}
+        {topServices.length > 0 && (
+          <div className="bg-slate-900 border border-white/10 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-white">Service Performance</h3>
+              <button onClick={exportCSV} className="px-4 py-2 text-sm border border-white/20 text-slate-300 rounded-lg hover:bg-slate-800">Export</button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-800 text-slate-400 text-left">
+                    <th className="px-4 py-3">Service Name</th>
+                    <th className="px-4 py-3">Type</th>
+                    <th className="px-4 py-3">Bookings</th>
+                    <th className="px-4 py-3">Gross Revenue</th>
+                    <th className="px-4 py-3">Net Payout</th>
+                    <th className="px-4 py-3">Avg per Booking</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {[...topServices].sort((a,b)=>b.revenue-a.revenue).map((s, i) => (
+                    <tr key={i} className="border-t border-white/10 hover:bg-slate-800/40">
+                      <td className="px-4 py-3 text-white font-medium">{s.name}</td>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-0.5 bg-[#BFBD31]/15 text-[#BFBD31] text-xs font-semibold rounded capitalize">{s.type}</span>
+                      </td>
+                      <td className="px-4 py-3 text-slate-300">{s.bookings}</td>
+                      <td className="px-4 py-3 text-white font-semibold">{fmtMoney(s.revenue)}</td>
+                      <td className="px-4 py-3 text-green-400 font-semibold">{fmtMoney(Math.round(s.revenue*(1-COMMISSION_RATE)))}</td>
+                      <td className="px-4 py-3 text-slate-300">{s.bookings > 0 ? fmtMoney(Math.round(s.revenue/s.bookings)) : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Schedule Reports Modal */}
+      {/* Schedule Modal */}
       {showScheduleModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 border border-white/10 rounded-2xl max-w-md w-full p-8">
-            <h2 className="text-2xl font-bold text-white mb-4">Schedule Automated Reports</h2>
-            <p className="text-slate-400 mb-6">Set up recurring report delivery</p>
-
+            <h2 className="text-xl font-bold text-white mb-1">Schedule Automated Reports</h2>
+            <p className="text-slate-400 text-sm mb-6">Set up recurring CSV report delivery</p>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-slate-300 mb-2">Frequency</label>
-                <select className="w-full px-4 py-2 border border-white/20 rounded-lg">
-                  <option>Daily</option>
-                  <option>Weekly</option>
-                  <option>Monthly</option>
+                <select className="w-full px-4 py-2 border border-white/20 rounded-lg text-sm">
+                  <option>Daily</option><option>Weekly</option><option>Monthly</option>
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-semibold text-slate-300 mb-2">Report Type</label>
-                <select className="w-full px-4 py-2 border border-white/20 rounded-lg">
-                  <option>Full Analytics Report</option>
-                  <option>Revenue Summary</option>
-                  <option>Bookings Report</option>
-                  <option>Performance Summary</option>
+                <select className="w-full px-4 py-2 border border-white/20 rounded-lg text-sm">
+                  <option>Full Analytics Report</option><option>Revenue Summary</option><option>Bookings Report</option>
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-semibold text-slate-300 mb-2">Email Recipients</label>
-                <input
-                  type="email"
-                  placeholder="email@example.com"
-                  className="w-full px-4 py-2 border border-white/20 rounded-lg"
-                />
+                <input type="email" placeholder="email@example.com" className="w-full px-4 py-2 border border-white/20 rounded-lg text-sm" />
               </div>
             </div>
-
             <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowScheduleModal(false)}
-                className="flex-1 px-4 py-3 border border-white/20 text-slate-300 rounded-lg font-semibold hover:bg-slate-950"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  alert('Report schedule saved!');
-                  setShowScheduleModal(false);
-                }}
-                className="flex-1 px-4 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#BFBD31]"
-              >
+              <button onClick={() => setShowScheduleModal(false)} className="flex-1 px-4 py-3 border border-white/20 text-slate-300 rounded-lg font-semibold hover:bg-slate-800">Cancel</button>
+              <button onClick={() => { toast.success('Schedule saved!'); setShowScheduleModal(false); }}
+                className="flex-1 px-4 py-3 bg-[#BFBD31] text-slate-950 rounded-lg font-semibold hover:bg-[#a8a628]">
                 Save Schedule
               </button>
             </div>

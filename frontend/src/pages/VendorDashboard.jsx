@@ -5,11 +5,13 @@ import axios from 'axios';
 export default function VendorDashboard() {
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // ── state wired to API ─────────────────────────────────────────────────────
   const [vendorName, setVendorName] = useState('');
+  const [vendorStatus, setVendorStatus] = useState('');
   const [metrics, setMetrics] = useState({
     totalBookings: 0, pendingRequests: 0, revenueThisMonth: 0,
     totalRevenue: 0, activeListings: 0, averageRating: 0,
@@ -23,8 +25,19 @@ export default function VendorDashboard() {
   const [serviceBreakdown, setServiceBreakdown] = useState([]);
 
   useEffect(() => {
+    const handler = (e) => {
+      if (!e.target.closest('[data-dropdown]')) {
+        setShowNotifications(false);
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
-    if (!userInfo?.token) { navigate('/vendor/login'); return; }
+    if (!userInfo?.token) { navigate('/vendor-login'); return; }
 
     const fetchDashboard = async () => {
       try {
@@ -33,6 +46,7 @@ export default function VendorDashboard() {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
         setVendorName(data.vendor?.businessName || 'Vendor');
+        setVendorStatus(data.vendor?.status || '');
         setMetrics(data.metrics);
         setRecentActivity(data.recentActivity || []);
         setNotifications(data.notifications || []);
@@ -57,6 +71,22 @@ export default function VendorDashboard() {
   const maxRevenue  = revenueData.length  ? Math.max(...revenueData.map(d => d.revenue))   : 1;
   const maxBookings = bookingsData.length ? Math.max(...bookingsData.map(d => d.bookings)) : 1;
 
+  const bookingsGrowth = (() => {
+    if (bookingsData.length < 2) return null;
+    const prev = bookingsData[bookingsData.length - 2]?.bookings || 0;
+    const curr = bookingsData[bookingsData.length - 1]?.bookings || 0;
+    if (prev === 0) return curr > 0 ? 100 : null;
+    return Math.round(((curr - prev) / prev) * 100);
+  })();
+
+  const revenueGrowth = (() => {
+    if (revenueData.length < 2) return null;
+    const prev = revenueData[revenueData.length - 2]?.revenue || 0;
+    const curr = revenueData[revenueData.length - 1]?.revenue || 0;
+    if (prev === 0) return curr > 0 ? 100 : null;
+    return Math.round(((curr - prev) / prev) * 100);
+  })();
+
   const vendorInitials = vendorName
     .split(' ').slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || 'V';
 
@@ -67,6 +97,7 @@ export default function VendorDashboard() {
     axios.get('/api/dashboard/vendor', { headers: { Authorization: `Bearer ${userInfo.token}` } })
       .then(({ data }) => {
         setVendorName(data.vendor?.businessName || 'Vendor');
+        setVendorStatus(data.vendor?.status || '');
         setMetrics(data.metrics);
         setRecentActivity(data.recentActivity || []);
         setNotifications(data.notifications || []);
@@ -80,7 +111,42 @@ export default function VendorDashboard() {
   };
 
   const handleDownloadReport = () => {
-    alert('Report download coming soon.');
+    const win = window.open('', '_blank');
+    if (!win) return;
+    const rows = revenueData.map(d =>
+      `<tr><td>${d.month}</td><td>LKR ${d.revenue.toLocaleString()}</td></tr>`
+    ).join('');
+    win.document.write(`
+      <!DOCTYPE html><html><head><title>${vendorName} — Dashboard Report</title>
+      <style>body{font-family:Arial,sans-serif;padding:30px;color:#111}
+      h1{font-size:22px;margin-bottom:4px}p.sub{color:#666;font-size:13px;margin-bottom:24px}
+      .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+      .card{border:1px solid #ddd;border-radius:8px;padding:16px}
+      .card h4{margin:0 0 6px;font-size:12px;color:#666;text-transform:uppercase}
+      .card p{margin:0;font-size:22px;font-weight:700}
+      table{width:100%;border-collapse:collapse;font-size:14px}
+      th{background:#f4f4f4;padding:8px 12px;text-align:left;border-bottom:2px solid #ddd}
+      td{padding:8px 12px;border-bottom:1px solid #eee}
+      @media print{button{display:none}}
+      </style></head><body>
+      <h1>${vendorName} — Dashboard Report</h1>
+      <p class="sub">Generated on ${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
+      <div class="grid">
+        <div class="card"><h4>Total Bookings</h4><p>${metrics.totalBookings}</p></div>
+        <div class="card"><h4>Pending Requests</h4><p>${metrics.pendingRequests}</p></div>
+        <div class="card"><h4>Revenue This Month</h4><p>LKR ${metrics.revenueThisMonth.toLocaleString()}</p></div>
+        <div class="card"><h4>Total Revenue</h4><p>LKR ${metrics.totalRevenue.toLocaleString()}</p></div>
+        <div class="card"><h4>Active Listings</h4><p>${metrics.activeListings}</p></div>
+        <div class="card"><h4>Response Rate</h4><p>${metrics.responseRate}%</p></div>
+        <div class="card"><h4>Last Upload</h4><p style="font-size:16px">${metrics.lastUploadDate}</p></div>
+        <div class="card"><h4>Account Status</h4><p style="font-size:16px;text-transform:capitalize">${vendorStatus || 'N/A'}</p></div>
+      </div>
+      <h2 style="font-size:16px;margin-bottom:12px">Monthly Revenue (Last 6 Months)</h2>
+      <table><thead><tr><th>Month</th><th>Revenue</th></tr></thead><tbody>${rows}</tbody></table>
+      <br/><button onclick="window.print()">Print / Save as PDF</button>
+      </body></html>`);
+    win.document.close();
+    setTimeout(() => win.print(), 500);
   };
 
   if (loading) return (
@@ -123,7 +189,18 @@ export default function VendorDashboard() {
               </div>
               <div>
                 <h1 className="text-lg font-bold text-slate-200">Vendor Dashboard</h1>
-                <p className="text-xs text-slate-400">Welcome back, {vendorName}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-slate-400">Welcome back, {vendorName}</p>
+                  {vendorStatus && (
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      vendorStatus === 'approved' ? 'bg-green-500/20 text-green-400' :
+                      vendorStatus === 'pending_review' ? 'bg-yellow-500/20 text-yellow-400' :
+                      'bg-red-500/20 text-red-400'
+                    }`}>
+                      {vendorStatus === 'approved' ? '✓ Verified' : vendorStatus === 'pending_review' ? '⏳ Pending' : vendorStatus}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -139,7 +216,8 @@ export default function VendorDashboard() {
               </button>
 
               <button
-                onClick={() => setShowNotifications(!showNotifications)}
+                onClick={() => { setShowNotifications(!showNotifications); setShowProfileMenu(false); }}
+                data-dropdown
                 className="relative p-2 hover:bg-slate-800/50 rounded-lg"
               >
                 <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,15 +228,72 @@ export default function VendorDashboard() {
                 )}
               </button>
 
-              <div className="relative">
-                <button className="flex items-center gap-2 p-2 hover:bg-slate-800/50 rounded-lg">
-                  <div className="w-8 h-8 bg-[#BFBD31] text-slate-950 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-semibold">{vendorInitials}</span>
+              <div className="relative" data-dropdown>
+                <button
+                  onClick={() => { setShowProfileMenu(!showProfileMenu); setShowNotifications(false); }}
+                  className="flex items-center gap-2 p-2 hover:bg-slate-800/50 rounded-lg"
+                >
+                  <div className="w-8 h-8 bg-[#BFBD31] rounded-full flex items-center justify-center">
+                    <span className="text-slate-950 text-sm font-bold">{vendorInitials}</span>
                   </div>
-                  <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-4 h-4 text-slate-400 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
                   </svg>
                 </button>
+
+                {showProfileMenu && (
+                  <div className="absolute right-0 top-12 w-56 bg-slate-900 border border-white/10 rounded-xl shadow-xl z-50">
+                    <div className="px-4 py-3 border-b border-white/10">
+                      <p className="text-sm font-semibold text-slate-200">{vendorName}</p>
+                      <p className="text-xs text-slate-400">
+                        {vendorStatus === 'approved' ? '✓ Verified Vendor' : vendorStatus === 'pending_review' ? '⏳ Pending Approval' : 'Vendor Account'}
+                      </p>
+                    </div>
+                    <div className="p-2 space-y-1">
+                      <a
+                        href="/vendor/profile"
+                        onClick={() => setShowProfileMenu(false)}
+                        className="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-lg"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        My Profile
+                      </a>
+                      <a
+                        href="/vendor/reservations"
+                        onClick={() => setShowProfileMenu(false)}
+                        className="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-lg"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Bookings
+                      </a>
+                      <a
+                        href="/help"
+                        onClick={() => setShowProfileMenu(false)}
+                        className="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-lg"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                        Help & Support
+                      </a>
+                    </div>
+                    <div className="p-2 border-t border-white/10">
+                      <button
+                        onClick={() => { setShowProfileMenu(false); handleLogout(); }}
+                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -166,7 +301,7 @@ export default function VendorDashboard() {
 
         {/* Notifications Dropdown */}
         {showNotifications && (
-          <div className="absolute right-4 top-16 w-80 bg-slate-900 border border-white/10 rounded-lg shadow-xl border border-white/10 z-50">
+          <div data-dropdown className="absolute right-4 top-16 w-80 bg-slate-900 border border-white/10 rounded-lg shadow-xl border border-white/10 z-50">
             <div className="p-4 border-b border-white/10">
               <h3 className="font-semibold text-white">Notifications</h3>
             </div>
@@ -280,7 +415,11 @@ export default function VendorDashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                   </svg>
                 </div>
-                <span className="text-xs text-green-600 font-semibold">+12%</span>
+                {bookingsGrowth !== null && (
+                  <span className={`text-xs font-semibold ${bookingsGrowth >= 0 ? 'text-green-500' : 'text-red-400'}`}>
+                    {bookingsGrowth >= 0 ? '+' : ''}{bookingsGrowth}% vs last month
+                  </span>
+                )}
               </div>
               <h3 className="text-sm text-slate-400 mb-1">Total Bookings</h3>
               <p className="text-3xl font-bold text-white">{metrics.totalBookings}</p>
@@ -308,7 +447,11 @@ export default function VendorDashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                   </svg>
                 </div>
-                <span className="text-xs text-green-600 font-semibold">+8%</span>
+                {revenueGrowth !== null && (
+                  <span className={`text-xs font-semibold ${revenueGrowth >= 0 ? 'text-green-500' : 'text-red-400'}`}>
+                    {revenueGrowth >= 0 ? '+' : ''}{revenueGrowth}% vs last month
+                  </span>
+                )}
               </div>
               <h3 className="text-sm text-slate-400 mb-1">Revenue This Month</h3>
               <p className="text-2xl font-bold text-white">LKR {(metrics.revenueThisMonth / 1000).toFixed(0)}K</p>
@@ -352,7 +495,11 @@ export default function VendorDashboard() {
               <h3 className="text-sm text-slate-400 mb-1">Average Rating</h3>
               <div className="flex items-baseline gap-2">
                 <p className="text-3xl font-bold text-white">{metrics.averageRating}</p>
-                <span className="text-yellow-500">★★★★★</span>
+                <span className="text-yellow-500">
+                  {Array.from({ length: 5 }, (_, i) =>
+                    i < Math.round(metrics.averageRating) ? '★' : '☆'
+                  ).join('')}
+                </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">{metrics.averageRating > 0 ? 'From customer reviews' : 'No reviews yet'}</p>
             </div>
@@ -388,14 +535,14 @@ export default function VendorDashboard() {
           <div className="bg-slate-900 border border-white/10 rounded-xl shadow-md p-6 mb-8">
             <h2 className="text-xl font-bold text-white mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              <button className="p-4 border-2 border-[#BFBD31] bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31] transition-all flex flex-col items-center gap-2">
+              <button onClick={() => navigate('/vendor/bulk-upload')} className="p-4 border-2 border-[#BFBD31] bg-[#BFBD31] text-slate-950 rounded-lg hover:bg-[#BFBD31] transition-all flex flex-col items-center gap-2">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                 </svg>
                 <span className="font-semibold">Upload Inventory</span>
               </button>
 
-              <button className="p-4 border-2 border-red-300 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-100 transition-all flex flex-col items-center gap-2 relative">
+              <button onClick={() => navigate('/vendor/reservations')} className="p-4 border-2 border-red-300 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-100 transition-all flex flex-col items-center gap-2 relative">
                 <span className="absolute top-2 right-2 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
                   {metrics.pendingRequests}
                 </span>
@@ -405,7 +552,7 @@ export default function VendorDashboard() {
                 <span className="font-semibold">Pending Requests</span>
               </button>
 
-              <button className="p-4 border-2 border-white/20 rounded-lg hover:bg-slate-950 transition-all flex flex-col items-center gap-2">
+              <button onClick={() => navigate('/vendor/inventory')} className="p-4 border-2 border-white/20 rounded-lg hover:bg-slate-950 transition-all flex flex-col items-center gap-2">
                 <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -413,14 +560,14 @@ export default function VendorDashboard() {
                 <span className="font-semibold text-slate-300">Manage Services</span>
               </button>
 
-              <button className="p-4 border-2 border-white/20 rounded-lg hover:bg-slate-950 transition-all flex flex-col items-center gap-2">
+              <button onClick={() => navigate('/vendor/revenue')} className="p-4 border-2 border-white/20 rounded-lg hover:bg-slate-950 transition-all flex flex-col items-center gap-2">
                 <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
                 <span className="font-semibold text-slate-300">View Reports</span>
               </button>
 
-              <button className="p-4 border-2 border-white/20 rounded-lg hover:bg-slate-950 transition-all flex flex-col items-center gap-2">
+              <button onClick={() => navigate('/vendor/profile')} className="p-4 border-2 border-white/20 rounded-lg hover:bg-slate-950 transition-all flex flex-col items-center gap-2">
                 <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
