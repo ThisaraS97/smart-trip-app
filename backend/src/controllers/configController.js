@@ -130,7 +130,12 @@ export const deleteService = async (req, res) => {
 // ========== DESTINATIONS ==========
 export const getDestinations = async (req, res) => {
   try {
-    const destinations = await ConfigDestination.find({ isActive: true }).sort({ name: 1 });
+    const limit = req.query.limit ? parseInt(req.query.limit) : null;
+    let query = ConfigDestination.find({ isActive: true }).sort({ name: 1 });
+    if (limit) {
+      query = query.limit(limit);
+    }
+    const destinations = await query.exec();
     res.json(destinations);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch destinations', error: error.message });

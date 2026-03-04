@@ -7,11 +7,15 @@ import {
   cancelTrip,
   updateTripStatus,
   deleteTrip,
+  searchTrips,
 } from '../controllers/tripController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { validateTripInput } from '../middleware/validationMiddleware.js';
 
 const router = express.Router();
+
+// Public search endpoint
+router.get('/search/available', searchTrips);
 
 router.route('/')
   .get(protect, getUserTrips)

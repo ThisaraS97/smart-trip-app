@@ -2,6 +2,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import SearchResultsModal from '../components/SearchResultsModal';
 import sigiriyaImg from '../images/sigiriya.jpg';
 import galleImg from '../images/galle.jpg';
 import yalaImg from '../images/yala.jpg';
@@ -36,6 +37,7 @@ export default function LandingPage() {
   const [userInfo, setUserInfo] = useState(null);
   const [expandedFaq, setExpandedFaq] = useState(null);
   const [destinations, setDestinations] = useState([]);
+  const [allDestinations, setAllDestinations] = useState([]);
   const [destinationsLoading, setDestinationsLoading] = useState(true);
   const [showDestDropdown, setShowDestDropdown] = useState(false);
   const [searchForm, setSearchForm] = useState({ 
@@ -47,6 +49,8 @@ export default function LandingPage() {
     endDate: ''
   });
   const [searching, setSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [searchParams, setSearchParams] = useState(null);
 
   const handleSearch = () => {
     if (!searchForm.destination.trim()) {
@@ -63,7 +67,7 @@ export default function LandingPage() {
     }
 
     const budgetNum = parseInt(searchForm.budget.replace(/,/g, '')) || 150000;
-    const selectedDest = destinations.find(d => d.name.toLowerCase() === searchForm.destination.toLowerCase());
+    const selectedDest = allDestinations.find(d => d.name.toLowerCase() === searchForm.destination.toLowerCase());
     
     let duration = selectedDest?.defaultDays || 3;
     if (searchForm.startDate && searchForm.endDate) {
@@ -75,24 +79,18 @@ export default function LandingPage() {
 
     const travelers = `${searchForm.adults} Adult${searchForm.adults !== 1 ? 's' : ''}${searchForm.children > 0 ? `, ${searchForm.children} Child${searchForm.children !== 1 ? 'ren' : ''}` : ''}`;
 
-    setSearching(true);
-    setTimeout(() => {
-      navigate('/itinerary', {
-        state: {
-          destination: searchForm.destination + ' Tour',
-          location: searchForm.destination,
-          budget: budgetNum,
-          travelers: travelers,
-          duration: `${duration} Day${duration !== 1 ? 's' : ''}`,
-          dates: { 
-            from: searchForm.startDate, 
-            to: searchForm.endDate || searchForm.startDate 
-          },
-          selectedDestination: selectedDest,
-        }
-      });
-      setSearching(false);
-    }, 300);
+    // Store search parameters and show modal instead of navigating
+    setSearchParams({
+      destination: searchForm.destination,
+      budget: budgetNum,
+      travelers: travelers,
+      duration: `${duration} Day${duration !== 1 ? 's' : ''}`,
+      dates: {
+        from: searchForm.startDate,
+        to: searchForm.endDate || searchForm.startDate
+      }
+    });
+    setShowSearchResults(true);
   };
 
   // Local fallback images keyed by destination name
@@ -117,8 +115,13 @@ export default function LandingPage() {
     const fetchDestinations = async () => {
       try {
         setDestinationsLoading(true);
-        const res = await axios.get('/api/config/destinations');
-        setDestinations(res.data || []);
+        // Fetch all destinations for search dropdown
+        const allRes = await axios.get('/api/config/destinations');
+        setAllDestinations(allRes.data || []);
+        
+        // Fetch limited destinations for display cards
+        const limitedRes = await axios.get('/api/config/destinations?limit=6');
+        setDestinations(limitedRes.data || []);
       } catch (err) {
         console.error('Failed to fetch destinations:', err);
       } finally {
@@ -141,6 +144,14 @@ export default function LandingPage() {
     <div className="relative min-h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(66,153,132,0.15),_transparent_45%),radial-gradient(circle_at_20%_20%,_rgba(190,242,100,0.05),_transparent_35%)]" />
       <div className="pointer-events-none absolute inset-0 mix-blend-screen opacity-30" style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }} />
+
+      {/* Search Results Modal */}
+      <SearchResultsModal
+        isOpen={showSearchResults}
+        onClose={() => setShowSearchResults(false)}
+        searchParams={searchParams}
+        destinations={allDestinations}
+      />
 
       {/* Hero Section */}
       <div className="relative w-full p-4 sm:p-6 lg:p-8">
@@ -240,11 +251,11 @@ export default function LandingPage() {
                       onClick={() => setShowDestDropdown(!showDestDropdown)}
                       className="w-full text-left rounded-lg bg-slate-800/80 border border-white/10 text-slate-300 hover:border-[#BFBD31]/50 text-sm px-3 py-2.5 outline-none focus:border-[#BFBD31]/50 transition"
                     >
-                      {searchForm.destination ? `${destinations.find(d => d.name === searchForm.destination)?.emoji || '🏖️'} ${searchForm.destination}` : 'Select'}
+                      {searchForm.destination ? `${allDestinations.find(d => d.name === searchForm.destination)?.emoji || '🏖️'} ${searchForm.destination}` : 'Select'}
                     </button>
                     {showDestDropdown && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-white/10 rounded-lg shadow-lg z-20 max-h-40 overflow-y-auto">
-                        {destinations.map(dest => (
+                        {allDestinations.map(dest => (
                           <button
                             key={dest._id}
                             onClick={() => {

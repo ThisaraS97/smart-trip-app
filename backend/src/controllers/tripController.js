@@ -145,3 +145,94 @@ export const deleteTrip = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+// @desc  Search trips by destination and budget
+// @route GET /api/trips/search?destination=xxx&budget=xxx
+// @access Public
+export const searchTrips = async (req, res) => {
+  try {
+    const { destination, budget } = req.query;
+    
+    if (!destination) {
+      return res.status(400).json({ message: 'Destination is required' });
+    }
+
+    const budgetNum = budget ? parseInt(budget) : null;
+    const query = {
+      destination: { $regex: destination, $options: 'i' },
+      status: 'confirmed'
+    };
+
+    if (budgetNum) {
+      query.totalCost = { $lte: budgetNum };
+    }
+
+    const trips = await Trip.find(query)
+      .populate('user', 'name email')
+      .sort({ totalCost: 1, createdAt: -1 })
+      .limit(10);
+
+    // Format response
+    const formattedTrips = trips.map(t => ({
+      ...t.toObject(),
+      id: t.tripId || t._id.toString()
+    }));
+
+    // If no confirmed trips, generate recommendations based on destination
+    if (formattedTrips.length === 0) {
+      return res.json({
+        message: 'No confirmed trips found. Here are recommendations:',
+        recommendations: generateRecommendations(destination, budgetNum),
+        trips: []
+      });
+    }
+
+    res.json({
+      count: formattedTrips.length,
+      trips: formattedTrips
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Search failed', error: error.message });
+  }
+};
+
+// Helper function to generate recommendations
+const generateRecommendations = (destination, budget) => {
+  const recommendations = [
+    {
+      id: 'rec1',
+      title: `3-Day ${destination} Tour`,
+      description: `Explore the best of ${destination} with guided tours, accommodation, and meals included.`,
+      duration: '3 Days',
+      estimatedPrice: budget ? Math.floor(budget * 0.8) : 150000,
+      highlights: ['Guided City Tour', 'Local Cuisine', '4-Star Hotel', 'Transportation'],
+      rating: 4.5,
+      reviews: 24,
+      image: '#667eea'
+    },
+    {
+      id: 'rec2',
+      title: `5-Day ${destination} Experience`,
+      description: `Extended tour with adventure activities, cultural experiences, and luxury accommodation.`,
+      duration: '5 Days',
+      estimatedPrice: budget ? Math.floor(budget * 0.9) : 200000,
+      highlights: ['Adventure Activities', 'Cultural Shows', 'Spa & Wellness', '5-Star Hotel'],
+      rating: 4.8,
+      reviews: 45,
+      image: '#764ba2'
+    },
+    {
+      id: 'rec3',
+      title: `${destination} Adventure Package`,
+      description: `Perfect for adventure seekers with hiking, water sports, and nature exploration.`,
+      duration: '4 Days',
+      estimatedPrice: budget ? Math.floor(budget * 0.75) : 120000,
+      highlights: ['Hiking Trails', 'Water Sports', 'Nature Photography', 'Budget Hotel'],
+      rating: 4.3,
+      reviews: 18,
+      image: '#f093fb'
+    }
+  ];
+
+  return recommendations;
+};
