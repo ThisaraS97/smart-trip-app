@@ -1,12 +1,13 @@
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js'; // Assuming you have a User model
+import Vendor from '../models/Vendor.js';
 import generateToken from '../utils/generateToken.js';
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
 export const registerUser = async (req, res) => {
-    const { name, email, password, phone, dateOfBirth, location, preferredLanguage, bio, travelInterests } = req.body;
+    const { name, email, password, role, phone, dateOfBirth, location, preferredLanguage, bio, travelInterests, vendor: vendorData } = req.body;
 
     try {
         const userExists = await User.findOne({ email });
@@ -18,11 +19,14 @@ export const registerUser = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        // Only allow 'user' or 'vendor' from client; default to 'user'
+        const userRole = role === 'vendor' ? 'vendor' : 'user';
+
         const user = await User.create({
             name,
             email,
             password: hashedPassword,
-            role: 'user', // role is always set server-side; never trusted from client
+            role: userRole,
             phone: phone || '',
             dateOfBirth: dateOfBirth || '',
             location: location || '',
@@ -30,6 +34,29 @@ export const registerUser = async (req, res) => {
             bio: bio || '',
             travelInterests: travelInterests || [],
         });
+
+        // If registering as vendor, create Vendor profile
+        if (userRole === 'vendor' && vendorData) {
+            try {
+                await Vendor.create({
+                    user: user._id,
+                    businessName: vendorData.businessName || '',
+                    businessType: vendorData.businessType || 'Other',
+                    businessEmail: vendorData.businessEmail || email,
+                    businessPhone: vendorData.businessPhone || '',
+                    registrationNumber: vendorData.registrationNumber || '',
+                    website: vendorData.website || '',
+                    address: vendorData.address || { addressLine1: '-', city: '-', province: '-' },
+                    primaryContact: vendorData.primaryContact || { name, phone: '', email },
+                    bankDetails: vendorData.bankDetails || undefined,
+                    status: 'pending_review',
+                });
+            } catch (vendorErr) {
+                // Rollback user if vendor creation fails
+                await User.findByIdAndDelete(user._id);
+                return res.status(400).json({ message: 'Vendor profile creation failed: ' + vendorErr.message });
+            }
+        }
 
         if (user) {
             res.status(201).json({
@@ -51,7 +78,8 @@ export const registerUser = async (req, res) => {
             res.status(400).json({ message: 'Invalid user data' });
         }
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('Register error:', error);
+        res.status(500).json({ message: error.message || 'Server error' });
     }
 };
 

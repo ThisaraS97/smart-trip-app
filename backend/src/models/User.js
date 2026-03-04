@@ -27,8 +27,7 @@ const userSchema = mongoose.Schema(
         location: { type: String, default: '' },
         preferredLanguage: { 
             type: String, 
-            enum: ['english', 'sinhala', 'tamil'],
-            default: 'english' 
+            default: 'English' 
         },
         bio: { type: String, default: '' },
         photo: { type: String, default: '' },

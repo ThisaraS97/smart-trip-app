@@ -22,10 +22,10 @@ const primaryContactSchema = mongoose.Schema({
 });
 
 const bankDetailsSchema = mongoose.Schema({
-  bankName: { type: String, required: true },
+  bankName: { type: String },
   branch: { type: String },
-  accountName: { type: String, required: true },
-  accountNumber: { type: String, required: true },
+  accountName: { type: String },
+  accountNumber: { type: String },
   accountType: { type: String },
   swiftCode: { type: String },
 });

@@ -47,7 +47,7 @@ export default function RegisterPage() {
     confirmPassword: '',
     agreedToTerms: false,
     role: 'user',
-    // Step 2
+    // Step 2 — traveler
     countryCode: '+94',
     phone: '',
     dateOfBirth: '',
@@ -55,6 +55,28 @@ export default function RegisterPage() {
     preferredLanguage: 'English',
     travelInterests: [],
     bio: '',
+    // Step 2 — vendor business info
+    businessName: '',
+    businessType: '',
+    businessEmail: '',
+    businessPhone: '',
+    registrationNumber: '',
+    website: '',
+    // vendor address
+    addressLine1: '',
+    addressCity: '',
+    addressProvince: '',
+    addressPostalCode: '',
+    // vendor primary contact
+    contactName: '',
+    contactDesignation: '',
+    contactPhone: '',
+    contactEmail: '',
+    // vendor bank details
+    bankName: '',
+    bankBranch: '',
+    bankAccountName: '',
+    bankAccountNumber: '',
   });
 
   const clearForm = () => {
@@ -62,6 +84,11 @@ export default function RegisterPage() {
       name: '', email: '', password: '', confirmPassword: '', agreedToTerms: false, role: 'user',
       countryCode: '+94', phone: '', dateOfBirth: '', location: '', preferredLanguage: 'English',
       travelInterests: [], bio: '',
+      businessName: '', businessType: '', businessEmail: '', businessPhone: '',
+      registrationNumber: '', website: '',
+      addressLine1: '', addressCity: '', addressProvince: '', addressPostalCode: '',
+      contactName: '', contactDesignation: '', contactPhone: '', contactEmail: '',
+      bankName: '', bankBranch: '', bankAccountName: '', bankAccountNumber: '',
     });
     setStep(1);
   };
@@ -99,10 +126,63 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { confirmPassword, agreedToTerms, countryCode, travelInterests, ...rest } = formData;
-      const payload = { ...rest, phone: formData.phone ? `${countryCode} ${formData.phone}` : '', travelInterests };
+      let payload;
+      if (formData.role === 'vendor') {
+        // Validate required vendor fields
+        if (!formData.businessName || !formData.businessType || !formData.businessEmail || !formData.businessPhone) {
+          toast.error('Please fill in all required business fields');
+          setLoading(false);
+          return;
+        }
+        if (!formData.addressLine1 || !formData.addressCity || !formData.addressProvince) {
+          toast.error('Please fill in the required address fields');
+          setLoading(false);
+          return;
+        }
+        if (!formData.contactName || !formData.contactPhone || !formData.contactEmail) {
+          toast.error('Please fill in the required primary contact fields');
+          setLoading(false);
+          return;
+        }
+        payload = {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: 'vendor',
+          vendor: {
+            businessName: formData.businessName,
+            businessType: formData.businessType,
+            businessEmail: formData.businessEmail,
+            businessPhone: formData.businessPhone,
+            registrationNumber: formData.registrationNumber,
+            website: formData.website,
+            address: {
+              addressLine1: formData.addressLine1,
+              city: formData.addressCity,
+              province: formData.addressProvince,
+              postalCode: formData.addressPostalCode,
+              country: 'Sri Lanka',
+            },
+            primaryContact: {
+              name: formData.contactName,
+              designation: formData.contactDesignation,
+              phone: formData.contactPhone,
+              email: formData.contactEmail,
+            },
+            bankDetails: (formData.bankName && formData.bankAccountName && formData.bankAccountNumber) ? {
+              bankName: formData.bankName,
+              branch: formData.bankBranch,
+              accountName: formData.bankAccountName,
+              accountNumber: formData.bankAccountNumber,
+            } : undefined,
+          },
+        };
+      } else {
+        const { confirmPassword, agreedToTerms, countryCode, travelInterests, ...rest } = formData;
+        payload = { ...rest, phone: formData.phone ? `${formData.countryCode} ${formData.phone}` : '', travelInterests };
+      }
       await axios.post('/api/auth/register', payload);
-      toast.success('Account created! Please log in.');
+      toast.success(formData.role === 'vendor' ? 'Vendor account created! Pending admin approval.' : 'Account created! Please log in.');
       navigate('/login');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
@@ -222,14 +302,16 @@ export default function RegisterPage() {
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-[#BFBD31]/80">
-                  {step === 1 ? 'Step 1 · Account' : 'Step 2 · Profile'}
+                  {step === 1 ? 'Step 1 · Account' : formData.role === 'vendor' ? 'Step 2 · Business' : 'Step 2 · Profile'}
                 </p>
                 <h2 className="text-2xl font-semibold text-white sm:text-3xl">
-                  {step === 1 ? 'Create your explorer ID' : 'Shape your travel profile'}
+                  {step === 1 ? 'Create your explorer ID' : formData.role === 'vendor' ? 'Set up your business' : 'Shape your travel profile'}
                 </h2>
                 <p className="text-sm text-slate-400">
                   {step === 1
                     ? 'We only ask for what we need to keep your trips secure.'
+                    : formData.role === 'vendor'
+                    ? 'Your business details — you can update these anytime from the vendor dashboard.'
                     : 'Optional details that help us fine-tune routes and recommendations.'}
                 </p>
               </div>
@@ -241,6 +323,60 @@ export default function RegisterPage() {
             {/* STEP 1 */}
             {step === 1 && (
               <form onSubmit={goToStep2} className="space-y-4">
+
+                {/* Role selector */}
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
+                    I am joining as
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      {
+                        value: 'user',
+                        icon: (
+                          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        ),
+                        title: 'Traveler',
+                        desc: 'Explore & book trips',
+                      },
+                      {
+                        value: 'vendor',
+                        icon: (
+                          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                        ),
+                        title: 'Vendor',
+                        desc: 'List & sell services',
+                      },
+                    ].map((r) => (
+                      <button
+                        key={r.value}
+                        type="button"
+                        onClick={() => setFormData((p) => ({ ...p, role: r.value }))}
+                        className={`relative flex flex-col items-center gap-2 rounded-2xl border px-4 py-4 text-sm font-semibold transition-all ${
+                          formData.role === r.value
+                            ? 'border-[#BFBD31] bg-[#BFBD31]/10 text-[#BFBD31]'
+                            : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:text-slate-200'
+                        }`}
+                      >
+                        <span className={formData.role === r.value ? 'text-[#BFBD31]' : 'text-slate-500'}>
+                          {r.icon}
+                        </span>
+                        <span>{r.title}</span>
+                        <span className="text-xs font-normal opacity-70">{r.desc}</span>
+                        {formData.role === r.value && (
+                          <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#BFBD31]" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-semibold text-slate-200 mb-1.5">
                     Full name <span className="text-red-400">*</span>
@@ -264,7 +400,7 @@ export default function RegisterPage() {
                       value={formData.name}
                       onChange={onChange}
                       placeholder="Your full name"
-                      className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-10 py-3 text-sm text-white placeholder:text-slate-500 transition focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none"
                     />
                   </div>
                 </div>
@@ -292,7 +428,7 @@ export default function RegisterPage() {
                       value={formData.email}
                       onChange={onChange}
                       placeholder="you@example.com"
-                      className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-10 py-3 text-sm text-white placeholder:text-slate-500 transition focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none"
                     />
                   </div>
                 </div>
@@ -319,7 +455,7 @@ export default function RegisterPage() {
                       value={formData.password}
                       onChange={onChange}
                       placeholder="Min. 6 characters"
-                      className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-10 py-3 pr-12 text-sm text-white placeholder:text-slate-500 transition focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none"
                     />
                     <button
                       type="button"
@@ -511,215 +647,228 @@ export default function RegisterPage() {
             {/* STEP 2 */}
             {step === 2 && (
               <form onSubmit={onSubmit} className="space-y-4">
-                <div className="mb-2 flex items-start gap-3 rounded-2xl border border-[#BFBD31]/20 bg-[#BFBD31]/5 p-3 text-sm text-slate-200">
-                  <svg className="mt-0.5 h-5 w-5 text-[#BFBD31] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <p className="text-xs sm:text-sm">
-                    Everything on this step is optional. Add what you like now, or skip and refine your profile from the
-                    dashboard later.
-                  </p>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-slate-200 mb-1.5">Phone number</label>
-                  <PhoneInput
-                    country="lk"
-                    value={formData.countryCode.replace('+', '') + formData.phone}
-                    onChange={(value, country) => {
-                      const dialCode = country.dialCode;
-                      const number = value.slice(dialCode.length);
-                      setFormData(prev => ({ ...prev, countryCode: '+' + dialCode, phone: number }));
-                    }}
-                    inputStyle={{
-                      width: '100%',
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '1rem',
-                      color: 'white',
-                      paddingTop: '0.75rem',
-                      paddingBottom: '0.75rem',
-                      paddingLeft: '3.5rem',
-                      fontSize: '0.875rem',
-                      height: 'auto',
-                    }}
-                    buttonStyle={{
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderLeft: 'none',
-                      borderRadius: '1rem 0 0 1rem',
-                      paddingLeft: '0.5rem',
-                      paddingRight: '0.5rem',
-                    }}
-                    dropdownStyle={{ background: '#0f172a', color: 'white' }}
-                    enableSearch
-                    searchPlaceholder="Search country..."
-                    placeholder="77 123 4567"
-                  />
-                </div>
+                {/* ─── VENDOR STEP 2 ─────────────────────────────── */}
+                {formData.role === 'vendor' ? (
+                  <div className="space-y-5 max-h-[60vh] overflow-y-auto pr-1">
+                    <div className="text-xs text-[#BFBD31]/80 font-semibold uppercase tracking-widest border-b border-white/10 pb-2">Business Info</div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-200 mb-1.5">Date of birth</label>
-                    <div className="relative">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Business name <span className="text-red-400">*</span></label>
+                        <input name="businessName" value={formData.businessName} onChange={onChange} placeholder="e.g. Ceylon Journeys Pvt Ltd"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
                       </div>
-                      <input
-                        name="dateOfBirth"
-                        type="date"
-                        value={formData.dateOfBirth}
-                        onChange={onChange}
-                        className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Business type <span className="text-red-400">*</span></label>
+                        <select name="businessType" value={formData.businessType} onChange={onChange}
+                          className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-white focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none">
+                          <option value="" className="text-slate-400">Select business type</option>
+                          {['Hotel/Guest House','Transport Provider','Tour Guide','Activity Provider','Restaurant/Cafe','Tour Operator','Travel Agency','Other'].map(t => (
+                            <option key={t} value={t} className="bg-slate-900">{t}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Business email <span className="text-red-400">*</span></label>
+                        <input name="businessEmail" type="email" value={formData.businessEmail} onChange={onChange} placeholder="business@example.com"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Business phone <span className="text-red-400">*</span></label>
+                        <input name="businessPhone" value={formData.businessPhone} onChange={onChange} placeholder="+94 11 234 5678"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Registration no. <span className="text-slate-500 font-normal">(optional)</span></label>
+                        <input name="registrationNumber" value={formData.registrationNumber} onChange={onChange} placeholder="BR 12345"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Website <span className="text-slate-500 font-normal">(optional)</span></label>
+                        <input name="website" value={formData.website} onChange={onChange} placeholder="https://yourbusiness.lk"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-[#BFBD31]/80 font-semibold uppercase tracking-widest border-b border-white/10 pb-2 pt-2">Business Address</div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Address line 1 <span className="text-red-400">*</span></label>
+                        <input name="addressLine1" value={formData.addressLine1} onChange={onChange} placeholder="123 Galle Road"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">City <span className="text-red-400">*</span></label>
+                        <select name="addressCity" value={formData.addressCity} onChange={onChange}
+                          className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-white focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none">
+                          <option value="">Select city</option>
+                          {SL_CITIES.map(c => <option key={c} value={c} className="bg-slate-900">{c}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Province <span className="text-red-400">*</span></label>
+                        <select name="addressProvince" value={formData.addressProvince} onChange={onChange}
+                          className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-white focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none">
+                          <option value="">Select province</option>
+                          {['Western','Central','Southern','Northern','Eastern','North Western','North Central','Uva','Sabaragamuwa'].map(p => (
+                            <option key={p} value={p} className="bg-slate-900">{p}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Postal code</label>
+                        <input name="addressPostalCode" value={formData.addressPostalCode} onChange={onChange} placeholder="10100"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-[#BFBD31]/80 font-semibold uppercase tracking-widest border-b border-white/10 pb-2 pt-2">Primary Contact</div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Contact name <span className="text-red-400">*</span></label>
+                        <input name="contactName" value={formData.contactName} onChange={onChange} placeholder="Full name"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Designation</label>
+                        <input name="contactDesignation" value={formData.contactDesignation} onChange={onChange} placeholder="Manager / Owner"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Contact phone <span className="text-red-400">*</span></label>
+                        <input name="contactPhone" value={formData.contactPhone} onChange={onChange} placeholder="+94 77 123 4567"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Contact email <span className="text-red-400">*</span></label>
+                        <input name="contactEmail" type="email" value={formData.contactEmail} onChange={onChange} placeholder="contact@business.lk"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-[#BFBD31]/80 font-semibold uppercase tracking-widest border-b border-white/10 pb-2 pt-2">Bank Details <span className="text-slate-500 font-normal normal-case">(optional — add later)</span></div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Bank name</label>
+                        <input name="bankName" value={formData.bankName} onChange={onChange} placeholder="Bank of Ceylon"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Branch</label>
+                        <input name="bankBranch" value={formData.bankBranch} onChange={onChange} placeholder="Colombo 03"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Account name</label>
+                        <input name="bankAccountName" value={formData.bankAccountName} onChange={onChange} placeholder="Ceylon Journeys Pvt Ltd"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Account number</label>
+                        <input name="bankAccountNumber" value={formData.bankAccountNumber} onChange={onChange} placeholder="000123456789"
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
+                      </div>
+                    </div>
+                  </div>
+
+                ) : (
+                  /* ─── USER STEP 2 ─────────────────────────────── */
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3 rounded-2xl border border-[#BFBD31]/20 bg-[#BFBD31]/5 p-3 text-sm text-slate-200">
+                      <svg className="mt-0.5 h-5 w-5 text-[#BFBD31] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-xs sm:text-sm">Everything on this step is optional. Add what you like now, or skip and refine your profile from the dashboard later.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-200 mb-1.5">Phone number</label>
+                      <PhoneInput
+                        country="lk"
+                        value={formData.countryCode.replace('+', '') + formData.phone}
+                        onChange={(value, country) => {
+                          const dialCode = country.dialCode;
+                          const number = value.slice(dialCode.length);
+                          setFormData(prev => ({ ...prev, countryCode: '+' + dialCode, phone: number }));
+                        }}
+                        inputStyle={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '1rem', color: 'white', paddingTop: '0.75rem', paddingBottom: '0.75rem', paddingLeft: '3.5rem', fontSize: '0.875rem', height: 'auto' }}
+                        buttonStyle={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderLeft: 'none', borderRadius: '1rem 0 0 1rem', paddingLeft: '0.5rem', paddingRight: '0.5rem' }}
+                        dropdownStyle={{ background: '#0f172a', color: 'white' }}
+                        enableSearch searchPlaceholder="Search country..." placeholder="77 123 4567"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-200 mb-1.5">City / Location</label>
-                    <div className="relative">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">Date of birth</label>
+                        <input name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={onChange}
+                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none" />
                       </div>
-                      <select
-                        name="location"
-                        value={formData.location}
-                        onChange={onChange}
-                        className="w-full rounded-2xl border border-white/10 bg-white/5 pl-10 pr-4 py-3 text-sm text-white focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none appearance-none cursor-pointer"
-                      >
-                        <option value="" className="bg-slate-900 text-slate-400">Select your city</option>
-                        {SL_CITIES.map((city) => (
-                          <option key={city} value={city} className="bg-slate-900 text-slate-100">{city}</option>
-                        ))}
-                        <option value="Other" className="bg-slate-900 text-slate-100">Other</option>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-200 mb-1.5">City / Location</label>
+                        <select name="location" value={formData.location} onChange={onChange}
+                          className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-white focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none">
+                          <option value="" className="text-slate-400">Select your city</option>
+                          {SL_CITIES.map(c => <option key={c} value={c} className="bg-slate-900">{c}</option>)}
+                          <option value="Other" className="bg-slate-900">Other</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-200 mb-1.5">Preferred language</label>
+                      <select name="preferredLanguage" value={formData.preferredLanguage} onChange={onChange}
+                        className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-white focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none">
+                        {LANGUAGES.map(l => <option key={l} className="bg-slate-900">{l}</option>)}
                       </select>
                     </div>
-                  </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-slate-200 mb-1.5">Preferred language</label>
-                  <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-                        />
-                      </svg>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-200 mb-2">Travel Interests <span className="ml-2 text-xs font-normal text-slate-400">Select all that apply</span></label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {TRAVEL_INTERESTS.map((interest) => {
+                          const selected = formData.travelInterests.includes(interest.id);
+                          return (
+                            <button key={interest.id} type="button" onClick={() => toggleInterest(interest.id)}
+                              className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium text-left transition-all ${
+                                selected ? 'border-[#BFBD31]/50 bg-[#BFBD31]/10 text-[#BFBD31]' : 'border-white/10 bg-white/5 text-slate-300 hover:border-[#BFBD31]/30'
+                              }`}>
+                              <div className={`h-4 w-4 rounded flex-shrink-0 border flex items-center justify-center transition-all ${
+                                selected ? 'bg-[#BFBD31] border-[#BFBD31]' : 'border-white/20'
+                              }`}>
+                                {selected && <svg className="h-2.5 w-2.5 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg>}
+                              </div>
+                              {interest.label}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                    <select
-                      name="preferredLanguage"
-                      value={formData.preferredLanguage}
-                      onChange={onChange}
-                      className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"
-                    >
-                      {LANGUAGES.map((l) => (
-                        <option key={l} className="bg-slate-900 text-slate-100">
-                          {l}
-                        </option>
-                      ))}
-                    </select>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-200 mb-1.5">About you <span className="text-xs font-normal text-slate-400">(short bio)</span></label>
+                      <textarea name="bio" value={formData.bio} onChange={onChange} rows={3}
+                        placeholder="Travel enthusiast, love cultural experiences and scenic destinations..."
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-[#BFBD31]/60 focus:ring-2 focus:ring-[#BFBD31]/50 outline-none resize-none" />
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Travel Interests */}
-                <div>
-                  <label className="block text-sm font-semibold text-slate-200 mb-2">
-                    Travel Interests
-                    <span className="ml-2 text-xs font-normal text-slate-400">Select all that apply</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {TRAVEL_INTERESTS.map((interest) => {
-                      const selected = formData.travelInterests.includes(interest.id);
-                      return (
-                        <button
-                          key={interest.id}
-                          type="button"
-                          onClick={() => toggleInterest(interest.id)}
-                          className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium text-left transition-all ${
-                            selected
-                              ? 'border-[#BFBD31]/50 bg-[#BFBD31]/10 text-[#BFBD31]'
-                              : 'border-white/10 bg-white/5 text-slate-300 hover:border-[#BFBD31]/30'
-                          }`}
-                        >
-                          <div className={`h-4 w-4 rounded flex-shrink-0 border flex items-center justify-center transition-all ${
-                            selected ? 'bg-[#BFBD31] border-[#BFBD31]' : 'border-white/20'
-                          }`}>
-                            {selected && <svg className="h-2.5 w-2.5 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg>}
-                          </div>
-                          {interest.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-200 mb-1.5">
-                    About you <span className="text-xs font-normal text-slate-400">(short bio)</span>
-                  </label>
-                  <textarea
-                    name="bio"
-                    value={formData.bio}
-                    onChange={onChange}
-                    rows={3}
-                    placeholder="Travel enthusiast, love cultural experiences and scenic destinations..."
-                    className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"
-                  />
-                </div>
-
-                <div className="mt-2 flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl rounded-xl p-6"
-                  >
+                <div className="mt-2 flex gap-3 pt-2">
+                  <button type="button" onClick={() => setStep(1)}
+                    className="flex items-center gap-1.5 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-300 hover:bg-white/10 transition">
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
                     </svg>
                     Back
                   </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="flex-2 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#BFBD31] px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-[#BFBD31]/20 transition focus:outline-none focus:ring-2 focus:ring-[#BFBD31]/50 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
+                  <button type="submit" disabled={loading}
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#BFBD31] px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-[#BFBD31]/20 transition focus:outline-none focus:ring-2 focus:ring-[#BFBD31]/50 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-60">
                     {loading ? (
-                      <>
-                        <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                          />
-                        </svg>
-                        Creating account...
-                      </>
+                      <><svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Creating account...</>
                     ) : (
-                      <>
-                        Create account
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                      </>
+                      <>{formData.role === 'vendor' ? 'Submit for review' : 'Create account'}<svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg></>
                     )}
                   </button>
                 </div>
