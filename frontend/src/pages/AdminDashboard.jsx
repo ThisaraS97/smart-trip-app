@@ -564,7 +564,7 @@ export default function AdminDashboard() {
                 <div key={dest._id} className="bg-slate-900 border border-white/10 rounded-xl overflow-hidden hover:border-[#BFBD31]/50 transition-all">
                   {dest.image ? (
                     <img 
-                      src={dest.image.startsWith('http') ? dest.image : `http://localhost:5001${dest.image}`} 
+                      src={dest.image.startsWith('http') ? dest.image : dest.image} 
                       alt={dest.name} 
                       className="w-full h-40 object-cover" 
                       onError={(e) => { e.target.style.display = 'none'; }}
@@ -698,7 +698,7 @@ export default function AdminDashboard() {
                         {formData.image && (
                           <div className="relative w-full h-32 bg-slate-800 rounded-lg overflow-hidden border border-white/10">
                             <img 
-                              src={formData.image.startsWith('http') ? formData.image : `http://localhost:5001${formData.image}`} 
+                              src={formData.image.startsWith('http') ? formData.image : formData.image} 
                               alt="Preview" 
                               className="w-full h-full object-cover" 
                               onError={(e) => { e.target.style.display = 'none'; }}

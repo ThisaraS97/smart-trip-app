@@ -12,7 +12,7 @@ export const useItineraryItems = (type = null, category = null) => {
     const fetchItems = async () => {
       try {
         setLoading(true);
-        let url = 'http://localhost:5001/api/config/itinerary-items';
+        let url = '/api/config/itinerary-items';
         
         const params = [];
         if (type) params.push(`type=${type}`);
@@ -57,7 +57,7 @@ export const useItineraryByType = (type) => {
     const fetchItems = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5001/api/config/itinerary-items/type/${type}`);
+        const response = await fetch(`/api/config/itinerary-items/type/${type}`);
         if (!response.ok) throw new Error('Failed to fetch');
         
         const data = await response.json();
@@ -95,7 +95,7 @@ export const useAllItineraryItems = () => {
     const fetchAllItems = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5001/api/config/itinerary-items');
+        const response = await fetch('/api/config/itinerary-items');
         if (!response.ok) throw new Error('Failed to fetch');
         
         const items = await response.json();
