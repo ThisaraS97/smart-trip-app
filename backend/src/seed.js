@@ -269,8 +269,85 @@ async function seed() {
   ]);
   console.log('👤 Created 5 users');
 
+  // ─── CREATE MORE VENDOR USERS ─────────────────────────────────────────────
+  const moreVendorUsers = await Promise.all([
+    User.create({
+      name: 'Earl\'s Regency Hotels',
+      email: 'hotels.earls@example.com',
+      password: await hash('Vendor@123'),
+      role: 'vendor',
+      phone: '+94 81 223 3344',
+      location: 'Kandy, Sri Lanka',
+      photo: 'https://api.dicebear.com/7.x/initials/svg?seed=Earls',
+    }),
+    User.create({
+      name: 'Safari Jeep Rentals',
+      email: 'safari.rentals@example.com',
+      password: await hash('Vendor@123'),
+      role: 'vendor',
+      phone: '+94 23 555 6666',
+      location: 'Yala, Sri Lanka',
+      photo: 'https://api.dicebear.com/7.x/initials/svg?seed=Safari',
+    }),
+    User.create({
+      name: 'Local Guide Services',
+      email: 'guides.local@example.com',
+      password: await hash('Vendor@123'),
+      role: 'vendor',
+      phone: '+94 36 777 8888',
+      location: 'Ella, Sri Lanka',
+      photo: 'https://api.dicebear.com/7.x/initials/svg?seed=Guides',
+    }),
+    User.create({
+      name: 'Adventure Extreme Sports',
+      email: 'adventure.extreme@example.com',
+      password: await hash('Vendor@123'),
+      role: 'vendor',
+      phone: '+94 91 999 0000',
+      location: 'Colombo, Sri Lanka',
+      photo: 'https://api.dicebear.com/7.x/initials/svg?seed=Adventure',
+    }),
+    User.create({
+      name: 'The Spice Trail Restaurant',
+      email: 'spice.trail@example.com',
+      password: await hash('Vendor@123'),
+      role: 'vendor',
+      phone: '+94 11 222 3333',
+      location: 'Colombo, Sri Lanka',
+      photo: 'https://api.dicebear.com/7.x/initials/svg?seed=SpiceTrail',
+    }),
+    User.create({
+      name: 'Luxury Villas Galle',
+      email: 'villas.galle@example.com',
+      password: await hash('Vendor@123'),
+      role: 'vendor',
+      phone: '+94 91 234 5678',
+      location: 'Galle, Sri Lanka',
+      photo: 'https://api.dicebear.com/7.x/initials/svg?seed=VillasGalle',
+    }),
+    User.create({
+      name: 'TravelMax Tours',
+      email: 'travelmax@example.com',
+      password: await hash('Vendor@123'),
+      role: 'vendor',
+      phone: '+94 11 456 7890',
+      location: 'Colombo, Sri Lanka',
+      photo: 'https://api.dicebear.com/7.x/initials/svg?seed=TravelMax',
+    }),
+    User.create({
+      name: 'Beachside Cabanas',
+      email: 'beachside.cabanas@example.com',
+      password: await hash('Vendor@123'),
+      role: 'vendor',
+      phone: '+94 32 111 2222',
+      location: 'Mirissa, Sri Lanka',
+      photo: 'https://api.dicebear.com/7.x/initials/svg?seed=Beachside',
+    }),
+  ]);
+  console.log('👤 Created 8 additional vendor users');
+
   // ─── VENDORS ──────────────────────────────────────────────────────────────
-  const [vendor1, vendor2] = await Promise.all([
+  const [vendor1, vendor2, vendor3, vendor4, vendor5, vendor6, vendor7, vendor8, vendor9, vendor10] = await Promise.all([
     Vendor.create({
       user: vendorUser1._id,
       businessName: 'Ceylon Journeys Pvt Ltd',
@@ -339,26 +416,326 @@ async function seed() {
       },
       status: 'approved',
     }),
+    Vendor.create({
+      user: moreVendorUsers[0]._id,
+      businessName: "Earl's Regency Hotel",
+      businessType: 'Hotel/Guest House',
+      registrationNumber: 'BP/56789/2015',
+      taxId: 'TAX-111111',
+      yearEstablished: 2015,
+      businessEmail: 'info@earlskandy.lk',
+      businessPhone: '+94 81 223 3344',
+      website: 'https://earlskandy.lk',
+      socialMedia: { facebook: 'fb.com/earlsregency', instagram: '@earlsregency' },
+      address: {
+        addressLine1: '45 Peradeniya Road',
+        city: 'Kandy',
+        province: 'Central',
+        postalCode: '20800',
+        country: 'Sri Lanka',
+      },
+      primaryContact: {
+        name: 'Samantha Fernandez',
+        designation: 'Hotel Manager',
+        phone: '+94 81 223 3344',
+        email: 'manager@earlskandy.lk',
+      },
+      services: ['Hotel Accommodation', 'Restaurant & Bar', 'Spa Services', 'Event Hosting'],
+      bankDetails: {
+        bankName: 'Sampath Bank',
+        branch: 'Kandy Branch',
+        accountName: "Earl's Regency Hotel",
+        accountNumber: '5555666677',
+        accountType: 'Current',
+      },
+      status: 'approved',
+    }),
+    Vendor.create({
+      user: moreVendorUsers[1]._id,
+      businessName: 'Safari Jeep Rentals',
+      businessType: 'Transport Provider',
+      registrationNumber: 'BP/98765/2019',
+      taxId: 'TAX-222222',
+      yearEstablished: 2019,
+      businessEmail: 'bookings@safarijeeps.lk',
+      businessPhone: '+94 23 555 6666',
+      website: 'https://safarijeeps.lk',
+      socialMedia: { instagram: '@safarijeepssk' },
+      address: {
+        addressLine1: '123 Main Street',
+        city: 'Yala',
+        province: 'Southern',
+        postalCode: '82100',
+        country: 'Sri Lanka',
+      },
+      primaryContact: {
+        name: 'Dilshan Jayasinghe',
+        designation: 'Owner',
+        phone: '+94 23 555 6666',
+        email: 'dilshan@safarijeeps.lk',
+      },
+      services: ['Vehicle Rental', 'Safari Tours', 'Driver Services', 'Airport Transfers'],
+      bankDetails: {
+        bankName: 'NDB Bank',
+        branch: 'Matara Branch',
+        accountName: 'Safari Jeep Rentals',
+        accountNumber: '7777888899',
+        accountType: 'Current',
+      },
+      status: 'approved',
+    }),
+    Vendor.create({
+      user: moreVendorUsers[2]._id,
+      businessName: 'Local Guide Services',
+      businessType: 'Tour Guide',
+      registrationNumber: 'BP/34567/2017',
+      taxId: 'TAX-333333',
+      yearEstablished: 2017,
+      businessEmail: 'guides@localservices.lk',
+      businessPhone: '+94 36 777 8888',
+      website: 'https://localguideservices.lk',
+      socialMedia: { facebook: 'fb.com/localguides' },
+      address: {
+        addressLine1: '5 Cliff Lane',
+        city: 'Ella',
+        province: 'Uva',
+        postalCode: '90090',
+        country: 'Sri Lanka',
+      },
+      primaryContact: {
+        name: 'Kumar Dissanayake',
+        designation: 'Head Guide',
+        phone: '+94 36 777 8888',
+        email: 'kumar@localguideservices.lk',
+      },
+      services: ['Hiking Guides', 'Cultural Tours', 'Photography Guides', 'Adventure Tours'],
+      bankDetails: {
+        bankName: 'Hatton National Bank',
+        branch: 'Badulla Branch',
+        accountName: 'Local Guide Services',
+        accountNumber: '9999000011',
+        accountType: 'Current',
+      },
+      status: 'approved',
+    }),
+    Vendor.create({
+      user: moreVendorUsers[3]._id,
+      businessName: 'Adventure Extreme Sports',
+      businessType: 'Activity Provider',
+      registrationNumber: 'BP/45678/2020',
+      taxId: 'TAX-444444',
+      yearEstablished: 2020,
+      businessEmail: 'bookings@adventureextreme.lk',
+      businessPhone: '+94 91 999 0000',
+      website: 'https://adventureextreme.lk',
+      socialMedia: { instagram: '@adventureextremeSK', facebook: 'fb.com/adventureextreme' },
+      address: {
+        addressLine1: '890 Mt. Lavinia Road',
+        city: 'Colombo',
+        province: 'Western',
+        postalCode: '00600',
+        country: 'Sri Lanka',
+      },
+      primaryContact: {
+        name: 'Arjun Rathnayake',
+        designation: 'CEO',
+        phone: '+94 91 999 0000',
+        email: 'arjun@adventureextreme.lk',
+      },
+      services: ['Rock Climbing', 'Paragliding', 'White Water Rafting', 'Zip-lining'],
+      bankDetails: {
+        bankName: 'Bank of Ceylon',
+        branch: 'Mt. Lavinia Branch',
+        accountName: 'Adventure Extreme Sports',
+        accountNumber: '1111222233',
+        accountType: 'Current',
+      },
+      status: 'approved',
+    }),
+    Vendor.create({
+      user: moreVendorUsers[4]._id,
+      businessName: 'The Spice Trail Restaurant',
+      businessType: 'Restaurant/Cafe',
+      registrationNumber: 'BP/67890/2018',
+      taxId: 'TAX-555555',
+      yearEstablished: 2018,
+      businessEmail: 'bookings@spicetrail.lk',
+      businessPhone: '+94 11 222 3333',
+      website: 'https://spicetrail.lk',
+      socialMedia: { instagram: '@spicetrailsk' },
+      address: {
+        addressLine1: '234 Regent Street',
+        city: 'Colombo',
+        province: 'Western',
+        postalCode: '00700',
+        country: 'Sri Lanka',
+      },
+      primaryContact: {
+        name: 'Priya Wijesinghe',
+        designation: 'Chef & Owner',
+        phone: '+94 11 222 3333',
+        email: 'priya@spicetrail.lk',
+      },
+      services: ['Restaurant Services', 'Catering', 'Cooking Classes', 'Food Tours'],
+      bankDetails: {
+        bankName: 'Seylan Bank',
+        branch: 'Colombo Branch',
+        accountName: 'The Spice Trail Restaurant',
+        accountNumber: '3333444455',
+        accountType: 'Current',
+      },
+      status: 'approved',
+    }),
+    Vendor.create({
+      user: moreVendorUsers[5]._id,
+      businessName: 'Luxury Villas Galle',
+      businessType: 'Hotel/Guest House',
+      registrationNumber: 'BP/23456/2016',
+      taxId: 'TAX-666666',
+      yearEstablished: 2016,
+      businessEmail: 'reservations@luxuryvillas.lk',
+      businessPhone: '+94 91 234 5678',
+      website: 'https://luxuryvillas-galle.lk',
+      socialMedia: { instagram: '@luxuryvillasgalle' },
+      address: {
+        addressLine1: '78 Fort Road',
+        city: 'Galle',
+        province: 'Southern',
+        postalCode: '80000',
+        country: 'Sri Lanka',
+      },
+      primaryContact: {
+        name: 'Nadira Perera',
+        designation: 'Operations Manager',
+        phone: '+94 91 234 5678',
+        email: 'nadira@luxuryvillas.lk',
+      },
+      services: ['Luxury Accommodation', 'Wedding Services', 'Spa & Wellness', 'Fine Dining'],
+      bankDetails: {
+        bankName: 'Nations Trust Bank',
+        branch: 'Galle Branch',
+        accountName: 'Luxury Villas Galle',
+        accountNumber: '5555666677',
+        accountType: 'Current',
+      },
+      status: 'approved',
+    }),
+    Vendor.create({
+      user: moreVendorUsers[6]._id,
+      businessName: 'TravelMax Tours',
+      businessType: 'Tour Operator',
+      registrationNumber: 'BP/89012/2019',
+      taxId: 'TAX-777777',
+      yearEstablished: 2019,
+      businessEmail: 'info@travelmax.lk',
+      businessPhone: '+94 11 456 7890',
+      website: 'https://travelmax.lk',
+      socialMedia: { facebook: 'fb.com/travelmaxsk', instagram: '@travelmaxsk' },
+      address: {
+        addressLine1: '100 Colombo Street',
+        city: 'Colombo',
+        province: 'Western',
+        postalCode: '00100',
+        country: 'Sri Lanka',
+      },
+      primaryContact: {
+        name: 'Sanjaya Mendis',
+        designation: 'Director',
+        phone: '+94 11 456 7890',
+        email: 'sanjaya@travelmax.lk',
+      },
+      services: ['Tour Packages', 'Flight Booking', 'Visa Assistance', 'Travel Insurance'],
+      bankDetails: {
+        bankName: 'Commercial Bank',
+        branch: 'Fort Branch',
+        accountName: 'TravelMax Tours',
+        accountNumber: '7777888899',
+        accountType: 'Current',
+      },
+      status: 'approved',
+    }),
+    Vendor.create({
+      user: moreVendorUsers[7]._id,
+      businessName: 'Beachside Cabanas',
+      businessType: 'Hotel/Guest House',
+      registrationNumber: 'BP/01234/2017',
+      taxId: 'TAX-888888',
+      yearEstablished: 2017,
+      businessEmail: 'info@beachsidecabanas.lk',
+      businessPhone: '+94 32 111 2222',
+      website: 'https://beachsidecabanas.lk',
+      socialMedia: { instagram: '@beachsidecabanas' },
+      address: {
+        addressLine1: '456 Mirissa Beach',
+        city: 'Mirissa',
+        province: 'Southern',
+        postalCode: '81400',
+        country: 'Sri Lanka',
+      },
+      primaryContact: {
+        name: 'Sunith Jayante',
+        designation: 'Resort Manager',
+        phone: '+94 32 111 2222',
+        email: 'sunith@beachsidecabanas.lk',
+      },
+      services: ['Beachfront Accommodation', 'Water Sports', 'Beach Dining', 'Whale Watching Tours'],
+      bankDetails: {
+        bankName: 'DFCC Bank',
+        branch: 'Matara Branch',
+        accountName: 'Beachside Cabanas',
+        accountNumber: '9999000011',
+        accountType: 'Current',
+      },
+      status: 'approved',
+    }),
   ]);
-  console.log('🏢 Created 2 vendors');
+  console.log('🏢 Created 10 vendors with different service types');
 
   // ─── INVENTORY ITEMS ──────────────────────────────────────────────────────
   const inventoryData = [
-    // Ceylon Journeys inventory
+    // Vendor 1: Ceylon Journeys (Tour Operator)
     { vendor: vendor1._id, name: 'Sigiriya Rock Fortress Day Tour', type: 'activity', description: 'Full-day guided tour to the iconic Sigiriya Rock Fortress with lunch.', price: 12500, capacity: 20, availableCount: 18, location: 'Sigiriya, Central Province', amenities: ['Lunch included', 'English guide', 'Transport', 'Entry tickets'], images: ['https://images.unsplash.com/photo-1588416936097-41850ab3d86d?w=800'] },
     { vendor: vendor1._id, name: 'Kandy Cultural Triangle Tour (3D/2N)', type: 'package', description: 'Explore Kandy, Dambulla and Polonnaruwa in a 3-day cultural package.', price: 45000, capacity: 10, availableCount: 8, location: 'Kandy & Central Province', amenities: ['Hotel stay', 'All meals', 'Guide', 'AC transport', 'Entry tickets'], images: ['https://images.unsplash.com/photo-1616128417859-3a984dd35f02?w=800'] },
     { vendor: vendor1._id, name: 'Ella Hill Country Train & Hike (2D/1N)', type: 'package', description: 'Scenic train ride from Kandy to Ella + hike to Little Adam\'s Peak.', price: 32000, capacity: 15, availableCount: 12, location: 'Ella, Uva Province', amenities: ['Train ticket', 'Guesthouse stay', 'Breakfast', 'Hiking guide'], images: ['https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800'] },
-    { vendor: vendor1._id, name: 'Luxury Mountain Villa (per night)', type: 'accommodation', description: 'Boutique villa overlooking the Knuckles Mountain Range.', price: 28000, capacity: 4, availableCount: 2, location: 'Knuckles, Kandy', amenities: ['Breakfast', 'WiFi', 'Mountain view', 'Private pool', 'Airport pickup'], images: ['https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800'] },
-    { vendor: vendor1._id, name: 'AC Mini Van Hire (per day)', type: 'transport', description: 'Air-conditioned Toyota KDH minivan with experienced driver. Seats 9.', price: 9500, capacity: 9, availableCount: 3, location: 'Island-wide', amenities: ['AC', 'WiFi hotspot', 'Experienced driver', 'Fuel included'], images: [] },
-    // Amaya Coastal Tours inventory
+    
+    // Vendor 2: Amaya Coastal Tours (Travel Agency)
     { vendor: vendor2._id, name: 'Mirissa Whale Watching Cruise', type: 'activity', description: 'Morning whale watching cruise off the south coast with breakfast on board.', price: 8500, capacity: 30, availableCount: 25, location: 'Mirissa Harbour, Southern Province', amenities: ['Breakfast', 'Life jackets', 'Marine biologist guide', 'Photos'], images: ['https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800'] },
     { vendor: vendor2._id, name: 'Galle Fort & South Coast Day Tour', type: 'activity', description: 'Explore historic Galle Fort, sea turtle hatchery, and Unawatuna beach.', price: 11000, capacity: 12, availableCount: 10, location: 'Galle, Southern Province', amenities: ['Lunch', 'Guide', 'AC transport', 'Entrance fees'], images: ['https://images.unsplash.com/photo-1593553584634-b7a2b24d1f2c?w=800'] },
-    { vendor: vendor2._id, name: 'Negombo Beach Resort (per night)', type: 'accommodation', description: 'Beachfront room at Amaya Lagoon with sea views and pool access.', price: 18500, capacity: 2, availableCount: 6, location: 'Negombo Beach', amenities: ['Breakfast', 'Pool', 'Beach access', 'WiFi', 'Spa discount'], images: ['https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800'] },
-    { vendor: vendor2._id, name: 'Airport Transfer (Negombo <-> CMB)', type: 'transport', description: 'Private AC car transfer between Bandaranaike International Airport and Negombo.', price: 3500, capacity: 4, availableCount: 8, location: 'Katunayake / Negombo', amenities: ['AC car', 'Meet & greet at airport', 'Flight tracking'], images: [] },
-    { vendor: vendor2._id, name: 'Snorkeling & Water Sports Package', type: 'activity', description: 'Half-day snorkeling, kayaking and jet ski at Bentota lagoon.', price: 7500, capacity: 8, availableCount: 7, location: 'Bentota, Southern Province', amenities: ['Equipment provided', 'Safety briefing', 'Instructor', 'Soft drinks'], images: ['https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800'] },
+    
+    // Vendor 3: Earl's Regency Hotel
+    { vendor: vendor3._id, name: 'Earl\'s Regency Hotel Room (Deluxe)', type: 'accommodation', description: 'Spacious deluxe room with mountain view overlooking Kandy city.', price: 16250, capacity: 2, availableCount: 5, location: 'Kandy, Central Province', amenities: ['Free WiFi', 'Breakfast', 'Pool', 'Restaurant', 'Spa'], images: ['https://images.unsplash.com/photo-1631049307038-da0ec89d4b0c?w=800'] },
+    { vendor: vendor3._id, name: 'Earl\'s Regency Hotel Room (Suite)', type: 'accommodation', description: 'Luxury suite with private balcony and premium amenities.', price: 32500, capacity: 4, availableCount: 2, location: 'Kandy, Central Province', amenities: ['Free WiFi', 'Breakfast', 'Pool', 'Restaurant', 'Spa', 'Butler service'], images: [] },
+    
+    // Vendor 4: Safari Jeep Rentals
+    { vendor: vendor4._id, name: 'Jeep Safari at Yala National Park (Full Day)', type: 'activity', description: 'Full-day safari tour with experienced driver and wildlife expert.', price: 15000, capacity: 4, availableCount: 3, location: 'Yala National Park, Southern Province', amenities: ['Expert guide', 'Breakfast & lunch', 'Binoculars', 'Photography assist'], images: ['https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800'] },
+    { vendor: vendor4._id, name: 'AC Jeep Rental (4WD per day)', type: 'transport', description: 'Comfortable 4WD AC jeep rental with fuel included for island-wide travel.', price: 12000, capacity: 5, availableCount: 4, location: 'Island-wide', amenities: ['AC', 'GPS', 'Fuel included', 'Insurance', 'Experienced driver'], images: [] },
+    
+    // Vendor 5: Local Guide Services
+    { vendor: vendor5._id, name: 'Ella Rock Hiking Tour with Local Guide', type: 'activity', description: 'Guided hike to Ella Rock with stunning tea plantation views and breakfast.', price: 5000, capacity: 15, availableCount: 12, location: 'Ella, Uva Province', amenities: ['Expert guide', 'Breakfast', 'Water & snacks', 'Photos'], images: ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'] },
+    { vendor: vendor5._id, name: 'Cultural Heritage Walking Tour (Dambulla)', type: 'activity', description: 'Full-day tour exploring cave temples and ancient heritage sites.', price: 8000, capacity: 12, availableCount: 10, location: 'Dambulla, Central Province', amenities: ['Licensed guide', 'Lunch', 'Temple entry', 'Historical insights'], images: [] },
+    
+    // Vendor 6: Adventure Extreme Sports
+    { vendor: vendor6._id, name: 'White Water Rafting (Grade III-IV)', type: 'activity', description: 'Thrilling rafting adventure on Kelani River with safety equipment.', price: 6500, capacity: 8, availableCount: 6, location: 'Kelani Valley, Western Province', amenities: ['Guide', 'Safety gear', 'Lunch', 'Photos', 'Insurance'], images: ['https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800'] },
+    { vendor: vendor6._id, name: 'Paragliding Experience (30 mins)', type: 'activity', description: 'Thrilling tandem paragliding with experienced pilot over scenic landscape.', price: 9500, capacity: 6, availableCount: 4, location: 'Sigiriya, Central Province', amenities: ['Pilot', 'Safety gear', 'GoPro video', 'Certificate'], images: [] },
+    
+    // Vendor 7: The Spice Trail Restaurant
+    { vendor: vendor7._id, name: 'Fine Dining Multi-Course Meal (per person)', type: 'meal', description: 'Chef\'s special 5-course Sri Lankan fusion dinner with wine pairing.', price: 4500, capacity: 50, availableCount: 30, location: 'Colombo, Western Province', amenities: ['Wine pairing', 'Vegan options', 'Special dietary', 'Ambiance lighting'], images: [] },
+    { vendor: vendor7._id, name: 'Cooking Class with Chef Priya (3 hours)', type: 'activity', description: 'Learn to cook authentic Sri Lankan curry and rice dishes.', price: 8500, capacity: 12, availableCount: 8, location: 'Colombo, Western Province', amenities: ['All ingredients', 'Equipment provided', 'Recipe booklet', 'Lunch included'], images: [] },
+    
+    // Vendor 8: Luxury Villas Galle
+    { vendor: vendor8._id, name: 'Beachfront Villa with Pool (per night)', type: 'accommodation', description: 'Luxury 2-bedroom villa with private pool overlooking Galle Fort.', price: 35000, capacity: 6, availableCount: 3, location: 'Galle, Southern Province', amenities: ['Private pool', 'Beachfront', 'Chef service', 'WiFi', 'Spa'], images: ['https://images.unsplash.com/photo-1566073771259-6a8506edf56f?w=800'] },
+    { vendor: vendor8._id, name: 'Spa & Wellness Package (3 hours)', type: 'activity', description: 'Traditional Ayurvedic massage and wellness treatments at luxury spa.', price: 12000, capacity: 4, availableCount: 6, location: 'Galle, Southern Province', amenities: ['Ayurvedic massage', 'Herbal treatments', 'Steam room', 'Refreshments'], images: [] },
+    
+    // Vendor 9: TravelMax Tours
+    { vendor: vendor9._id, name: 'Complete Sri Lanka Tour (7D/6N)', type: 'package', description: 'Round-island comprehensive tour covering beaches, mountains, and heritage sites.', price: 125000, capacity: 8, availableCount: 5, location: 'Island-wide', amenities: ['Accommodation', 'All meals', 'Transport', 'Guide', 'Entry tickets'], images: ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'] },
+    { vendor: vendor9._id, name: 'Flight Booking Assistant (per booking)', type: 'package', description: 'Expert assistance with international and domestic flight bookings.', price: 2500, capacity: 20, availableCount: 20, location: 'Colombo', amenities: ['Best price search', 'Visa advice', 'Travel insurance', '24/7 support'], images: [] },
+    
+    // Vendor 10: Beachside Cabanas
+    { vendor: vendor10._id, name: 'Beachfront Room (per night)', type: 'accommodation', description: 'Comfortable beachfront room with ocean view and direct beach access.', price: 14000, capacity: 2, availableCount: 8, location: 'Mirissa, Southern Province', amenities: ['Beach access', 'Breakfast', 'WiFi', 'Restaurant', 'Water sports'], images: ['https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800'] },
+    { vendor: vendor10._id, name: 'Whale Watching & Whale Shark Tour', type: 'activity', description: 'Combined tour with morning whale watching and afternoon whale shark encounter.', price: 14500, capacity: 20, availableCount: 15, location: 'Mirissa, Southern Province', amenities: ['Expert guide', 'Breakfast & lunch', 'Life jacket', 'Photos'], images: [] },
   ];
   await InventoryItem.insertMany(inventoryData);
-  console.log('📦 Created 10 inventory items');
+  console.log('📦 Created 28 inventory items from 10 vendors');
 
   // ─── TRIPS (for user1 — Thisara) ──────────────────────────────────────────
   const now = new Date();
