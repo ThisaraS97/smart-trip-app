@@ -1,112 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('all');
-  // TODO: pull notifications from API
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: 'booking_confirmed',
-      title: 'Booking Confirmed!',
-      message: 'Your Kandy Cultural Tour booking (ST2025-KND-1847) has been confirmed by all vendors.',
-      timestamp: '2 hours ago',
-      date: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      isRead: false,
-      category: 'booking'
-    },
-    {
-      id: 2,
-      type: 'trip_reminder',
-      title: 'Upcoming Trip Reminder',
-      message: 'Your Kandy Cultural Tour starts in 3 days! Don\'t forget to pack and prepare.',
-      timestamp: '5 hours ago',
-      date: new Date(Date.now() - 5 * 60 * 60 * 1000),
-      isRead: false,
-      category: 'system'
-    },
-    {
-      id: 3,
-      type: 'booking_submitted',
-      title: 'Booking Request Submitted',
-      message: 'Your booking request for Galle Beach Getaway has been submitted. Awaiting vendor confirmation.',
-      timestamp: '1 day ago',
-      date: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      isRead: true,
-      category: 'booking'
-    },
-    {
-      id: 4,
-      type: 'promotion',
-      title: '🎉 Special Offer: 15% Off Ella Adventures',
-      message: 'Book your Ella hill country trip this month and get 15% off! Limited time offer.',
-      timestamp: '1 day ago',
-      date: new Date(Date.now() - 26 * 60 * 60 * 1000),
-      isRead: false,
-      category: 'promotion'
-    },
-    {
-      id: 5,
-      type: 'budget_alert',
-      title: 'Budget Alert',
-      message: 'Your current itinerary customization has exceeded budget by LKR 5,000. Consider adjusting selections.',
-      timestamp: '2 days ago',
-      date: new Date(Date.now() - 48 * 60 * 60 * 1000),
-      isRead: true,
-      category: 'system'
-    },
-    {
-      id: 6,
-      type: 'review_request',
-      title: 'How was your trip?',
-      message: 'We hope you enjoyed your Nuwara Eliya Tea Country tour! Please share your experience.',
-      timestamp: '3 days ago',
-      date: new Date(Date.now() - 72 * 60 * 60 * 1000),
-      isRead: false,
-      category: 'system'
-    },
-    {
-      id: 7,
-      type: 'booking_rejected',
-      title: 'Booking Update Required',
-      message: 'Your Sigiriya Adventure booking could not be confirmed. One vendor is unavailable on selected dates.',
-      timestamp: '4 days ago',
-      date: new Date(Date.now() - 96 * 60 * 60 * 1000),
-      isRead: true,
-      category: 'booking'
-    },
-    {
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotifs, setLoadingNotifs] = useState(true);
+
+  const timeAgo = (dateStr) => {
+    const diff = Date.now() - new Date(dateStr);
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return `${days}d ago`;
+    return new Date(dateStr).toLocaleDateString();
+  };
+
+  const getCategoryFromType = (type) => {
+    if (['booking_confirmed','booking_rejected','booking_submitted','payment_due','payment_received'].includes(type)) return 'booking';
+    if (type === 'promotion') return 'promotion';
+    return 'system';
+  };
+
+  useEffect(() => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    if (!userInfo?.token) { navigate('/login'); return; }
+    axios.get('/api/notifications', {
+      headers: { Authorization: `Bearer ${userInfo.token}` }
+    })
+      .then(res => {
+        const data = res.data.map(n => ({
+          ...n,
+          id: n._id,
+          timestamp: timeAgo(n.createdAt),
+          date: new Date(n.createdAt),
+          category: getCategoryFromType(n.type)
+        }));
+        setNotifications(data);
+      })
+      .catch(err => console.error('Failed to load notifications:', err))
+      .finally(() => setLoadingNotifs(false));
+  }, []);
+
+  // placeholder to keep original useState block size - removed dummy id 8 below
+  // (original dummy data replaced by API)
+  const _unused = {
       id: 8,
       type: 'booking_confirmed',
       title: 'Booking Confirmed',
-      message: 'Earl\'s Regency Hotel has confirmed your accommodation for March 15-17.',
+      message: 'Placeholder - replaced by API data.',
       timestamp: '5 days ago',
       date: new Date(Date.now() - 120 * 60 * 60 * 1000),
       isRead: true,
       category: 'booking'
-    },
-    {
-      id: 9,
-      type: 'promotion',
-      title: '💰 Early Bird Discount Available',
-      message: 'Book 3 months in advance and save up to 20% on all packages!',
-      timestamp: '6 days ago',
-      date: new Date(Date.now() - 144 * 60 * 60 * 1000),
-      isRead: false,
-      category: 'promotion'
-    },
-    {
-      id: 10,
-      type: 'system',
-      title: 'Profile Update Successful',
-      message: 'Your travel preferences have been updated successfully.',
-      timestamp: '1 week ago',
-      date: new Date(Date.now() - 168 * 60 * 60 * 1000),
-      isRead: true,
-      category: 'system'
-    }
-  ]);
+  };
 
   const filterTabs = [
     { id: 'all', label: 'All Notifications', count: notifications.length },
@@ -166,6 +117,20 @@ export default function NotificationsPage() {
       textColor: 'text-pink-600',
       symbol: '🎁'
     },
+    payment_due: {
+      icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
+      color: 'green',
+      bgColor: 'bg-green-100',
+      textColor: 'text-green-600',
+      symbol: '💳'
+    },
+    payment_received: {
+      icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+      color: 'green',
+      bgColor: 'bg-green-100',
+      textColor: 'text-green-600',
+      symbol: '✅'
+    },
     system: {
       icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
       color: 'gray',
@@ -198,20 +163,35 @@ export default function NotificationsPage() {
     return filtered.sort((a, b) => b.date - a.date);
   };
 
-  const markAsRead = (id) => {
-    setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, isRead: true } : n
-    ));
+  const markAsRead = async (id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      await axios.patch(`/api/notifications/${id}/read`, {}, {
+        headers: { Authorization: `Bearer ${userInfo.token}` }
+      });
+    } catch (err) { console.error(err); }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+  const markAllAsRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      await axios.patch('/api/notifications/read-all', {}, {
+        headers: { Authorization: `Bearer ${userInfo.token}` }
+      });
+    } catch (err) { console.error(err); }
   };
 
-  const deleteNotification = (id) => {
-    if (confirm('Delete this notification?')) {
-      setNotifications(notifications.filter(n => n.id !== id));
-    }
+  const deleteNotification = async (id) => {
+    if (!confirm('Delete this notification?')) return;
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      await axios.delete(`/api/notifications/${id}`, {
+        headers: { Authorization: `Bearer ${userInfo.token}` }
+      });
+    } catch (err) { console.error(err); }
   };
 
   const deleteAllRead = () => {
@@ -379,12 +359,23 @@ export default function NotificationsPage() {
                         
                         {/* Context-specific actions */}
                         {notification.type === 'booking_confirmed' && (
-                          <button className="text-sm font-medium text-[#BFBD31] hover:text-blue-300">
+                          <button onClick={() => navigate('/my-trips')} className="text-sm font-medium text-[#BFBD31] hover:text-blue-300">
                             View Booking
                           </button>
                         )}
+                        {(notification.type === 'payment_due' || (notification.type === 'booking_confirmed' && notification.bookingId)) && (
+                          <button
+                            onClick={() => navigate('/my-trips')}
+                            className="text-sm font-medium text-green-400 hover:text-green-300 flex items-center gap-1"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                            Pay Now
+                          </button>
+                        )}
                         {notification.type === 'booking_rejected' && (
-                          <button className="text-sm font-medium text-[#BFBD31] hover:text-blue-300">
+                          <button onClick={() => navigate('/my-trips')} className="text-sm font-medium text-[#BFBD31] hover:text-blue-300">
                             Modify Booking
                           </button>
                         )}

@@ -6,6 +6,39 @@ import ConfigPreference from '../models/ConfigPreference.js';
 import ConfigBank from '../models/ConfigBank.js';
 import ConfigWorkflow from '../models/ConfigWorkflow.js';
 import ConfigItineraryItem from '../models/ConfigItineraryItem.js';
+import InventoryItem from '../models/InventoryItem.js';
+
+// Map InventoryItem type -> ConfigItineraryItem type
+const INV_TYPE_MAP = {
+  accommodation: 'hotel',
+  transport:     'transport',
+  activity:      'activity',
+  meal:          'meal',
+  package:       'service',
+  other:         'service'
+};
+
+// Normalize an InventoryItem into a ConfigItineraryItem-shaped object
+const normalizeInventoryItem = (inv) => ({
+  _id:        inv._id,
+  _source:    'inventory',
+  type:       INV_TYPE_MAP[inv.type] || 'service',
+  name:       inv.name,
+  price:      inv.price,
+  location:   inv.location || '',
+  amenities:  inv.amenities || [],
+  category:   inv.type === 'accommodation' ? 'Accommodation'
+            : inv.type === 'transport'     ? 'Transport'
+            : inv.type === 'activity'      ? 'Cultural'
+            : inv.type === 'meal'          ? 'Food'
+            : 'Service',
+  duration:   inv.duration || '',
+  comfort:    inv.comfort  || '',
+  available:  inv.availableCount > 0,
+  isActive:   inv.isActive,
+  capacity:   inv.capacity,
+  description: inv.description || ''
+});
 
 // ========== CITIES ==========
 export const getCities = async (req, res) => {
@@ -332,8 +365,29 @@ export const getItineraryItems = async (req, res) => {
     if (category) filter.category = category;
     if (location) filter.location = location;
     
-    const items = await ConfigItineraryItem.find(filter).sort({ type: 1, price: 1 });
-    res.json(items);
+    // Fetch from both collections in parallel
+    const configFilter = { ...filter };
+    // For inventory, map the requested type back to InventoryItem enum
+    const reverseTypeMap = { hotel: 'accommodation', transport: 'transport', activity: 'activity', meal: 'meal', service: ['package','other'] };
+    const invFilter = { isActive: true };
+    if (type && reverseTypeMap[type]) {
+      const mapped = reverseTypeMap[type];
+      invFilter.type = Array.isArray(mapped) ? { $in: mapped } : mapped;
+    }
+    if (location) invFilter.location = new RegExp(location, 'i');
+
+    const [configItems, inventoryItems] = await Promise.all([
+      ConfigItineraryItem.find(configFilter).sort({ type: 1, price: 1 }),
+      InventoryItem.find(invFilter).sort({ type: 1, price: 1 })
+    ]);
+
+    // Merge: config items first, then inventory items not already covered
+    const configNames = new Set(configItems.map(i => i.name.toLowerCase()));
+    const newFromInventory = inventoryItems
+      .map(normalizeInventoryItem)
+      .filter(i => !configNames.has(i.name.toLowerCase()));
+
+    res.json([...configItems, ...newFromInventory]);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch itinerary items', error: error.message });
   }
@@ -342,8 +396,21 @@ export const getItineraryItems = async (req, res) => {
 export const getItineraryItemsByType = async (req, res) => {
   try {
     const { type } = req.params;
-    const items = await ConfigItineraryItem.find({ type, isActive: true }).sort({ price: 1 });
-    res.json(items);
+    const reverseTypeMap = { hotel: 'accommodation', transport: 'transport', activity: 'activity', meal: 'meal', service: ['package','other'] };
+    const invTypeRaw = reverseTypeMap[type];
+    const invFilter = { isActive: true, type: Array.isArray(invTypeRaw) ? { $in: invTypeRaw } : invTypeRaw };
+
+    const [configItems, inventoryItems] = await Promise.all([
+      ConfigItineraryItem.find({ type, isActive: true }).sort({ price: 1 }),
+      invTypeRaw ? InventoryItem.find(invFilter).sort({ price: 1 }) : Promise.resolve([])
+    ]);
+
+    const configNames = new Set(configItems.map(i => i.name.toLowerCase()));
+    const newFromInventory = inventoryItems
+      .map(normalizeInventoryItem)
+      .filter(i => !configNames.has(i.name.toLowerCase()));
+
+    res.json([...configItems, ...newFromInventory]);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch itinerary items', error: error.message });
   }

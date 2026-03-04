@@ -187,6 +187,11 @@ export default function MyTrips() {
     }
 
     if (trip.status === 'confirmed') {
+      if (trip.paymentStatus !== 'paid') {
+        actions.push(
+          { id: 'pay', label: '💳 Pay Now', icon: 'credit-card', color: 'green' }
+        );
+      }
       actions.push(
         { id: 'contact', label: 'Contact Vendor', icon: 'message', color: 'green' }
       );
@@ -528,13 +533,35 @@ export default function MyTrips() {
                       {actions.map(action => (
                         <button
                           key={action.id}
-                          onClick={() => {
+                          onClick={async () => {
                             if (action.id === 'cancel') {
                               setCancelConfirm({ show: true, tripId: trip.id, tripName: trip.destination });
                             } else if (action.id === 'details') {
                               navigate(`/trip/${trip.id}`);
                             } else if (action.id === 'modify') {
-                              navigate(`/itinerary?edit=${trip.id}`);
+                              navigate('/itinerary', {
+                                state: {
+                                  existingTripId: trip.id,
+                                  destination: trip.destination,
+                                  location: trip.location,
+                                  duration: trip.duration,
+                                  budget: trip.totalCost,
+                                  travelers: trip.pax,
+                                  dates: { from: trip.startDate, to: trip.endDate },
+                                },
+                              });
+                            } else if (action.id === 'pay') {
+                              if (!confirm(`Pay LKR ${trip.totalCost.toLocaleString()} for your trip to ${trip.destination}?`)) return;
+                              try {
+                                const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+                                await axios.patch(`/api/bookings/${trip.id}/pay`, {}, {
+                                  headers: { Authorization: `Bearer ${userInfo.token}` }
+                                });
+                                setTrips(prev => prev.map(t => t.id === trip.id ? { ...t, paymentStatus: 'paid' } : t));
+                                toast.success('Payment successful! Your trip is confirmed. 🎉');
+                              } catch (err) {
+                                toast.error(err.response?.data?.message || 'Payment failed. Please try again.');
+                              }
                             } else if (action.id === 'book-again') {
                               navigate('/plan-trip');
                             } else if (action.id === 'review') {

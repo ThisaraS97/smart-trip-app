@@ -1,6 +1,7 @@
 import Booking from '../models/Booking.js';
 import InventoryItem from '../models/InventoryItem.js';
 import Vendor from '../models/Vendor.js';
+import { createNotification } from './notificationController.js';
 
 // GET /api/bookings  — current user's bookings
 export const getMyBookings = async (req, res) => {
@@ -89,6 +90,37 @@ export const createBooking = async (req, res) => {
   }
 };
 
+// PUT /api/bookings/:id  — user updates their own pending booking
+export const updateBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+    if (booking.user.toString() !== req.user._id.toString())
+      return res.status(403).json({ message: 'Not authorised' });
+    if (booking.status !== 'pending')
+      return res.status(400).json({ message: 'Only pending bookings can be modified' });
+
+    const {
+      destination, location, duration, itinerarySummary,
+      totalCost, tripDates, pax, specialRequests,
+    } = req.body;
+
+    if (destination !== undefined)       booking.destination       = destination;
+    if (location !== undefined)          booking.location          = location;
+    if (duration !== undefined)          booking.duration          = duration;
+    if (itinerarySummary !== undefined)  booking.itinerarySummary  = itinerarySummary;
+    if (totalCost !== undefined)         booking.totalCost         = totalCost;
+    if (tripDates !== undefined)         booking.tripDates         = tripDates;
+    if (pax !== undefined)               booking.pax               = pax;
+    if (specialRequests !== undefined)   booking.specialRequests   = specialRequests;
+
+    const updated = await booking.save();
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // PATCH /api/bookings/:id/cancel  — user cancels own booking
 export const cancelBooking = async (req, res) => {
   try {
@@ -114,9 +146,39 @@ export const updateBookingStatus = async (req, res) => {
     const booking = await Booking.findById(req.params.id);
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
+    const prevStatus = booking.status;
     if (status) booking.status = status;
     if (paymentStatus) booking.paymentStatus = paymentStatus;
     await booking.save();
+
+    // Notify user on admin status changes
+    const destination = booking.destination || 'your trip';
+    if (status && status !== prevStatus) {
+      if (status === 'confirmed') {
+        await createNotification({
+          userId: booking.user,
+          type: 'booking_confirmed',
+          title: '🎉 Booking Confirmed!',
+          message: `Your booking for "${destination}" has been confirmed. You can now proceed to payment.`,
+          bookingId: booking._id,
+        });
+        await createNotification({
+          userId: booking.user,
+          type: 'payment_due',
+          title: '💳 Payment Required',
+          message: `Please complete your payment of LKR ${booking.totalCost.toLocaleString()} for "${destination}" to secure your booking.`,
+          bookingId: booking._id,
+        });
+      } else if (status === 'rejected') {
+        await createNotification({
+          userId: booking.user,
+          type: 'booking_rejected',
+          title: '❌ Booking Not Confirmed',
+          message: `Your booking for "${destination}" was not confirmed.`,
+          bookingId: booking._id,
+        });
+      }
+    }
     res.json(booking);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -183,11 +245,69 @@ export const vendorBookingAction = async (req, res) => {
     if (notes) booking.vendorNotes = notes;
     await booking.save();
 
+    // Notify the user
+    const destination = booking.destination || 'your trip';
+    if (action === 'confirmed') {
+      await createNotification({
+        userId: booking.user,
+        type: 'booking_confirmed',
+        title: '🎉 Booking Confirmed!',
+        message: `Your booking for "${destination}" has been confirmed by the vendor. You can now proceed to payment.`,
+        bookingId: booking._id,
+      });
+      await createNotification({
+        userId: booking.user,
+        type: 'payment_due',
+        title: '💳 Payment Required',
+        message: `Please complete your payment of LKR ${booking.totalCost.toLocaleString()} for "${destination}" to secure your booking.`,
+        bookingId: booking._id,
+      });
+    } else if (action === 'rejected') {
+      await createNotification({
+        userId: booking.user,
+        type: 'booking_rejected',
+        title: '❌ Booking Not Confirmed',
+        message: `Unfortunately, your booking for "${destination}" could not be confirmed by the vendor.${notes ? ` Reason: ${notes}` : ''} Please contact support or try a different date.`,
+        bookingId: booking._id,
+      });
+    }
+
     const updated = await Booking.findById(booking._id)
       .populate('user', 'name email')
       .populate('items.inventory', 'name type price');
 
     res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// PATCH /api/bookings/:id/pay  — user pays for a confirmed booking
+export const payBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+    if (booking.user.toString() !== req.user._id.toString())
+      return res.status(403).json({ message: 'Not authorised' });
+    if (booking.status !== 'confirmed')
+      return res.status(400).json({ message: 'Booking must be confirmed before payment' });
+    if (booking.paymentStatus === 'paid')
+      return res.status(400).json({ message: 'Booking is already paid' });
+
+    booking.paymentStatus = 'paid';
+    await booking.save();
+
+    // Notify user of successful payment
+    const destination = booking.destination || 'your trip';
+    await createNotification({
+      userId: booking.user,
+      type: 'payment_received',
+      title: '✅ Payment Successful!',
+      message: `Your payment of LKR ${booking.totalCost.toLocaleString()} for "${destination}" has been received. Your trip is now fully booked!`,
+      bookingId: booking._id,
+    });
+
+    res.json(booking);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

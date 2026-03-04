@@ -104,9 +104,22 @@ export default function BookingReview() {
       toast.error('Please agree to the terms and conditions to proceed.');
       return;
     }
+
+    // guard: ensure we have a valid total
+    const safeTotal = finalTotal || passed.totalCost || bookingDetails.costs.total || 0;
+    if (!safeTotal) {
+      toast.error('Trip cost could not be calculated. Please go back and review your itinerary.');
+      return;
+    }
+
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    if (!userInfo.token) {
+      toast.error('You are not logged in. Please log in and try again.');
+      return;
+    }
+
     setLoading(true);
     try {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
       const tripItinerary = bookingDetails.itinerary.map(day => ({
         day: day.day,
         date: day.date,
@@ -117,33 +130,47 @@ export default function BookingReview() {
           ...(day.meals && day.meals.length > 0 ? [{ time: 'Meals', items: day.meals.map(m => ({ type: 'meal', name: m })) }] : []),
         ],
       }));
-      await axios.post(
-        '/api/bookings',
-        {
-          destination: bookingDetails.destination,
-          location: bookingDetails.location,
-          duration: bookingDetails.dates.duration,
-          itinerarySummary: tripItinerary,
-          totalCost: finalTotal,
-          tripDates: {
-            startDate: bookingDetails.dates.checkIn,
-            endDate: bookingDetails.dates.checkOut,
-          },
-          pax: {
-            adults: bookingDetails.travelers.adults || 1,
-            children: bookingDetails.travelers.children || 0,
-            infants: bookingDetails.travelers.infants || 0,
-          },
-          specialRequests: [specialRequests, dietaryRestrictions, accessibilityNeeds, specialOccasion]
-            .filter(Boolean)
-            .join(' | '),
+      const bookingPayload = {
+        destination: bookingDetails.destination,
+        location: bookingDetails.location,
+        duration: bookingDetails.dates.duration,
+        itinerarySummary: tripItinerary,
+        totalCost: safeTotal,
+        tripDates: {
+          startDate: bookingDetails.dates.checkIn,
+          endDate: bookingDetails.dates.checkOut,
         },
-        { headers: { Authorization: `Bearer ${userInfo.token}` } }
-      );
-      toast.success('Booking submitted successfully!');
+        pax: {
+          adults: bookingDetails.travelers.adults || 1,
+          children: bookingDetails.travelers.children || 0,
+          infants: bookingDetails.travelers.infants || 0,
+        },
+        specialRequests: [specialRequests, dietaryRestrictions, accessibilityNeeds, specialOccasion]
+          .filter(Boolean)
+          .join(' | '),
+      };
+
+      if (passed.existingTripId) {
+        await axios.put(
+          `/api/bookings/${passed.existingTripId}`,
+          bookingPayload,
+          { headers: { Authorization: `Bearer ${userInfo.token}` } }
+        );
+        toast.success('Trip updated successfully!');
+      } else {
+        await axios.post(
+          '/api/bookings',
+          bookingPayload,
+          { headers: { Authorization: `Bearer ${userInfo.token}` } }
+        );
+        toast.success('Booking submitted successfully!');
+      }
       setShowConfirmation(true);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Booking submission failed. Please try again.');
+      const status = err.response?.status;
+      const msg = err.response?.data?.message || err.response?.data || err.message || 'Booking submission failed.';
+      console.error('Booking error', status, err.response?.data);
+      toast.error(`Error ${status ? `(${status})` : ''}: ${msg}`);
     } finally {
       setLoading(false);
     }

@@ -384,6 +384,7 @@ export default function ItineraryCustomization() {
 
     navigate('/booking-review', {
       state: {
+        existingTripId: tripState?.existingTripId || null,
         destination: tripDestination,
         location: tripLocation,
         dates: {

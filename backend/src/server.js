@@ -14,6 +14,7 @@ import savedTripRoutes from './routes/savedTripRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import configRoutes from './routes/configRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use('/api/vendors', vendorRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/api/saved-trips', savedTripRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api/reviews', reviewRoutes);
 
 // Serve static files (uploaded images, etc.)

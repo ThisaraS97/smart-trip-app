@@ -4,7 +4,9 @@ import {
   getMyBookings,
   getBookingById,
   createBooking,
+  updateBooking,
   cancelBooking,
+  payBooking,
   updateBookingStatus,
   getAllBookings,
   getVendorBookings,
@@ -26,6 +28,8 @@ router.patch('/:id/vendor-action', protect, vendorOnly, vendorBookingAction);
 
 // Shared routes
 router.get('/:id', protect, getBookingById);
+router.put('/:id', protect, updateBooking);
+router.patch('/:id/pay', protect, payBooking);
 router.patch('/:id/cancel', protect, cancelBooking);
 router.patch('/:id/status', protect, adminOnly, updateBookingStatus);
 
